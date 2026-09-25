@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Verified against the live sources on 2026-09-26 (S1-T7).
+id: bigbluebutton
+name: BigBlueButton
+aliases: [bbb]
+vendor: BigBlueButton Inc.
+category: collaboration
+homepage: https://bigbluebutton.org
+description: Open-source web conferencing for online learning.
+versionScheme: semver
+tagFilter:
+  include: '^v\d+\.\d+\.\d+$'
+tracks:
+  - { id: "3.0", match: '^3\.0\.' }
+  - { id: "2.7", match: '^2\.7\.' }
+sources:
+  releases: { type: github, repo: bigbluebutton/bigbluebutton }
+  security:
+    - { type: ghsa, repo: bigbluebutton/bigbluebutton }
+  eol: { type: endoflife, product: bigbluebutton }
+detect:
+  - command: { run: "dpkg-query -W -f='${Version}' bbb-html5", regex: '(\d+\.\d+\.\d+)' }
+maintainers: ["@DamirManyapov"]

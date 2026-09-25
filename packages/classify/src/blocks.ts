@@ -17,6 +17,7 @@ function inlineMarkdownToText(md: string): string {
       .replace(/,?\s*\[#\d+\]\([^)]*\)/g, '')
       .replace(/,?\s*\[@[^\]]*?(?:\[[^\]]*\])?\]\([^)]*\)/g, '')
       .replace(/\s+by @[\w-]+(?:\[bot\])? in https?:\/\/\S+/g, '')
+      .replace(/\s+in https?:\/\/github\.com\/\S+\/(?:pull|issues)\/\d+\S*/g, '')
       .replace(/!\[[^\]]*\]\([^)]*\)/g, '') // images
       .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // links → text
       .replace(/<[^>]+>/g, '') // inline html

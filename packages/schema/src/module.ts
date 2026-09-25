@@ -79,6 +79,9 @@ const GithubSource = z.strictObject({
   changelogPath: nonEmpty
     .optional()
     .meta({ description: 'Path of the changelog file for notesFrom: changelogFile.' }),
+  versionRegex: regex(
+    "Extracts the version from the tag name; tags that don't match are ignored. First non-empty capture group wins.",
+  ).optional(),
 });
 
 const GitlabSource = z.strictObject({
@@ -121,6 +124,9 @@ const DockerhubSource = z.strictObject({
   type: z.literal('dockerhub'),
   repo: nonEmpty.meta({ description: 'Image repository, e.g. analogic/poste.io' }),
   tagRegex: regex('Only tags matching this count as releases.').optional(),
+  versionRegex: regex(
+    'Extracts the version from the tag; the first non-empty capture group wins.',
+  ).optional(),
 });
 
 const ManualReleasesSource = z.strictObject({
@@ -310,6 +316,14 @@ export const Module = z
       .optional(),
     prerelease: z.enum(['skip', 'include']).default('skip'),
 
+    releaseNotesUrl: z
+      .string()
+      .regex(/^https?:\/\/\S*\{version\}/, { error: 'an http(s) URL containing {version}' })
+      .optional()
+      .meta({
+        description:
+          'Per-release notes page, e.g. https://www.zabbix.com/rn/rn{version}; used as the release link.',
+      }),
     tracks: z
       .array(Track)
       .optional()

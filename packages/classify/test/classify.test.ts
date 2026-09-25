@@ -154,3 +154,40 @@ describe('classifyNotes', () => {
     expect(classifyNotes({ format: 'markdown', body: '  ' })).toEqual({ items: [], omitted: 0 });
   });
 });
+
+describe('classifyNotes: vendor conventions', () => {
+  it('reads Conventional Commits prefixes before keywords', () => {
+    const md = [
+      '- fix: remove unnecessary replication checks',
+      '- feat(ui): dark mode',
+      '- feat!: new config format',
+      '- docs: typo',
+      '- Removed the legacy API',
+    ].join('\n');
+    expect(summary(classifyNotes({ format: 'markdown', body: md }).items)).toEqual([
+      'fix/keyword: fix: remove unnecessary replication checks',
+      'feature/keyword: feat(ui): dark mode',
+      'breaking/keyword: feat!: new config format',
+      'other/keyword: docs: typo',
+      'breaking/keyword: Removed the legacy API',
+    ]);
+  });
+
+  it('drops link-only lines and version boilerplate, and PR links without an author', () => {
+    const text =
+      'Downloads: https://elastic.co/downloads/x\nRelease notes: https://www.elastic.co/notes.html';
+    expect(classifyNotes({ format: 'text', body: text }).items).toEqual([]);
+    expect(
+      classifyNotes({ format: 'html', body: '18.6 is the latest release in the 18 series.' }).items,
+    ).toEqual([]);
+    const md = '- Added OKF export in https://github.com/outline/outline/pull/13644';
+    expect(classifyNotes({ format: 'markdown', body: md }).items[0]?.text).toBe('Added OKF export');
+  });
+
+  it('keeps a prose paragraph that names a CVE even when there are bullets (nginx)', () => {
+    const md =
+      "nginx-1.31.6 has been released, with a fix for CVE-2026-90439.\n\n## What's Changed\n* man page updates";
+    const { items } = classifyNotes({ format: 'markdown', body: md });
+    expect(items.map((i) => i.type)).toEqual(['security', 'other']);
+  });
+});

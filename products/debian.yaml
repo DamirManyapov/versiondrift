@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schemas/module.schema.json
-# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+# Verified against the live sources on 2026-09-26 (S1-T7).
 id: debian
 name: Debian GNU/Linux
 aliases: [debian-linux]
@@ -8,13 +8,13 @@ category: os
 homepage: https://www.debian.org
 logo: simpleicons:debian
 description: Universal operating system.
-versionScheme: loose            # point releases 12.7, 13.2 (packages use the "debian" scheme)
+versionScheme: debian            # point releases 13.7; the branch is the major (13), as on endoflife.date
 tracks:
   - { id: "13", match: '^13\.', label: trixie }
   - { id: "12", match: '^12\.', label: bookworm }
   - { id: "11", match: '^11\.', label: bullseye }
 sources:
-  releases:
+  releases:                      # the news feed only lists recent point releases; history accumulates daily
     type: rss
     url: https://www.debian.org/News/news
     versionFrom: title
@@ -24,4 +24,4 @@ sources:
   eol: { type: endoflife, product: debian }
 detect:
   - file: { path: /etc/debian_version }
-maintainers: []
+maintainers: ["@DamirManyapov"]

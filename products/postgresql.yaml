@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Verified against the live sources on 2026-09-26 (S1-T7).
+id: postgresql
+name: PostgreSQL
+aliases: [postgres, pg]
+vendor: PostgreSQL Global Development Group
+category: database
+homepage: https://www.postgresql.org
+logo: simpleicons:postgresql
+description: Open-source object-relational database.
+versionScheme: loose             # 18.6; each major is a branch
+tracks:
+  - { id: "18", match: '^18\.' }
+  - { id: "17", match: '^17\.' }
+  - { id: "16", match: '^16\.' }
+  - { id: "15", match: '^15\.' }
+  - { id: "14", match: '^14\.' }
+sources:
+  releases:                      # latest minor per supported major; each links to its release notes; history accumulates
+    type: rss
+    url: https://www.postgresql.org/versions.rss
+    versionFrom: title
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:postgresql:postgresql" }
+  eol: { type: endoflife, product: postgresql }
+detect:
+  - sql: { engine: postgresql, query: "SHOW server_version", regex: '^(\d+\.\d+)' }
+  - docker: { image: postgres }
+maintainers: ["@DamirManyapov"]

@@ -76,8 +76,9 @@ export function classifyNotes(notes: ReleaseNotesInput | undefined, hints?: Clas
       sections.push({ level: block.level, meaning: sectionMeaning(block.text, hints) });
       continue;
     }
-    // Prose counts only when the notes have no bullets at all (a short announcement).
-    if (block.kind === 'prose' && (hasBullets || prose++ >= MAX_PROSE_ITEMS)) continue;
+    // Prose counts only when the notes have no bullets at all (a short announcement) — or when it names a CVE.
+    const namesCve = refsIn(block.text).length > 0;
+    if (block.kind === 'prose' && !namesCve && (hasBullets || prose++ >= MAX_PROSE_ITEMS)) continue;
     const section = [...sections].reverse().find((s) => s.meaning !== undefined)?.meaning;
     if (section === 'noise' || NOISE_ITEM.test(block.text)) continue;
     items.push(classifyText(block.text, section, hints));

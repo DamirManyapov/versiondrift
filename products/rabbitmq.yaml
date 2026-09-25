@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Verified against the live sources on 2026-09-26 (S1-T7).
+id: rabbitmq
+name: RabbitMQ
+vendor: Broadcom
+category: messaging
+homepage: https://www.rabbitmq.com
+logo: simpleicons:rabbitmq
+description: Message broker (AMQP, MQTT, STOMP).
+versionScheme: semver
+tagFilter:
+  include: '^v\d+\.\d+\.\d+$'
+tracks:
+  - { id: "4", match: '^4\.' }
+  - { id: "3", match: '^3\.' }
+sources:
+  releases: { type: github, repo: rabbitmq/rabbitmq-server }
+  security:
+    - { type: ghsa, repo: rabbitmq/rabbitmq-server }
+  eol: { type: endoflife, product: rabbitmq }
+detect:
+  - http: { path: /api/overview, jsonPath: $.rabbitmq_version, defaultPort: 15672 }
+  - docker: { image: rabbitmq }
+maintainers: ["@DamirManyapov"]

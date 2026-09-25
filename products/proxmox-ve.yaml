@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schemas/module.schema.json
-# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+# Verified against the live sources on 2026-09-26 (S1-T7).
 id: proxmox-ve
 name: Proxmox VE
 aliases: [pve, proxmox]
@@ -13,15 +13,16 @@ tracks:
   - { id: "9", match: '^9\.' }
   - { id: "8", match: '^8\.' }
 sources:
-  releases:
-    type: rss
-    url: https://forum.proxmox.com/forums/announcements.7/index.rss
-    versionFrom: title
-    versionRegex: 'Proxmox VE (\d+\.\d+(?:\.\d+)?)'
+  releases:                      # roadmap wiki: one "<h2>Proxmox VE X.Y</h2>" per release, "Released 05. August 2026" below
+    type: html
+    url: https://pve.proxmox.com/wiki/Roadmap
+    select: { item: h2 }
+    versionRegex: '^Proxmox VE (\d+\.\d+(?:\.\d+)?)$'
+    dateFormat: 'DD. MMM YYYY'
   security:
     - { type: nvd, cpe: "cpe:2.3:a:proxmox:virtual_environment" }
   eol: { type: endoflife, product: proxmox-ve }
 detect:
   - command: { run: pveversion, regex: 'pve-manager/(\S+)/' }
   - http: { path: /api2/json/version, jsonPath: $.data.version, defaultPort: 8006, scheme: https }
-maintainers: []
+maintainers: ["@DamirManyapov"]

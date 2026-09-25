@@ -2,7 +2,7 @@
 // Notes come from the release body (Markdown) or, with notesFrom: changelogFile, from a changelog file.
 import type { ReleaseSource } from '@versiondrift/schema';
 import { SourceError, type AdapterContext, type RawRelease } from '../types.ts';
-import { extractVersion, reachedKnown, toIso, type SourceType } from './common.ts';
+import { extractVersion, reachedKnown, toIso, withVersionRegex, type SourceType } from './common.ts';
 
 type GithubSource = SourceType<ReleaseSource, 'github'>;
 
@@ -53,16 +53,19 @@ async function releases(source: GithubSource, ctx: AdapterContext): Promise<RawR
         headers: { accept: 'application/vnd.github+json' },
       },
     );
-    const batch = list
-      .filter((r) => !r.draft)
-      .map((r): RawRelease => ({
-        version: r.tag_name,
-        date: toIso(r.published_at ?? r.created_at),
-        url: r.html_url,
-        ...(r.name && { title: r.name }),
-        ...(r.body && { notes: { format: 'markdown', body: r.body } }),
-        prerelease: r.prerelease,
-      }));
+    const batch = withVersionRegex(
+      list
+        .filter((r) => !r.draft)
+        .map((r): RawRelease => ({
+          version: r.tag_name,
+          date: toIso(r.published_at ?? r.created_at),
+          url: r.html_url,
+          ...(r.name && { title: r.name }),
+          ...(r.body && { notes: { format: 'markdown', body: r.body } }),
+          prerelease: r.prerelease,
+        })),
+      source.versionRegex,
+    );
     out.push(...batch);
     if (list.length < PER_PAGE || reachedKnown(batch, ctx.knownVersions, ctx.since)) break;
   }
@@ -82,7 +85,7 @@ async function tags(source: GithubSource, ctx: AdapterContext): Promise<RawRelea
       throw new SourceError(`GitHub GraphQL: ${response.errors.map((e) => e.message).join('; ')}`);
     const refs = response.data?.repository?.refs;
     if (!refs) throw new SourceError(`repository ${source.repo} not found`);
-    const batch = refs.nodes.map((tag): RawRelease => {
+    const tagged = refs.nodes.map((tag): RawRelease => {
       const date = toIso(
         tag.target.tagger?.date ?? tag.target.committedDate ?? tag.target.target?.committedDate,
       );
@@ -92,6 +95,7 @@ async function tags(source: GithubSource, ctx: AdapterContext): Promise<RawRelea
         ...(date && { date }),
       };
     });
+    const batch = withVersionRegex(tagged, source.versionRegex);
     out.push(...batch);
     if (!refs.pageInfo.hasNextPage || reachedKnown(batch, ctx.knownVersions, ctx.since)) break;
     cursor = refs.pageInfo.endCursor;

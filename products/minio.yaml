@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Verified against the live sources on 2026-09-26 (S1-T7).
+id: minio
+name: MinIO
+vendor: MinIO, Inc.
+category: storage
+homepage: https://min.io
+logo: simpleicons:minio
+description: S3-compatible object storage.
+versionScheme: regex             # RELEASE.2025-10-15T17-29-55Z
+versionRegex: '^RELEASE\.(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})Z$'
+branchGroups: 2                  # year.month
+sources:
+  releases: { type: github, repo: minio/minio }
+  security:
+    - { type: ghsa, repo: minio/minio }
+detect:
+  - http: { path: /minio/health/live, header: server, regex: 'MinIO' }
+  - docker: { image: minio/minio }
+maintainers: ["@DamirManyapov"]
