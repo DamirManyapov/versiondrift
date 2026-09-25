@@ -13,7 +13,8 @@
     "typecheck": "tsc -b",
     "test": "pnpm -r test",
     "schema:gen": "pnpm -F @versiondrift/schema gen",
-    "modules:validate": "pnpm -F @versiondrift/schema validate"
+    "modules:validate": "pnpm -F @versiondrift/schema validate",
+    "collect": "node apps/collector/src/cli.ts collect"
   },
   "packageManager": "pnpm@12.6.0",
   "devDependencies": {

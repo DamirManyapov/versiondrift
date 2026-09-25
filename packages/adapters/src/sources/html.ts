@@ -21,8 +21,12 @@ export function parseHtmlReleases(html: string, source: HtmlSource): RawRelease[
   const out: RawRelease[] = [];
   items.each((_, node) => {
     const item = $(node);
-    const pick = (selector: string | undefined) =>
-      selector === undefined ? undefined : item.is(selector) ? item : item.find(selector).first();
+    const pick = (selector: string | undefined) => {
+      if (selector === undefined) return undefined;
+      if (item.is(selector)) return item;
+      const found = item.find(selector).first();
+      return found.length > 0 ? found : undefined;
+    };
     const titleEl = pick(source.select.title) ?? item;
     const title = clean(titleEl.text());
     const version = extractVersion(title, source.versionRegex);

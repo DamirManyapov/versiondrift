@@ -50,7 +50,7 @@ export interface AdapterContext {
   /** On a first run, releases older than this are not needed (retention window). */
   since?: Date;
   /** Reads a file from the repository (manual sources). */
-  readRepoFile?(path: string): Promise<string>;
+  readRepoFile?: (path: string) => Promise<string>;
 }
 
 /** Thrown by adapters for problems with the source itself (layout changed, nothing matched, …). */

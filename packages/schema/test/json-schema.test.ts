@@ -3,8 +3,8 @@ import path from 'node:path';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
-import { Module, moduleJsonSchema, validateModules } from '../src/index.ts';
-import { MODULE_SCHEMA_FILE, PRODUCTS_DIR, REPO_ROOT, serializeJsonSchema } from '../src/cli/paths.ts';
+import { generatedSchemas, Module, moduleJsonSchema, validateModules } from '../src/index.ts';
+import { PRODUCTS_DIR, REPO_ROOT, SCHEMAS_DIR, serializeJsonSchema } from '../src/cli/paths.ts';
 
 const schema = moduleJsonSchema();
 // Formats (uri, regex) are left to editors; zod checks them at runtime. strictRequired would reject the
@@ -23,10 +23,13 @@ const products = readdirSync(PRODUCTS_DIR)
     return { file: path.relative(REPO_ROOT, full), text: readFileSync(full, 'utf8') };
   });
 
-describe('schemas/module.schema.json', () => {
-  it('is up to date with the zod schema (run `pnpm schema:gen` if this fails)', () => {
-    expect(readFileSync(MODULE_SCHEMA_FILE, 'utf8')).toBe(serializeJsonSchema(schema));
-  });
+describe('schemas/*.json', () => {
+  it.each(Object.entries(generatedSchemas()))(
+    '%s is up to date (run `pnpm schema:gen` if this fails)',
+    (file, generated) => {
+      expect(readFileSync(path.join(SCHEMAS_DIR, file), 'utf8')).toBe(serializeJsonSchema(generated));
+    },
+  );
 });
 
 describe('products/*.yaml', () => {
