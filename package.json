@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "description": "See how far your stack has drifted from upstream.",
+  "license": "AGPL-3.0-only",
   "engines": {
     "node": ">=22.18"
   },

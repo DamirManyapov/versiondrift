@@ -16,8 +16,7 @@ Goal: an empty but well-wired monorepo.
 - S0-T2 ✅ `packages/schema` with zod `Module` schema per `docs/02`; `pnpm schema:gen` → `schemas/module.schema.json`
   (replace the hand-written draft); `pnpm modules:validate`.
 - S0-T3 ✅ GitHub Actions `ci.yml` (lint, typecheck, test, schema drift).
-- S0-T4 Repo hygiene: LICENSE (per ADR-0005), CONTRIBUTING.md, CODE_OF_CONDUCT.md, issue templates (bug, module request).
-  Done except LICENSE (+ contributor licensing in CONTRIBUTING.md): waiting for the ADR-0005 decision.
+- S0-T4 ✅ Repo hygiene: LICENSE (per ADR-0005), CONTRIBUTING.md, CODE_OF_CONDUCT.md, issue templates (bug, module request).
 - S0-T5 ✅ Register domain(s), create Cloudflare account resources: R2 bucket, Pages project, DNS `feed.` and apex.
 
 **Done when:** `pnpm i && pnpm -r test && pnpm modules:validate` pass in CI on the example modules.

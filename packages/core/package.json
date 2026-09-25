@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Version schemes, comparison and the status engine. Runs in browsers, Workers and Node.",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

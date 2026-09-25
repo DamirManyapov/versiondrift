@@ -51,4 +51,5 @@ the Debian Security Tracker and the CISA KEV catalog. Every item links back to i
 
 ## License
 
-Code: AGPL-3.0 (see `docs/adr/0005-license.md`). Modules and feed data: CC BY 4.0.
+Code: [AGPL-3.0-only](LICENSE); code contributions need a [CLA](CLA.md). Product modules (`products/`) and the feed data:
+[CC BY 4.0](LICENSES/CC-BY-4.0.txt). Why: [`docs/adr/0005-license.md`](docs/adr/0005-license.md).
