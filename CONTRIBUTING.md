@@ -43,3 +43,11 @@ Before you start on something bigger, read [`docs/00-vision.md`](docs/00-vision.
 - **Commits** follow [Conventional Commits](https://www.conventionalcommits.org/): `feat(collector): …`,
   `fix(web): …`, `module(grafana): …`.
 - User-facing strings go through i18n (`en` first, then `ru`).
+
+## Licensing of contributions
+
+- **Code and docs** are licensed under [AGPL-3.0-only](LICENSE). On your first such PR a bot asks you to sign the
+  [Contributor License Agreement](CLA.md) with a one-line comment. It lets the project also offer the code under
+  other licenses (for example an enterprise edition); you keep all rights to your own work.
+- **Product modules** (`products/**`) and feed data are [CC BY 4.0](LICENSES/CC-BY-4.0.txt). Submitting a module
+  licenses it under CC BY 4.0; no CLA needed.
