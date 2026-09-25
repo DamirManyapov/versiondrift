@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://versiondrift.dev/schemas/feed-product.schema.json",
   "title": "VersionDrift feed: product file (v1)",
-  "description": "Hand-written draft matching docs/03-feed-format.md. Generated from zod from S0-T2 on.",
+  "description": "Hand-written draft matching docs/03-feed-format.md. Will be generated from packages/schema (zod) once the feed schemas are implemented in S1.",
   "type": "object",
   "required": ["formatVersion", "id", "name", "versionScheme", "releases", "advisories", "branches", "collectedAt", "stale"],
   "properties": {

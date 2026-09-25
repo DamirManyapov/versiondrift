@@ -86,12 +86,15 @@ docker build -t versiondrift .     # self-hosted image
 
 ## Conventions
 
-- Package layout: `src/` is compiled by the package's own `tsconfig.json` (extends `tsconfig.base.json`,
-  `rootDir: src`, `outDir: dist`); tests are `test/*.test.ts`, type-checked by the root `tsconfig.json`.
-  A new package must be added to the root `tsconfig.json` `references`. Shared dev tools (`typescript`,
-  `vitest`, `@types/node`) are declared as `"catalog:"` — versions live in `pnpm-workspace.yaml`.
+- Package layout (see `packages/schema`): no build step — `package.json` `exports` points at `src/index.ts`;
+  Node ≥ 22.18 runs `.ts` directly (type stripping), Vite/Vitest transpile it. The package's `tsconfig.json`
+  (extends `tsconfig.base.json`, `rootDir: src`, `outDir: dist`) only type-checks and emits declarations.
+  Tests are `test/*.test.ts`, type-checked by the root `tsconfig.json`. A new package must be added to the root
+  `tsconfig.json` `references`. Shared dev tools (`typescript`, `vitest`, `@types/node`) are declared as
+  `"catalog:"` — versions live in `pnpm-workspace.yaml`.
 - TypeScript is erasable-only (`erasableSyntaxOnly`): no `enum`, `namespace` or parameter properties —
-  use `as const` objects / string unions.
+  use `as const` objects / string unions. Relative imports name the real file: `from './module.ts'`.
+- Code that may run in browsers/Workers (`schema`, `core`) must not import `node:*` outside `src/cli/`.
 - Module ids: lowercase kebab-case, stable forever (`percona-xtradb-cluster`). Renames need an `aliases` entry.
 - All dates in the feed are ISO 8601 UTC (`2026-09-22T00:00:00Z`) — date-only sources use midnight UTC.
 - Versions are stored as the vendor writes them (`v` prefix stripped) plus a normalized `sortKey` from `packages/core`.

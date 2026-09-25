@@ -1,5 +1,7 @@
 {
   // Shared compiler options. Every package extends this and sets its own rootDir/outDir/types.
+  // Packages export their .ts sources directly (no build step): Node >= 22.18 runs them via type stripping,
+  // Vite/Vitest transpile them. tsc only type-checks and emits declarations for project references.
   "compilerOptions": {
     "target": "ES2023",
     // No DOM here: packages/core must run in browsers, Workers and Node alike.
@@ -19,12 +21,14 @@
     "isolatedModules": true,
     // No enums / namespaces / parameter properties, so Node can run sources via type stripping.
     "erasableSyntaxOnly": true,
+    // Relative imports name the real file: import { x } from './module.ts'.
+    "allowImportingTsExtensions": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
 
     "composite": true,
     "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true
+    "emitDeclarationOnly": true,
+    "declarationMap": true
   }
 }

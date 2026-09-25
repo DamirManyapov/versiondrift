@@ -1,8 +1,9 @@
 # 02 — Module specification (`products/<id>.yaml`)
 
 A module describes **where to find information about one product** and **how to recognise its versions**.
-It contains no code. JSON Schema: `schemas/module.schema.json`
-(add `# yaml-language-server: $schema=../schemas/module.schema.json` as the first line for editor validation).
+It contains no code. The source of truth is the zod schema in `packages/schema/src/module.ts`;
+`pnpm schema:gen` generates `schemas/module.schema.json` from it (never edit that file by hand). Add
+`# yaml-language-server: $schema=../schemas/module.schema.json` as the first line for editor validation.
 
 ## Full example
 
@@ -75,9 +76,12 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `name` | ✓ | |
 | `category` | ✓ | `os, virtualization, containers, orchestration, monitoring, logging, database, mail, network, web, security, storage, backup, messaging, collaboration, ci-cd, identity, other` |
 | `versionScheme` | ✓ | see `docs/05-status-engine.md` |
+| `versionRegex` | | required when `versionScheme: regex`; capture groups become numeric segments |
+| `branchGroups` | | `versionScheme: regex` only: how many leading capture groups form the branch |
 | `sources.releases` | ✓ | exactly one primary source |
 | `tagFilter` | | regexes applied to raw version strings before parsing |
-| `tracks` | | needed when a product has parallel supported lines (ES 8/9, Debian 12/13, PostgreSQL majors) |
+| `tracks` | | needed when a product has parallel supported lines (ES 8/9, Debian 12/13, PostgreSQL majors). Ids are strings — quote numbers (`id: "12"`), unique, `latest` is reserved |
+| `defaultTrack` | | `latest` (default) or one of the track ids |
 | `classify` | | hints; without them the generic pipeline is used |
 | `detect` | | list, first match wins |
 | `maintainers` | | GitHub handles |
@@ -94,7 +98,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `dockerhub` | image tags | `repo` (`analogic/poste.io`), `tagRegex?` | versions + push dates (no notes) |
 | `endoflife` | lifecycle | `product` (endoflife.date slug) | branches, EOL dates, LTS flags |
 | `osv` | OSV.dev advisories | `ecosystem`, `package` | advisories with affected ranges |
-| `ghsa` | GitHub Security Advisories | `repo` (repository advisories) or `ecosystem`+`package` | advisories with ranges |
+| `ghsa` | GitHub Security Advisories | either `repo` (repository advisories) or `ecosystem`+`package` | advisories with ranges |
 | `nvd` | NVD CVE API 2.0 | `cpe` | CVEs + CVSS + CPE ranges |
 | `debian` | Debian Security Tracker | `packages: [..] \| fromInventory` | DSA/DLA per release |
 | `kev` | CISA KEV catalog (global, not per module) | — | "known exploited" flag by CVE id |
@@ -103,6 +107,11 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 New source types = new adapter in `packages/adapters` + fixtures + docs row here.
 
 ## Validation rules (CI)
+
+`pnpm modules:validate` checks rules 1 and 4 plus: valid YAML without duplicate keys, every regex compiles,
+no alias equals another module's id. Errors are printed as `file:line:col` (and as PR annotations in GitHub
+Actions). `products/_template.yaml` (any file starting with `_`) is only checked against the schema.
+Rules 2, 3 and 5 need collected data and run in the collector (`pnpm collect --only <id>`).
 
 1. Schema-valid; `id` == file name.
 2. `pnpm collect --only <id>` returns ≥ 1 release, every release version parses under `versionScheme`.
