@@ -98,6 +98,8 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 
 ### Field rules
 
+- `index.json` `url` values carry a version query (`products/grafana.json?v=3f72d49a4d9b`): the query changes with the
+  content, so CDN caches never pair a new index with an old product file. The object in R2 is `products/<id>.json`.
 - Product files are compact JSON; `index.json` stores the sha256 of exactly those bytes, so the signed index vouches
   for every product file. JSON Schemas: `schemas/feed-product.schema.json`, `schemas/feed-index.schema.json`
   (generated from `packages/schema/src/feed.ts`).
@@ -131,5 +133,6 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 
 ## Caching
 
-R2 objects are served with `Cache-Control: public, max-age=3600, stale-while-revalidate=86400` and strong ETags.
+`index.json`, `index.json.minisig` and `health.json` are served with `Cache-Control: public, max-age=300,
+stale-while-revalidate=3600`, everything else with `max-age=3600, stale-while-revalidate=86400`; R2 adds strong ETags.
 Clients must use conditional requests.

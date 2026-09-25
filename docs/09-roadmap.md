@@ -30,7 +30,7 @@ Goal: `https://feed.versiondrift.dev/v1/index.json` updates daily with real data
 - S1-T3 ✅ Adapters: `github`, `rss`, `html`, `dockerhub`, `endoflife`.
 - S1-T4 ✅ Classification v1: section mapping + keyword rules (no LLM).
 - S1-T5 ✅ Collector CLI: `collect`, `build` (index/product/catalog/health/week), merge with previous, guardrails.
-- S1-T6 Publish to R2 with wrangler; minisign signing; `collect.yml` cron.
+- S1-T6 ✅ Publish to R2 (REST API instead of wrangler); minisign signing; `collect.yml` cron.
 - S1-T7 Verify & fix the 10 example modules; add 5 more from the author's stack (zabbix, postgresql, nginx, minio,
   proxmox-backup-server).
 - S1-T8 `module-pr.yml` bot comment with parsed releases.

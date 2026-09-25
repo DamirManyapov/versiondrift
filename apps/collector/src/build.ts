@@ -20,6 +20,7 @@ export function serializeProduct(product: FeedProduct): string {
 export const sha256 = (text: string) => createHash('sha256').update(text).digest('hex');
 
 export function indexEntry(module: Module, product: FeedProduct, bytes: string): IndexEntry {
+  const hash = sha256(bytes);
   const stable = product.releases.filter((r) => !r.prerelease);
   const latest = stable[0];
   const tracks: Record<string, string> = {};
@@ -35,8 +36,9 @@ export function indexEntry(module: Module, product: FeedProduct, bytes: string):
     hasSecuritySource: (module.sources.security?.length ?? 0) > 0,
     updatedAt: product.lastSuccessAt ?? product.collectedAt,
     stale: product.stale,
-    sha256: sha256(bytes),
-    url: `products/${product.id}.json`,
+    sha256: hash,
+    // The query string changes with the content, so a CDN never pairs a new index with an old cached product file.
+    url: `products/${product.id}.json?v=${hash.slice(0, 12)}`,
   };
 }
 

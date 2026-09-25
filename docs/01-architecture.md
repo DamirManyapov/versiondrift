@@ -114,8 +114,19 @@ Secrets (GitHub Actions): `GITHUB_TOKEN` (built-in, for GitHub API), `CLOUDFLARE
 
 ## Feed integrity
 
-The collector signs `index.json` with minisign; product files are referenced from the index by `sha256`.
-Self-hosted verifies the signature with the public key baked into the image (overridable for forks/private feeds).
+The collector signs `index.json` with minisign (Ed25519, prehashed "ED" format); product files are referenced from
+the index by `sha256`. The public key is `keys/feed.pub` in this repository:
+
+```
+untrusted comment: minisign public key C47B6424FAAC40B9
+RWS5QKz6JGR7xISHHllazU/WZfqYkET1YLLxuKPMlK8s7N13793Wd/2N
+```
+
+Anyone can check the feed with the stock tool: `minisign -Vm index.json -P RWS5QKz6JGR7xISHHllazU/WZfqYkET1YLLxuKPMlK8s7N13793Wd/2N`
+(download `v1/index.json` and `v1/index.json.minisig`), then compare each product file's sha256 with the index.
+The trusted comment carries `timestamp`, `file` and the index's sha256. Self-hosted verifies the signature with the
+public key baked into the image (overridable for forks/private feeds). The secret key lives only in the
+`MINISIGN_SECRET_KEY` Actions secret and the maintainer's backup (`pnpm collector keygen` creates a new pair).
 
 ## Scaling notes
 

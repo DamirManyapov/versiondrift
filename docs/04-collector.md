@@ -128,7 +128,11 @@ matching security item get a synthetic item `"Fixes CVE-…"` on the fixing rele
 
 ## Workflows
 
-- `collect.yml`: cron `0 2 * * *` + `workflow_dispatch` (input: `only` ids). Timeout 30 min. Concurrency group `collect`.
+- `collect.yml`: cron `0 2 * * *` + `workflow_dispatch` (inputs: `only` ids, `force`). Timeout 30 min. Concurrency group
+  `collect`. Steps: `pnpm collector state-pull` (HTTP cache from the private bucket) → `pnpm collect` →
+  `pnpm collector publish` (sign + upload via the R2 REST API: products first, unchanged ones skipped, then
+  signature and index) → `state-push` → `pnpm collector issues` (opens "Module X is failing" with label
+  `module-broken` after 3 consecutive failures, closes it on recovery) → the built feed as an artifact.
 - `module-pr.yml`: on PRs touching `products/**`: validate, run `collect --only <changed> --dry-run`, post a comment
   with the parsed releases table (latest 5), tracks, detected security source, warnings.
 - `ci.yml`: lint, typecheck, unit tests, `modules:validate`, schema drift check (`schema:gen` must not change files).

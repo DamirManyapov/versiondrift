@@ -55,7 +55,7 @@ export async function loadPreviousFeed(location: string, log: Logger): Promise<P
     async product(id) {
       const entry = index.products[id];
       if (!entry) return undefined;
-      const text = await read(entry.url);
+      const text = await read(remote ? entry.url : entry.url.replace(/\?.*$/, ''));
       if (text === undefined) {
         log.warn(`${id}: previous product file missing`);
         return undefined;
