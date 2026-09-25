@@ -1,8 +1,11 @@
-// pnpm schema:gen — writes schemas/module.schema.json from the zod schema.
+// pnpm schema:gen — writes schemas/*.json from the zod schemas.
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { moduleJsonSchema } from '../json-schema.ts';
-import { MODULE_SCHEMA_FILE, REPO_ROOT, serializeJsonSchema } from './paths.ts';
+import { generatedSchemas } from '../json-schema.ts';
+import { REPO_ROOT, SCHEMAS_DIR, serializeJsonSchema } from './paths.ts';
 
-await writeFile(MODULE_SCHEMA_FILE, serializeJsonSchema(moduleJsonSchema()));
-console.log(`wrote ${path.relative(REPO_ROOT, MODULE_SCHEMA_FILE)}`);
+for (const [file, schema] of Object.entries(generatedSchemas())) {
+  const target = path.join(SCHEMAS_DIR, file);
+  await writeFile(target, serializeJsonSchema(schema));
+  console.log(`wrote ${path.relative(REPO_ROOT, target)}`);
+}

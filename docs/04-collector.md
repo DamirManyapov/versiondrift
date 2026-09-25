@@ -25,6 +25,22 @@
 Failure policy: a module whose collection fails keeps its previous data with `stale: true` and
 `lastSuccessAt`. After 3 consecutive failures an issue is opened, mentioning `maintainers`.
 
+## Implementation notes (`apps/collector`)
+
+- Modules run 8 at a time. `sources.releases` defines the set of releases; `releasesExtra` only enrich releases the
+  primary source knows (notes, dates, links) — they never add versions.
+- Normalization: `tagFilter` on the raw version → parse under `versionScheme` (unparseable versions are dropped and
+  reported as a warning with examples) → pre-releases (source flag, or alpha/beta/rc/pre/preview/dev/snapshot/
+  nightly/canary in the version) dropped unless `prerelease: include`.
+- Merge: releases from the previous feed are kept (union). Their items are never recomputed; `sortKey` and `track`
+  are, so editing a module's tracks or scheme applies immediately. New releases get `firstSeenAt` = run time.
+- First runs fetch back to the retention window (3 years); later runs stop at the first page with a known version.
+- A module whose release source fails, or that yields no usable release, keeps its previous product file with
+  `stale: true` and `lastSuccessAt`; a module without previous data is left out. Lifecycle/extra source failures are
+  warnings (the previous branches are kept).
+- The run exits 0 even if some modules fail (see `health.json`), 1 if all failed, 2 if the guard blocks writing.
+- HTTP cache: `--cache-dir` (default `.cache/http`); entries not used by a full run are pruned.
+
 ## Fetcher (`packages/adapters/src/http`)
 
 Adapters never call `fetch` directly; they get a `Fetcher` in their context:

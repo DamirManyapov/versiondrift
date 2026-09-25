@@ -77,8 +77,10 @@ pnpm lint && pnpm typecheck        # lint = ESLint (type-aware) + prettier --che
 pnpm format                        # prettier --write (skips docs/, design/, products/, schemas/, *.md)
 pnpm schema:gen                    # zod → schemas/*.json
 pnpm modules:validate              # validate every products/*.yaml against the schema
-pnpm collect --only grafana,debian --out ./.feed   # local collector run, no publish
-pnpm collect --dry-run             # fetch + build, print diff vs. published feed
+GITHUB_TOKEN=$(gh auth token) pnpm collect --only grafana,debian --out ./.feed   # local run, no publish
+pnpm collect --dry-run             # fetch + build, print the report, write nothing
+pnpm collect --no-previous         # start from scratch instead of the published feed (FEED_URL overrides it)
+pnpm collect --only poste-io --record-fixtures packages/adapters/test/fixtures   # save raw responses
 pnpm web:dev                       # SvelteKit dev server using ./.feed or FEED_URL
 pnpm web:build:cf | web:build:node
 docker build -t versiondrift .     # self-hosted image

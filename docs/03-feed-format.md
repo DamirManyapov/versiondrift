@@ -98,6 +98,18 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 
 ### Field rules
 
+- Product files are compact JSON; `index.json` stores the sha256 of exactly those bytes, so the signed index vouches
+  for every product file. JSON Schemas: `schemas/feed-product.schema.json`, `schemas/feed-index.schema.json`
+  (generated from `packages/schema/src/feed.ts`).
+- `releases`: newest first. `date` is `null` when the source gives none; `firstSeenAt` (when the collector first saw
+  the release) stands in for it (latestDate, weekly digests). `moreItems`: how many items were left out to keep 40.
+- `branches`: only from a lifecycle source (`eol` in the module), ids as that source names them (`13.2`, `12`);
+  releases belong to a branch by prefix (`13.2.1` → `13.2`, `12.7` → `12`). `latest` is computed from the feed's
+  releases. No lifecycle source → `branches: []` (EOL unknown, never "not EOL").
+- `versionRegex` / `branchGroups` are included for `versionScheme: regex` so clients parse versions like the collector.
+- `health.json`: `{ ok: 0–1, modules: { <id>: { status: ok|failed, lastAttemptAt, lastSuccessAt, consecutiveFailures,
+  releases, error?, warnings[] } } }`.
+- `week/*.json`: the last 12 ISO weeks are rewritten on every full run (not on `--only` runs).
 - `releases[].sortKey`: opaque, from `sortKey()` in `packages/core`; comparing two keys as plain byte strings gives
   the scheme's version order (equal keys = equal versions), so clients and SQL can `ORDER BY` it without parsing.
   Only comparable within one product. Changes to the encoding bump `formatVersion`.

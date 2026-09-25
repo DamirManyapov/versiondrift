@@ -171,8 +171,11 @@ export function createFetcher(options: FetcherOptions = {}): Fetcher {
 
   async function text(url: string, opts?: RequestOptions): Promise<FetchResult> {
     const result = await request(url, opts);
-    if (result.status < 200 || result.status >= 300)
-      throw new HttpError(url, result.status, result.body.slice(0, 200));
+    if (result.status < 200 || result.status >= 300) {
+      // A JSON/text error body is useful; an HTML error page is noise.
+      const detail = /^\s*</.test(result.body) ? '' : result.body.replace(/\s+/g, ' ').trim().slice(0, 160);
+      throw new HttpError(url, result.status, detail);
+    }
     return result;
   }
 
