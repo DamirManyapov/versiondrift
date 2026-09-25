@@ -113,4 +113,18 @@ export const en = {
   added: 'Added',
   missingProduct: 'Missing a product? Add a module →',
   noMatches: 'No products match.',
+  // This week
+  weekTitle: 'What shipped',
+  weekSummary: '{releases} · {mine} newer than yours · {security} with security fixes',
+  weekSummaryAll: '{releases} across all products',
+  weekReleases: { one: '{n} release', other: '{n} releases' },
+  quietWeek: 'Quiet week.',
+  prevWeek: 'Previous week',
+  nextWeek: 'Next week',
+  weekOutOfRange: 'The feed keeps the last 12 weeks.',
+  relAffectsYouSecurity: 'affects you · security',
+  relAffectsYou: 'affects you',
+  relInstalled: 'already installed',
+  relOtherTrack: 'other track',
+  relNotOnBoard: '',
 };

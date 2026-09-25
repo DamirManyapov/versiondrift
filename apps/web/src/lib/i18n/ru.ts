@@ -128,4 +128,18 @@ export const ru: Messages = {
   added: 'Добавлено',
   missingProduct: 'Нет нужного продукта? Добавьте модуль →',
   noMatches: 'Ничего не нашлось.',
+  // This week
+  weekTitle: 'Что вышло',
+  weekSummary: '{releases} · новее вашей версии: {mine} · с исправлениями безопасности: {security}',
+  weekSummaryAll: '{releases} по всем продуктам',
+  weekReleases: { one: '{n} релиз', few: '{n} релиза', many: '{n} релизов', other: '{n} релиза' },
+  quietWeek: 'Тихая неделя.',
+  prevWeek: 'Предыдущая неделя',
+  nextWeek: 'Следующая неделя',
+  weekOutOfRange: 'Фид хранит последние 12 недель.',
+  relAffectsYouSecurity: 'касается вас · безопасность',
+  relAffectsYou: 'касается вас',
+  relInstalled: 'уже установлено',
+  relOtherTrack: 'другой трек',
+  relNotOnBoard: '',
 };

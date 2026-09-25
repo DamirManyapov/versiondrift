@@ -67,6 +67,10 @@ Header: "Sep 21–27: 7 releases, 6 newer than yours, 4 with security fixes". Ro
 date, product, version, relevance chip (`affects you · security`, `affects you`, `already installed`, `other track`),
 items. Week navigation ‹ ›. Empty state: "Quiet week."
 
+Implemented (S2-T6): the board's products only (all products when the board is empty), relevance per release against
+every instance (newer in the same track → "affects you", with "· security" when the release has security items),
+previous/next week links over the 12 weeks the feed keeps.
+
 ## Catalog modal / page
 
 Search (fuzzy over name, aliases, vendor, keywords), category filter, rows: logo, name, category, source types,
