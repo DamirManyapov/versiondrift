@@ -67,10 +67,13 @@ and the author gets Telegram messages about their own stack without opening the 
 
 ## S3 — Security
 
+Note: the `debian` security adapter (per-package DSA/DLA) is deferred to the self-hosted inventory work (S6-T4);
+S3-T1 ships `ghsa`, `nvd`, `osv` and `kev`.
+
 Goal: red tiles are real.
 
-- S3-T1 Adapters `osv`, `ghsa`, `nvd`, `debian`, `kev`; advisory merge by aliases; severity mapping.
-- S3-T2 `isAffected` with OSV ranges; advisory ↔ release linking; synthetic "Fixes CVE" items.
+- S3-T1 ✅ Adapters `osv`, `ghsa`, `nvd`, `debian`, `kev`; advisory merge by aliases; severity mapping.
+- S3-T2 ✅ `isAffected` with OSV ranges; advisory ↔ release linking; synthetic "Fixes CVE" items.
 - S3-T3 Status `critical`, Vulnerabilities tab, CVSS tiles, KEV badge, settings threshold.
 - S3-T4 Optional LLM classification + release summaries (budgeted, cached, labelled).
 - S3-T5 "Important only" toggle; "Copy as Markdown".

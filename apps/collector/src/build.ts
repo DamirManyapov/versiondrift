@@ -1,5 +1,6 @@
 // Feed files from collected products (docs/03-feed-format.md): index, catalog, health, weekly digests.
 import { createHash } from 'node:crypto';
+import { maxSeverity, severityFixedIn } from './advisories.ts';
 import {
   FEED_FORMAT_VERSION,
   type Catalog,
@@ -19,7 +20,14 @@ export function serializeProduct(product: FeedProduct): string {
 
 export const sha256 = (text: string) => createHash('sha256').update(text).digest('hex');
 
-export function indexEntry(module: Module, product: FeedProduct, bytes: string): IndexEntry {
+const MONTH = 30 * 86_400_000;
+
+export function indexEntry(
+  module: Module,
+  product: FeedProduct,
+  bytes: string,
+  now: Date = new Date(),
+): IndexEntry {
   const hash = sha256(bytes);
   const stable = product.releases.filter((r) => !r.prerelease);
   const latest = stable[0];
@@ -32,7 +40,11 @@ export function indexEntry(module: Module, product: FeedProduct, bytes: string):
     latest: latest?.version ?? null,
     latestDate: latest ? (latest.date ?? latest.firstSeenAt) : null,
     tracks,
-    maxSeverityLast30d: null,
+    maxSeverityLast30d: maxSeverity(
+      product.advisories
+        .filter((a) => a.published !== null && now.getTime() - Date.parse(a.published) <= MONTH)
+        .map((a) => a.severity),
+    ),
     hasSecuritySource: (module.sources.security?.length ?? 0) > 0,
     updatedAt: product.lastSuccessAt ?? product.collectedAt,
     stale: product.stale,
@@ -124,7 +136,7 @@ export function buildWeeks(products: FeedProduct[], now: Date, weeks = 12): Map<
         version: release.version,
         date,
         types: [...new Set(release.items.map((i) => i.type))].sort(),
-        maxSeverity: null,
+        maxSeverity: severityFixedIn(product, product.advisories, release),
       });
     }
   }

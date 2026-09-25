@@ -1,11 +1,14 @@
 // Records the fixtures used by the adapter tests from the live sources:
-//   GITHUB_TOKEN=$(gh auth token) pnpm -F @versiondrift/adapters record
+//   GITHUB_TOKEN=$(gh auth token) pnpm -F @versiondrift/adapters record [fixture dirs…]
+// Without arguments every fixture directory is re-recorded; with arguments only those (e.g. "nvd kev").
 // Long JSON lists are cut to MAX_ITEMS before the adapter sees them, so tests replay exactly what was recorded.
 import { rm } from 'node:fs/promises';
 import path from 'node:path';
-import type { EolSource, ReleaseSource } from '@versiondrift/schema';
+import type { EolSource, ReleaseSource, SecuritySource } from '@versiondrift/schema';
 import {
   createFetcher,
+  fetchAdvisories,
+  fetchKev,
   fetchLifecycle,
   fetchReleases,
   recordingFetch,
@@ -25,9 +28,15 @@ function trimmed(inner: FetchFn): FetchFn {
     if (Array.isArray(data)) return Response.json(trim(data), response);
     const record = data as {
       results?: unknown[];
+      vulnerabilities?: unknown[];
+      totalResults?: number;
       data?: { repository?: { refs?: { nodes: unknown[] } } };
     };
     if (Array.isArray(record.results)) Object.assign(record, { results: trim(record.results), next: null });
+    if (Array.isArray(record.vulnerabilities)) {
+      record.vulnerabilities = trim(record.vulnerabilities);
+      if (record.totalResults !== undefined) record.totalResults = record.vulnerabilities.length;
+    }
     const refs = record.data?.repository?.refs;
     if (refs)
       Object.assign(refs, { nodes: trim(refs.nodes), pageInfo: { hasNextPage: false, endCursor: null } });
@@ -35,7 +44,13 @@ function trimmed(inner: FetchFn): FetchFn {
   };
 }
 
-type Case = { name: string; release?: ReleaseSource; lifecycle?: EolSource };
+type Case = {
+  name: string;
+  release?: ReleaseSource;
+  lifecycle?: EolSource;
+  security?: SecuritySource;
+  kev?: true;
+};
 
 const cases: Case[] = [
   { name: 'github', release: { type: 'github', repo: 'grafana/grafana' } },
@@ -78,12 +93,18 @@ const cases: Case[] = [
   },
   { name: 'endoflife', lifecycle: { type: 'endoflife', product: 'grafana' } },
   { name: 'endoflife', lifecycle: { type: 'endoflife', product: 'debian' } },
+  { name: 'ghsa', security: { type: 'ghsa', repo: 'grafana/grafana' } },
+  { name: 'nvd', security: { type: 'nvd', cpe: 'cpe:2.3:a:grafana:grafana' } },
+  { name: 'osv', security: { type: 'osv', ecosystem: 'npm', package: 'minimist' } },
+  { name: 'kev', kev: true },
 ];
 
-for (const name of new Set(cases.map((c) => c.name)))
+const only = process.argv.slice(2);
+const selected = only.length > 0 ? cases.filter((c) => only.includes(c.name)) : cases;
+for (const name of new Set(selected.map((c) => c.name)))
   await rm(path.join(FIXTURES, name), { recursive: true, force: true });
 
-for (const c of cases) {
+for (const c of selected) {
   const token = process.env.GITHUB_TOKEN;
   const fetcher = createFetcher({
     fetch: recordingFetch(
@@ -93,8 +114,13 @@ for (const c of cases) {
     ...(token && { auth: { 'api.github.com': { authorization: `Bearer ${token}` } } }),
   });
   const ctx: AdapterContext = { fetcher, log: console, knownVersions: new Set() };
-  const result = c.release ? await fetchReleases(c.release, ctx) : await fetchLifecycle(c.lifecycle!, ctx);
-  console.log(
-    `${c.name}: ${JSON.stringify(c.release ?? c.lifecycle).slice(0, 70)}… → ${result.length} items`,
-  );
+  const result = c.kev
+    ? [...(await fetchKev(fetcher))]
+    : c.security
+      ? await fetchAdvisories(c.security, ctx)
+      : c.release
+        ? await fetchReleases(c.release, ctx)
+        : await fetchLifecycle(c.lifecycle!, ctx);
+  const label = JSON.stringify(c.release ?? c.lifecycle ?? c.security ?? 'kev').slice(0, 70);
+  console.log(`${c.name}: ${label}… → ${result.length} items`);
 }

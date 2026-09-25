@@ -45,6 +45,7 @@ jobs:
 
       - name: Collect
         env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
           ONLY: ${{ inputs.only }}
           FORCE: ${{ inputs.force }}
         run: |

@@ -15,3 +15,7 @@ export { extractVersion, parseDate } from './sources/common.ts';
 export { parseFeed } from './sources/feed.ts';
 export { parseHtmlReleases } from './sources/html.ts';
 export { changelogSections } from './sources/github.ts';
+export { fetchAdvisories } from './advisories/index.ts';
+export { fetchKev, KEV_URL } from './advisories/kev.ts';
+export { parseRangeExpression, severityFromScore, type RawAdvisory } from './advisories/types.ts';
+export { rangesFromConfigurations } from './advisories/nvd.ts';

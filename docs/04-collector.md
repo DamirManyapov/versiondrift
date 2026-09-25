@@ -85,6 +85,25 @@ Adapters never call `fetch` directly; they get a `Fetcher` in their context:
   Map to per-release status for the packages configured (or, self-hosted, the packages detected on hosts).
 - **kev**: CISA KEV JSON catalog, downloaded once per run; used only to set `kev: true` on advisories.
 
+Security sources as implemented (S3-T1, verified 2026-09):
+- **ghsa**: REST `/repos/{repo}/security-advisories` (published, newest first) or `/advisories?ecosystem=&affects=`.
+  Vendor range strings are free-form; `parseRangeExpression` handles `>= a, < b`, `a - b`, space-separated pairs,
+  `||`, drops wildcard bounds (`<9.x`), and with several patched versions ("9.3.2, 9.2.8, 8.5.16") builds one range
+  per patched branch while unpatched branches in between stay affected.
+- **nvd**: `?virtualMatchString=<cpe>&resultsPerPage=2000`; CVSS from v3.1 → v3.0 → v4.0 → v2; ranges from the
+  CVE's `cpeMatch` entries for the module's vendor:product (exact CPE versions become single-version ranges). The
+  shared fetcher paces NVD at 6.5 s (0.7 s with `NVD_API_KEY`).
+- **osv**: `POST /v1/query`; events → ranges; a CVE alias becomes the id.
+- `debian` and `rss` security sources yield no advisories yet (per-package Debian data needs the self-hosted inventory;
+  RSS announcements carry no version ranges) — they are listed as source links only.
+- Merge: one advisory per vulnerability, keyed by CVE id and aliases; ranges from the most precise source (GHSA, OSV,
+  then NVD) that has any; CVSS from the first source with a score; `kev` from the catalog; newest first. If every
+  security source of a module fails, its previous advisories stay.
+- Linking: a release that is some advisory's `fixed` version gets a synthetic item "Fixes CVE-…: title"
+  (`classifiedBy: advisory`) unless its own items already reference the CVE/GHSA; recomputed every run.
+- `index.json` `maxSeverityLast30d` = highest severity among advisories published in the last 30 days; weekly digest
+  entries carry the highest severity fixed in that release.
+
 All endpoints above must be re-verified when the adapter is implemented; record real responses as fixtures.
 
 ## Classification pipeline (`packages/classify`)

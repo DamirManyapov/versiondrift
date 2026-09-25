@@ -68,6 +68,7 @@ program
         force: opts.force ?? false,
         concurrency: opts.concurrency,
         ...(process.env.GITHUB_TOKEN && { githubToken: process.env.GITHUB_TOKEN }),
+        ...(process.env.NVD_API_KEY && { nvdApiKey: process.env.NVD_API_KEY }),
         log,
       });
       if (opts.dryRun) console.log(`\n${result.report}`);

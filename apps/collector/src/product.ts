@@ -2,12 +2,14 @@
 // previous feed. The previous feed is the source of truth: releases accumulate, and releases already published
 // keep their items (stable output), while sortKey and track are recomputed so module edits apply at once.
 import {
+  fetchAdvisories,
   fetchLifecycle,
   fetchReleases,
   type AdapterContext,
   type Fetcher,
   type Logger,
   type RawBranch,
+  type RawAdvisory,
   type RawRelease,
 } from '@versiondrift/adapters';
 import { createHash } from 'node:crypto';
@@ -20,6 +22,7 @@ import {
   type Module,
   type Release,
 } from '@versiondrift/schema';
+import { linkAdvisories, mergeAdvisories } from './advisories.ts';
 import { sourceLinks } from './links.ts';
 
 export interface CollectContext {
@@ -29,6 +32,8 @@ export interface CollectContext {
   readRepoFile?: (path: string) => Promise<string>;
   /** First runs fetch at most this far back. */
   retentionYears?: number;
+  /** CVE ids in CISA's Known Exploited Vulnerabilities catalog. */
+  kev?: ReadonlySet<string>;
 }
 
 export type ProductResult =
@@ -197,6 +202,21 @@ export async function collectProduct(
     }
   }
 
+  // Advisories: every security source; if all of them fail, the previous advisories stay.
+  const securitySources = module.sources.security ?? [];
+  const advisoryLists: RawAdvisory[][] = [];
+  for (const source of securitySources) {
+    try {
+      advisoryLists.push(await fetchAdvisories(source, adapterCtx));
+    } catch (error) {
+      warnings.push(`${source.type} (security): ${(error as Error).message}`);
+    }
+  }
+  const advisories =
+    securitySources.length > 0 && advisoryLists.length === 0
+      ? (previous?.advisories ?? [])
+      : mergeAdvisories(advisoryLists, ctx.kev ?? new Set());
+
   const moduleHash = createHash('sha256')
     .update(JSON.stringify(module))
     .update(CLASSIFIER_VERSION)
@@ -232,8 +252,10 @@ export async function collectProduct(
     newReleases.push(c.version.raw);
   }
 
-  const releases = [...merged.values()].sort((a, b) =>
-    a.sortKey < b.sortKey ? 1 : a.sortKey > b.sortKey ? -1 : 0,
+  const releases = linkAdvisories(
+    module,
+    [...merged.values()].sort((a, b) => (a.sortKey < b.sortKey ? 1 : a.sortKey > b.sortKey ? -1 : 0)),
+    advisories,
   );
   if (releases.length === 0) {
     return {
@@ -260,7 +282,7 @@ export async function collectProduct(
     sources: sourceLinks(module),
     branches: buildBranches(lifecycle, releases),
     releases,
-    advisories: previous?.advisories ?? [],
+    advisories,
     collectedAt: now,
     lastSuccessAt: now,
     stale: false,

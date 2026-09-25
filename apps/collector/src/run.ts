@@ -4,6 +4,7 @@ import { appendFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/pro
 import path from 'node:path';
 import {
   createFetcher,
+  fetchKev,
   FileHttpCache,
   recordingFetch,
   type Fetcher,
@@ -35,6 +36,8 @@ export interface RunOptions {
   dryRun?: boolean;
   force?: boolean;
   githubToken?: string;
+  /** NVD API key: 50 instead of 5 requests per 30 s. */
+  nvdApiKey?: string;
   concurrency?: number;
   now?: Date;
   log: Logger;
@@ -128,17 +131,30 @@ export async function runCollector(options: RunOptions): Promise<RunResult> {
     options.previous === null ? EMPTY_FEED : await loadPreviousFeed(options.previous, log);
   const cache = options.cacheDir ? new FileHttpCache(options.cacheDir) : undefined;
   const repoRoot = path.dirname(options.productsDir);
-  const fetcherFor = (id: string): Fetcher =>
-    options.fetcher ??
+  // One fetcher for all modules, so per-host pacing (NVD allows 5 requests per 30 s without a key) is global.
+  const nvdKey = options.nvdApiKey;
+  const makeFetcher = (record?: string): Fetcher =>
     createFetcher({
       ...(cache && { cache }),
-      ...(options.githubToken && {
-        auth: { 'api.github.com': { authorization: `Bearer ${options.githubToken}` } },
-      }),
-      ...(options.recordFixtures && {
-        fetch: recordingFetch((url, init) => fetch(url, init), path.join(options.recordFixtures, id)),
-      }),
+      auth: {
+        ...(options.githubToken && { 'api.github.com': { authorization: `Bearer ${options.githubToken}` } }),
+        ...(nvdKey && { 'services.nvd.nist.gov': { apiKey: nvdKey } }),
+      },
+      intervals: { 'services.nvd.nist.gov': nvdKey ? 700 : 6500 },
+      ...(record && { fetch: recordingFetch((url, init) => fetch(url, init), record) }),
     });
+  const shared = options.fetcher ?? makeFetcher();
+  const fetcherFor = (id: string): Fetcher =>
+    options.recordFixtures ? makeFetcher(path.join(options.recordFixtures, id)) : shared;
+
+  let kev: ReadonlySet<string> = new Set();
+  if (selected.some((m) => (m.sources.security?.length ?? 0) > 0)) {
+    try {
+      kev = await fetchKev(shared);
+    } catch (error) {
+      log.warn(`KEV catalog unavailable, kev flags not set: ${(error as Error).message}`);
+    }
+  }
 
   const previousProducts = new Map<string, FeedProduct | undefined>();
   const outcomes = await pool(selected, options.concurrency ?? 8, async (module): Promise<ModuleOutcome> => {
@@ -148,6 +164,7 @@ export async function runCollector(options: RunOptions): Promise<RunResult> {
       fetcher: fetcherFor(module.id),
       log,
       now,
+      kev,
       readRepoFile: (p) => readFile(path.join(repoRoot, p), 'utf8'),
     });
     const product = result.product;
@@ -191,7 +208,7 @@ export async function runCollector(options: RunOptions): Promise<RunResult> {
     }
     const bytes = serializeProduct(product);
     files.set(`v1/products/${id}.json`, bytes);
-    entries[id] = indexEntry(module, product, bytes);
+    entries[id] = indexEntry(module, product, bytes, now);
     products.push(product);
     if (before) releaseCounts[id] = { before: before.releases.length, after: product.releases.length };
   }

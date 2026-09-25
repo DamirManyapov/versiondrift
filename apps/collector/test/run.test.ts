@@ -10,7 +10,7 @@ const ADAPTER_FIXTURES = path.resolve(import.meta.dirname, '../../../packages/ad
 
 /** Serves any fixture recorded for the adapter tests; hosts in `down` fail like a network outage. */
 function fixtures(down: string[] = []): FetchFn {
-  const dirs = ['github', 'rss', 'html', 'dockerhub', 'endoflife'].map((d) =>
+  const dirs = ['github', 'rss', 'html', 'dockerhub', 'endoflife', 'ghsa', 'kev'].map((d) =>
     fixtureFetch(path.join(ADAPTER_FIXTURES, d)),
   );
   return async (url, init) => {
@@ -110,6 +110,8 @@ describe('runCollector', () => {
     expect(grafana.releases.map((r) => r.version).slice(0, 3)).toEqual(['13.2.2', '13.2.1', '13.2.0']);
     expect(grafana.releases[0]?.items[0]).toMatchObject({ type: 'security', refs: ['CVE-2026-15815'] });
     expect(grafana.branches.find((b) => b.id === '13.2')).toMatchObject({ eol: false, latest: '13.2.2' });
+    expect(grafana.advisories).toHaveLength(10);
+    expect(grafana.advisories[0]).toMatchObject({ source: 'ghsa', kev: false });
 
     const poste = await readJson(path.join(env.out, 'v1/products/poste-io.json'), FeedProduct);
     expect(poste.releases.length).toBeGreaterThan(100);
