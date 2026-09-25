@@ -2,6 +2,11 @@ packages:
   - packages/*
   - apps/*
 
+# Dependencies allowed to run install scripts (pnpm blocks all others).
+allowBuilds:
+  esbuild: true # verifies its platform binary
+  workerd: false # ~100 MB local Workers runtime, only for wrangler dev; builds don't need it
+
 # Shared versions: packages depend on these as "catalog:" so the whole repo moves together.
 catalog:
   '@types/node': ^22.20.4

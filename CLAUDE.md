@@ -84,7 +84,7 @@ pnpm collect --only poste-io --record-fixtures packages/adapters/test/fixtures  
 pnpm collector publish|state-pull|state-push|issues|keygen   # CI steps of collect.yml (need CLOUDFLARE_* etc.)
 pnpm collector pr-report --only <ids>   # the module PR comment, printed locally
 pnpm notify run --inventory inventory.yaml --dry-run   # Telegram alerts for your stack (docs/07)
-pnpm web:dev                       # SvelteKit dev server using ./.feed or FEED_URL
+pnpm web:dev                       # SvelteKit dev server; uses ./.feed when present, else the public feed
 pnpm web:build:cf | web:build:node
 docker build -t versiondrift .     # self-hosted image
 ```
@@ -133,4 +133,4 @@ docker build -t versiondrift .     # self-hosted image
 | How to contribute a module | `docs/10-contributing-modules.md` |
 | Launch, growth, naming | `docs/11-launch-and-growth.md` |
 | Risks, open questions | `docs/12-risks-and-open-questions.md` |
-| Decisions | `docs/adr/*.md` |
+| Decisions | `docs/adr/*.md` (incl. ADR-0006 i18n) |

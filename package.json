@@ -10,13 +10,16 @@
   "scripts": {
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b && pnpm -F @versiondrift/web check",
     "test": "pnpm -r test",
     "schema:gen": "pnpm -F @versiondrift/schema gen",
     "modules:validate": "pnpm -F @versiondrift/schema validate",
     "collect": "node apps/collector/src/cli.ts collect",
     "collector": "node apps/collector/src/cli.ts",
-    "notify": "node apps/notify/src/cli.ts"
+    "notify": "node apps/notify/src/cli.ts",
+    "web:dev": "pnpm -F @versiondrift/web dev",
+    "web:build:cf": "pnpm -F @versiondrift/web build:cf",
+    "web:build:node": "pnpm -F @versiondrift/web build:node"
   },
   "packageManager": "pnpm@12.6.0",
   "devDependencies": {
@@ -24,7 +27,11 @@
     "@types/node": "catalog:",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-svelte": "^3.23.0",
+    "globals": "^17.12.0",
     "prettier": "^3.9.9",
+    "prettier-plugin-svelte": "^4.1.1",
+    "svelte": "^5.57.1",
     "typescript": "catalog:",
     "typescript-eslint": "^8.70.1",
     "vitest": "catalog:"

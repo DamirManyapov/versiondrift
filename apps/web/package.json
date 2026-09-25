@@ -1,0 +1,37 @@
+{
+  "name": "@versiondrift/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The VersionDrift board: public site (Cloudflare) and self-hosted app (Node).",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "build:cf": "VD_ADAPTER=cloudflare vite build",
+    "build:node": "VD_ADAPTER=node vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-cloudflare": "^7.2.9",
+    "@sveltejs/adapter-node": "^5.5.7",
+    "@sveltejs/kit": "^2.70.3",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@types/node": "catalog:",
+    "svelte": "^5.57.1",
+    "svelte-check": "^4.7.6",
+    "typescript": "catalog:",
+    "vite": "^8.3.1",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@versiondrift/core": "workspace:*",
+    "@versiondrift/schema": "workspace:*",
+    "yaml": "^2.9.1"
+  }
+}

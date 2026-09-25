@@ -11,6 +11,8 @@
     "types": ["node"]
   },
   "include": ["*.ts", "*.js", "packages/*/test", "apps/*/test"],
+  // apps/web has its own tsconfig (SvelteKit, DOM types) and is checked by svelte-check.
+  "exclude": ["apps/web"],
   "references": [
     { "path": "packages/schema" },
     { "path": "packages/core" },

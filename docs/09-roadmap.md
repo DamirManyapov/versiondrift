@@ -43,7 +43,7 @@ they are correct for Grafana, Debian, poste.io.
 
 Goal: the author uses `versiondrift.dev` for his own stack.
 
-- S2-T1 SvelteKit app skeleton, tokens, layout, i18n (en/ru), `FeedClient`.
+- S2-T1 ✅ SvelteKit app skeleton, tokens, layout, i18n (en/ru), `FeedClient`.
 - S2-T2 `BrowserInventoryStore` (localStorage + import/export YAML).
 - S2-T3 ✅ Status engine in `core` (`computeStatus`, `changelog`) — without advisories yet (critical comes in S3).
 - S2-T4 Board: summary strip, filters, tiles, sorting, detail panel (Changes + Module tabs), version picker,

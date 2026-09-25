@@ -107,4 +107,14 @@ A light theme is required before public launch (tokens redefined under `[data-th
 
 ## i18n
 
-`en` (default) and `ru` from day one using `paraglide-js` or `svelte-i18n`. Vendor text stays in original language.
+`en` (default) and `ru` from day one — a small typed dictionary in `apps/web/src/lib/i18n` (ADR-0006). Language from
+the `vd_lang` cookie, else `Accept-Language`; theme from `vd_theme` (`auto` follows the OS). Vendor text stays in
+its original language.
+
+## Implementation notes (S2-T1)
+
+- `apps/web`: SvelteKit 2 + Svelte 5 (runes). `VD_ADAPTER=cloudflare|node` picks the adapter.
+- Fonts are served from the app (`@fontsource/ibm-plex-*`), never from Google — no third-party requests.
+- `FeedClient` (`src/lib/feed/client.ts`): ETag + in-memory cache, product files checked against the index
+  sha256 (one retry bypassing caches). The feed URL is `PUBLIC_FEED_URL`, default `https://feed.versiondrift.dev/`;
+  `pnpm web:dev` serves a local `.feed/` at `/feed/` automatically when it exists.

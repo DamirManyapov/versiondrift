@@ -1,0 +1,139 @@
+/* Design tokens (docs/06-ui-spec.md). Dark first; light for [data-theme=light] and prefers-color-scheme. */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #121316;
+  --surface: #1f2125;
+  --surface-2: #1a1b1f;
+  --surface-3: #202227;
+  --border: #2e3136;
+  --border-strong: #3a3d43;
+  --text: #eceae4;
+  --text-muted: #a3a09a;
+  --text-soft: #cfccc5;
+  --link: #7cb7ff;
+  --link-hover: #a8cfff;
+  --focus: #7cb7ff;
+
+  --critical: #ff6b61;
+  --critical-bg: #35181a;
+  --critical-border: #8c2f2a;
+  --on-critical: #1a0a08;
+  --update: #f5a524;
+  --update-bg: #2a2417;
+  --update-border: #6e5320;
+  --on-update: #1a1206;
+  --ok: #3dd68c;
+  --ok-bg: #17261e;
+  --ok-border: #2c5a41;
+  --on-ok: #06170e;
+  --eol: #d9d2c3;
+  --eol-bg: #29251e;
+  --eol-border: #7a6f5c;
+  --on-eol: #1b1a17;
+  --news-bg: #1f2125;
+  --news-border: #34373e;
+  --stale-border: #5a5d64;
+
+  --type-security: #ff6b61;
+  --type-breaking: #f5a524;
+  --type-deprecated: #c4a7ff;
+  --type-feature: #7cb7ff;
+  --type-fix: #4a4d54;
+  --type-other: #34373e;
+  --on-type: #121316;
+  --on-type-fix: #eceae4;
+
+  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface-2: #f0eee8;
+    --surface-3: #ecebe5;
+    --border: #d9d6ce;
+    --border-strong: #c3c0b7;
+    --text: #1b1c1f;
+    --text-muted: #5f5d58;
+    --text-soft: #3d3c39;
+    --link: #1f5fbf;
+    --link-hover: #174a95;
+    --focus: #1f5fbf;
+    --critical: #c62f25;
+    --critical-bg: #fde8e6;
+    --critical-border: #e8a39d;
+    --on-critical: #ffffff;
+    --update: #9a5b00;
+    --update-bg: #fdf1dc;
+    --update-border: #e4c286;
+    --on-update: #ffffff;
+    --ok: #16794a;
+    --ok-bg: #e3f5ec;
+    --ok-border: #9fd6b9;
+    --on-ok: #ffffff;
+    --eol: #4d4638;
+    --eol-bg: #eee9df;
+    --eol-border: #b9ad97;
+    --on-eol: #ffffff;
+    --news-bg: #ffffff;
+    --news-border: #d9d6ce;
+    --stale-border: #a8a59e;
+    --type-security: #c62f25;
+    --type-breaking: #9a5b00;
+    --type-deprecated: #6a47b8;
+    --type-feature: #1f5fbf;
+    --type-fix: #d9d6ce;
+    --type-other: #ecebe5;
+    --on-type: #ffffff;
+    --on-type-fix: #1b1c1f;
+  }
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface-2: #f0eee8;
+  --surface-3: #ecebe5;
+  --border: #d9d6ce;
+  --border-strong: #c3c0b7;
+  --text: #1b1c1f;
+  --text-muted: #5f5d58;
+  --text-soft: #3d3c39;
+  --link: #1f5fbf;
+  --link-hover: #174a95;
+  --focus: #1f5fbf;
+  --critical: #c62f25;
+  --critical-bg: #fde8e6;
+  --critical-border: #e8a39d;
+  --on-critical: #ffffff;
+  --update: #9a5b00;
+  --update-bg: #fdf1dc;
+  --update-border: #e4c286;
+  --on-update: #ffffff;
+  --ok: #16794a;
+  --ok-bg: #e3f5ec;
+  --ok-border: #9fd6b9;
+  --on-ok: #ffffff;
+  --eol: #4d4638;
+  --eol-bg: #eee9df;
+  --eol-border: #b9ad97;
+  --on-eol: #ffffff;
+  --news-bg: #ffffff;
+  --news-border: #d9d6ce;
+  --stale-border: #a8a59e;
+  --type-security: #c62f25;
+  --type-breaking: #9a5b00;
+  --type-deprecated: #6a47b8;
+  --type-feature: #1f5fbf;
+  --type-fix: #d9d6ce;
+  --type-other: #ecebe5;
+  --on-type: #ffffff;
+  --on-type-fix: #1b1c1f;
+}
