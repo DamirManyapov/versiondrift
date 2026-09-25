@@ -22,6 +22,73 @@ services:
 Distribution targets: Docker Compose, Helm chart (`charts/versiondrift`), Proxmox VE community helper script (LXC),
 Unraid/TrueNAS templates, a static binary is **not** planned.
 
+## Deploying (S5-T6)
+
+```yaml
+# docker-compose.yml
+services:
+  versiondrift:
+    image: ghcr.io/<owner>/versiondrift:latest
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    ports: ["127.0.0.1:8080:8080"] # behind a reverse proxy; "8080:8080" to reach it directly on the LAN
+    volumes: ["./data:/data"]
+    environment:
+      VD_ADMIN_PASSWORD: change-me-please # first start only
+      VD_TZ: Europe/Moscow                # for the feed sync schedule
+      ORIGIN: https://vd.example.com      # the public URL, if a proxy rewrites Host (and for OIDC)
+```
+
+First start: the `admin` password is `VD_ADMIN_PASSWORD`, or a random one printed by `docker compose logs`. The feed
+mirror is ready after ~20 seconds. `./data` must be writable by uid 1000 (`chown 1000 ./data`).
+
+**Reverse proxy.** Anything that passes the original `Host` works without settings:
+
+```
+# Caddy (TLS included; sends X-Forwarded-Proto, so the session cookie is Secure)
+vd.example.com {
+  reverse_proxy versiondrift:8080
+}
+```
+
+```nginx
+location / {
+  proxy_pass http://127.0.0.1:8080;
+  proxy_set_header Host $host;
+  proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+```yaml
+# Traefik labels
+labels:
+  - traefik.http.routers.vd.rule=Host(`vd.example.com`)
+  - traefik.http.services.vd.loadbalancer.server.port=8080
+```
+
+**Single sign-on.** Either OIDC (`VD_AUTH=oidc`, `VD_OIDC_ISSUER=https://auth.example.com/application/o/versiondrift/`,
+`VD_OIDC_CLIENT_ID`, `VD_OIDC_CLIENT_SECRET`, redirect URI `https://vd.example.com/auth/oidc/callback`), or a
+forward-auth proxy (Authelia, authentik outpost, oauth2-proxy) with `VD_AUTH=header` and the header it sets
+(`VD_TRUST_PROXY_HEADER=Remote-User`); then publish the port only to the proxy.
+
+**GitOps inventory.** A `/data/inventory.yaml` (or `VD_INVENTORY_FILE`) in the `pnpm notify` format is imported at
+start and whenever its content changes (file watch plus a one-minute poll): the boards it names are created or
+replaced, other boards stay. UI edits to those boards last until the file changes again; a file that doesn't
+validate is logged and ignored.
+
+```yaml
+boards:
+  prod:
+    products:
+      grafana: [{ version: "12.1.1", host: mon-01 }, { version: "11.6.4", host: mon-02 }]
+      poste-io: "2.5.17"
+```
+
+**Backups and upgrades.** Back up `./data/versiondrift.db` (plus `-wal`/`-shm` if the container runs; or stop it)
+and `./data/secret.key` — without the key, notification credentials must be entered again. `./data/feed` is
+re-synced on start. Upgrading is `docker compose pull && docker compose up -d`; database migrations run on start.
+
 ## Image (S5-T1)
 
 `Dockerfile` at the repository root: a build stage (runs once on the build machine's platform — the output is plain
