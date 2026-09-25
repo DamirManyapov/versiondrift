@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import type { WeekDigest } from '@versiondrift/schema';
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
@@ -38,7 +38,8 @@
     (digest?.entries ?? []).filter((e) => onBoard.size === 0 || onBoard.has(e.product)),
   );
   $effect(() => {
-    if (feed.index) void productCache.ensure(entries.map((e) => e.product));
+    const ids = entries.map((e) => e.product);
+    if (feed.index) untrack(() => void productCache.ensure(ids));
   });
 
   const REL_KEYS = {

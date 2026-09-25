@@ -87,6 +87,7 @@
   <footer>
     <span>{t('appTagline')}</span>
     <span class="muted">{t('footerData')} · {t('footerCode')}</span>
+    <a class="muted" href={resolve('/status')}>{t('navStatus')}</a>
     <div class="spacer"></div>
     <label>
       <span class="visually-hidden">{t('language')}</span>

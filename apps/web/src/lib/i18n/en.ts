@@ -139,4 +139,18 @@ export const en = {
   allReleases: 'Recent releases',
   advisories: 'Security advisories',
   noAdvisories: 'No advisories in the feed yet.',
+  // Feed status
+  statusPageTitle: 'Feed status',
+  statusSummary: '{ok} of {total} modules collected successfully in the last run ({at}).',
+  statusFailing: 'Failing modules',
+  statusAllGood: 'All modules collected successfully.',
+  statusModule: 'Module',
+  statusState: 'Status',
+  statusReleases: 'Releases',
+  statusLastSuccess: 'Last success',
+  statusFailures: { one: '{n} failure in a row', other: '{n} failures in a row' },
+  statusWarnings: { one: '{n} warning', other: '{n} warnings' },
+  statusNever: 'never',
+  statusOkLabel: 'ok',
+  statusFailedLabel: 'failed',
 };

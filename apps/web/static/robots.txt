@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /
+# Pre-launch: remove this at the public launch (docs/11, S4-T7).

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { resolve } from '$app/paths';
   import { productCache } from '$lib/board/products.svelte';
   import { buildRows, filterRows, summarize, SUMMARY_STATUSES, type SummaryStatus } from '$lib/board/rows';
@@ -22,7 +22,9 @@
   onMount(() => inventory.init());
 
   $effect(() => {
-    if (feed.index) void productCache.ensure(inventory.data.items.map((i) => i.p));
+    const ids = inventory.data.items.map((i) => i.p);
+    // Track the index and the inventory only, not the product cache that ensure() fills.
+    if (feed.index) untrack(() => void productCache.ensure(ids));
   });
 
   const rows = $derived(

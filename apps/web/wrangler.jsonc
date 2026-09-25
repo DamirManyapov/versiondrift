@@ -1,0 +1,6 @@
+// Cloudflare Pages project for versiondrift.dev (docs/01 "Provisioned resources"); deployed by deploy-web.yml.
+{
+  "name": "versiondrift",
+  "pages_build_output_dir": ".svelte-kit/cloudflare",
+  "compatibility_date": "2026-09-01",
+}

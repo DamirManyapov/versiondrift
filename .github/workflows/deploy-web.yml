@@ -1,0 +1,50 @@
+# Builds apps/web for Cloudflare and deploys it to the Pages project "versiondrift" (versiondrift.dev).
+name: Deploy web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'packages/core/**'
+      - 'packages/schema/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/setup@v3
+        with:
+          cache: true
+          require-lockfile: true
+
+      - name: Build (adapter-cloudflare)
+        run: pnpm web:build:cf
+
+      - name: Deploy to Cloudflare Pages
+        working-directory: apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm dlx wrangler@4 pages deploy --branch main --commit-hash "$GITHUB_SHA"
+
+      - name: Smoke test
+        run: |
+          for path in / /p/grafana /status; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' "https://versiondrift.dev$path")
+            echo "$path → $code"
+            [ "$code" = 200 ] || exit 1
+          done

@@ -110,7 +110,9 @@ Secrets (GitHub Actions): `GITHUB_TOKEN` (built-in, for GitHub API), `CLOUDFLARE
   upload (`docs/03-feed-format.md`).
 - R2 `versiondrift-state`: no public access.
 - Pages project `versiondrift` (direct upload, production branch `main`), custom domain `versiondrift.dev`.
-  Until S2-T8 it serves a one-page placeholder.
+  Serves `apps/web` (SSR in Pages Functions / Workers) since S2-T8, deployed by `.github/workflows/deploy-web.yml` on
+  every push to `main` that touches the app, `core` or `schema` (`wrangler pages deploy`, then a smoke test).
+  `robots.txt` disallows crawling until the public launch (S4-T7).
 
 ## Feed integrity
 

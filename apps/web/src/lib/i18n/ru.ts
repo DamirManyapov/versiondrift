@@ -154,4 +154,28 @@ export const ru: Messages = {
   allReleases: 'Последние релизы',
   advisories: 'Уязвимости',
   noAdvisories: 'В фиде пока нет данных об уязвимостях.',
+  // Feed status
+  statusPageTitle: 'Статус фида',
+  statusSummary: 'В последнем прогоне ({at}) успешно собрано модулей: {ok} из {total}.',
+  statusFailing: 'Модули с ошибками',
+  statusAllGood: 'Все модули собраны успешно.',
+  statusModule: 'Модуль',
+  statusState: 'Статус',
+  statusReleases: 'Релизов',
+  statusLastSuccess: 'Последний успех',
+  statusFailures: {
+    one: '{n} сбой подряд',
+    few: '{n} сбоя подряд',
+    many: '{n} сбоев подряд',
+    other: '{n} сбоя подряд',
+  },
+  statusWarnings: {
+    one: '{n} предупреждение',
+    few: '{n} предупреждения',
+    many: '{n} предупреждений',
+    other: '{n} предупреждения',
+  },
+  statusNever: 'никогда',
+  statusOkLabel: 'ок',
+  statusFailedLabel: 'ошибка',
 };

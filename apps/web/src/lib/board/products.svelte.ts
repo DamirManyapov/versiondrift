@@ -14,10 +14,11 @@ class ProductCache {
     const wanted = [...new Set(ids)].filter(
       (id) => id in index.products && (force || !(id in this.products)) && !this.pending.has(id),
     );
+    // Claim every id first, so a second call while this one runs doesn't fetch the same files again.
+    for (const id of wanted) this.pending.add(id);
     for (let i = 0; i < wanted.length; i += 6) {
       await Promise.all(
         wanted.slice(i, i + 6).map(async (id) => {
-          this.pending.add(id);
           try {
             this.products[id] = await feed.client.product(id);
             delete this.errors[id];
