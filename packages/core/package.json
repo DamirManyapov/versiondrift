@@ -1,0 +1,21 @@
+{
+  "name": "@versiondrift/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Version schemes, comparison and the status engine. Runs in browsers, Workers and Node.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "fast-check": "^4.10.2",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "@versiondrift/schema": "workspace:*"
+  }
+}

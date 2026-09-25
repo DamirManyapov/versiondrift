@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  // No "types": this package must not depend on Node or DOM APIs.
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  "references": [{ "path": "../schema" }]
+}

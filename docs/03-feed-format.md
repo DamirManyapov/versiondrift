@@ -57,7 +57,7 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
   "releases": [
     {
       "version": "12.1.2",
-      "sortKey": "000012.000001.000002",
+      "sortKey": "b12a1a2`~",
       "track": "12",
       "date": "2026-09-22T00:00:00Z",
       "url": "https://github.com/grafana/grafana/releases/tag/v12.1.2",
@@ -98,6 +98,9 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 
 ### Field rules
 
+- `releases[].sortKey`: opaque, from `sortKey()` in `packages/core`; comparing two keys as plain byte strings gives
+  the scheme's version order (equal keys = equal versions), so clients and SQL can `ORDER BY` it without parsing.
+  Only comparable within one product. Changes to the encoding bump `formatVersion`.
 - `items[].type`: `security | breaking | deprecated | feature | fix | other`.
 - `items[].classifiedBy`: `section` (vendor heading), `keyword`, `llm`, `manual`. UI shows a subtle marker for `llm`.
 - `items[].text`: ≤ 300 chars, one bullet, in English as the vendor wrote it (trimmed). No full copies of notes.
