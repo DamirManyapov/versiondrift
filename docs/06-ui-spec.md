@@ -99,6 +99,13 @@ Implemented in `apps/web/src/lib/inventory` (`BrowserInventoryStore`, reactive `
 Human-readable variant accepted too: `/b#grafana@11.3.1,poste-io@2.4.5`.
 Import/export: YAML file identical to the self-hosted `inventory.yaml` format.
 
+## Accessibility (S3-T6)
+
+axe-core (WCAG 2 A/AA + best practice) reports no violations on `/`, `/week`, `/catalog`, `/p/:id`, `/status`,
+`/settings` in dark and light themes. Tiles are buttons with arrow-key navigation; the detail tabs follow the ARIA
+tabs pattern (arrows, Home/End); on narrow screens the detail overlay takes focus and Escape returns to the tile;
+status chips always carry text.
+
 ## Design tokens (from the prototype, dark theme first)
 
 ```css

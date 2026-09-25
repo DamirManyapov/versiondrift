@@ -47,7 +47,7 @@
         <th>{t('statusState')}</th>
         <th>{t('statusReleases')}</th>
         <th>{t('statusLastSuccess')}</th>
-        <th></th>
+        <th><span class="visually-hidden">{t('statusWarnings', { n: 2 }).replace(/^\d+ /, '')}</span></th>
       </tr>
     </thead>
     <tbody>

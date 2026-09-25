@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, untrack } from 'svelte';
+  import { onMount, tick, untrack } from 'svelte';
   import { resolve } from '$app/paths';
   import { productCache } from '$lib/board/products.svelte';
   import { buildRows, filterRows, summarize, SUMMARY_STATUSES, type SummaryStatus } from '$lib/board/rows';
@@ -45,9 +45,21 @@
     ok: 'summaryOk',
   } as const;
 
-  function select(id: string) {
+  async function select(id: string) {
     selectedId = id;
     overlay = true;
+    // On narrow screens the panel covers the board: move focus into it (Escape returns).
+    if (window.matchMedia('(max-width: 1100px)').matches) {
+      await tick();
+      document.querySelector<HTMLElement>('#detail-title a')?.focus();
+    }
+  }
+
+  function onKey(event: KeyboardEvent) {
+    if (event.key === 'Escape' && overlay && window.matchMedia('(max-width: 1100px)').matches) {
+      overlay = false;
+      document.querySelector<HTMLElement>(`[data-tile][aria-pressed='true']`)?.focus();
+    }
   }
 
   /** Arrow keys move focus between tiles (docs/06: keyboard). */
@@ -66,6 +78,8 @@
     }
   }
 </script>
+
+<svelte:window onkeydown={onKey} />
 
 <svelte:head>
   <title>VersionDrift</title>

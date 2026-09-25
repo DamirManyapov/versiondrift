@@ -27,7 +27,27 @@
   const WEEK = 7 * 86_400_000;
 
   let chosen = $state<number | undefined>();
-  let tab = $state<'changes' | 'vulns' | 'module'>('changes');
+  const TABS = ['changes', 'vulns', 'module'] as const;
+  let tab = $state<(typeof TABS)[number]>('changes');
+
+  /** ARIA tabs pattern: arrow keys move between tabs, Home/End jump to the ends. */
+  function onTabKey(event: KeyboardEvent) {
+    const i = TABS.indexOf(tab);
+    const next =
+      event.key === 'ArrowRight'
+        ? TABS[(i + 1) % TABS.length]
+        : event.key === 'ArrowLeft'
+          ? TABS[(i + TABS.length - 1) % TABS.length]
+          : event.key === 'Home'
+            ? TABS[0]
+            : event.key === 'End'
+              ? TABS[TABS.length - 1]
+              : undefined;
+    if (!next) return;
+    event.preventDefault();
+    tab = next;
+    document.getElementById(`tab-${next}-${row.id}`)?.focus();
+  }
   let importantOnly = $state(false);
   let draft = $state<string | undefined>();
 
@@ -220,16 +240,25 @@
       {#if versionError}<span class="hint">{versionError}</span>{/if}
     </label>
 
-    <div class="tabs" role="tablist">
-      <button role="tab" aria-selected={tab === 'changes'} onclick={() => (tab = 'changes')}>
-        {t('tabChanges', { n: s.newer.length })}
-      </button>
-      <button role="tab" aria-selected={tab === 'vulns'} onclick={() => (tab = 'vulns')}>
-        {t('tabVulns', { n: s.affecting.length })}
-      </button>
-      <button role="tab" aria-selected={tab === 'module'} onclick={() => (tab = 'module')}
-        >{t('tabModule')}</button
-      >
+    <div class="tabs">
+      <div role="tablist" tabindex="-1" onkeydown={onTabKey}>
+        {#each TABS as key (key)}
+          <button
+            role="tab"
+            id="tab-{key}-{row.id}"
+            aria-controls="panel-{row.id}"
+            aria-selected={tab === key}
+            tabindex={tab === key ? 0 : -1}
+            onclick={() => (tab = key)}
+          >
+            {key === 'changes'
+              ? t('tabChanges', { n: s.newer.length })
+              : key === 'vulns'
+                ? t('tabVulns', { n: s.affecting.length })
+                : t('tabModule')}
+          </button>
+        {/each}
+      </div>
       <span class="grow"></span>
       {#if tab === 'changes' && s.newer.length > 0}
         <button class="copy" onclick={copyMarkdown}>{t('copyMarkdown')}</button>
@@ -240,7 +269,7 @@
       {/if}
     </div>
 
-    <div role="tabpanel" class="tabpanel">
+    <div role="tabpanel" class="tabpanel" id="panel-{row.id}" aria-labelledby="tab-{tab}-{row.id}">
       {#if tab === 'changes'}
         {#if !s.installed}
           <h3 class="muted">{t('recentReleases')}</h3>
@@ -522,6 +551,11 @@
     align-items: center;
     gap: 4px;
     border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  [role='tablist'] {
+    display: flex;
+    gap: 4px;
     flex-wrap: wrap;
   }
   [role='tab'] {
