@@ -71,9 +71,10 @@ design/                   # prototype + design notes
 ## Commands (to be created in Sprint 0 — keep this list in sync)
 
 ```bash
-pnpm i
-pnpm -r test                       # all unit tests
-pnpm lint && pnpm typecheck
+pnpm i                             # pnpm version is pinned in package.json "packageManager"
+pnpm -r test                       # all unit tests (`pnpm vitest` at the root = watch mode over all packages)
+pnpm lint && pnpm typecheck        # lint = ESLint (type-aware) + prettier --check; typecheck = tsc -b
+pnpm format                        # prettier --write (skips docs/, design/, products/, schemas/, *.md)
 pnpm schema:gen                    # zod → schemas/*.json
 pnpm modules:validate              # validate every products/*.yaml against the schema
 pnpm collect --only grafana,debian --out ./.feed   # local collector run, no publish
@@ -85,6 +86,12 @@ docker build -t versiondrift .     # self-hosted image
 
 ## Conventions
 
+- Package layout: `src/` is compiled by the package's own `tsconfig.json` (extends `tsconfig.base.json`,
+  `rootDir: src`, `outDir: dist`); tests are `test/*.test.ts`, type-checked by the root `tsconfig.json`.
+  A new package must be added to the root `tsconfig.json` `references`. Shared dev tools (`typescript`,
+  `vitest`, `@types/node`) are declared as `"catalog:"` — versions live in `pnpm-workspace.yaml`.
+- TypeScript is erasable-only (`erasableSyntaxOnly`): no `enum`, `namespace` or parameter properties —
+  use `as const` objects / string unions.
 - Module ids: lowercase kebab-case, stable forever (`percona-xtradb-cluster`). Renames need an `aliases` entry.
 - All dates in the feed are ISO 8601 UTC (`2026-09-22T00:00:00Z`) — date-only sources use midnight UTC.
 - Versions are stored as the vendor writes them (`v` prefix stripped) plus a normalized `sortKey` from `packages/core`.

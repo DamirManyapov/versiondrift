@@ -1,0 +1,9 @@
+packages:
+  - packages/*
+  - apps/*
+
+# Shared versions: packages depend on these as "catalog:" so the whole repo moves together.
+catalog:
+  '@types/node': ^22.20.4
+  typescript: ~6.0.3
+  vitest: ^5.0.1

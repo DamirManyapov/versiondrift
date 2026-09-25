@@ -1,0 +1,15 @@
+{
+  // Solution root. `pnpm typecheck` (tsc -b) builds every package listed in "references"
+  // (each package's tsconfig.json compiles src/ → dist/), then checks this project:
+  // the root config files and every package's test/ directory.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts", "*.js", "packages/*/test", "apps/*/test"],
+  "references": []
+}

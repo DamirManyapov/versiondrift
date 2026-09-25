@@ -1,0 +1,26 @@
+{
+  "name": "versiondrift",
+  "private": true,
+  "type": "module",
+  "description": "See how far your stack has drifted from upstream.",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "tsc -b",
+    "test": "pnpm -r test"
+  },
+  "packageManager": "pnpm@12.6.0",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "catalog:",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.9",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "catalog:"
+  }
+}

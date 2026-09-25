@@ -9,3 +9,7 @@ build/
 .env.*
 !.env.example
 /data/
+.DS_Store
+coverage/
+*.tsbuildinfo
+.claude/settings.local.json
