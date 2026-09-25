@@ -1,0 +1,52 @@
+# Telegram alerts for the maintainer's own stack (docs/07-self-hosted.md "Telegram alerts").
+# Runs after every feed update. Does nothing until the secrets are set; the inventory lives only in the
+# NOTIFY_INVENTORY secret and the sent-state in the private state bucket — never in this repository.
+name: Notify
+
+on:
+  workflow_run:
+    workflows: [Collect]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: notify
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      NOTIFY_INVENTORY: ${{ secrets.NOTIFY_INVENTORY }}
+      NOTIFY_LANG: ${{ vars.NOTIFY_LANG || 'en' }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Configured?
+        id: check
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ] || [ -z "$NOTIFY_INVENTORY" ]; then
+            echo "Telegram alerts are not configured (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, NOTIFY_INVENTORY)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.check.outputs.ready == 'true'
+
+      - uses: pnpm/setup@v3
+        if: steps.check.outputs.ready == 'true'
+        with:
+          cache: true
+          require-lockfile: true
+
+      - name: Send alerts
+        if: steps.check.outputs.ready == 'true'
+        run: pnpm notify run --state r2:notify/state.json

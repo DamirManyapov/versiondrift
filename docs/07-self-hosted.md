@@ -105,3 +105,31 @@ Slack/Matrix webhooks. Dedupe through `events`. Message templates in `apps/web/s
 - Credentials encrypted at rest with `VD_SECRET_KEY` (libsodium secretbox).
 - CSRF protection, secure cookies, rate-limited login, audit log of settings changes.
 - Container runs as non-root, read-only root FS except `/data`.
+
+## Telegram alerts (S2-T9, before self-hosted)
+
+`apps/notify` sends Telegram messages about *your* stack from the public feed — no server needed. It reads an
+`inventory.yaml` (the format above; a product may also be just a version string, `poste-io: "2.5.17"`; quote versions),
+verifies the feed (minisign signature of `index.json`, sha256 of every product file), computes statuses with
+`packages/core` and messages only what changed since the last run:
+
+- 🟥 a new advisory affects an instance (`critical`, from S3 on),
+- ⬛ a branch reached end of life, or will within 90 days (once),
+- 🟧 a new release while the instance is behind (once per new latest release),
+- a version in the inventory is not recognised.
+
+The first run sends one summary; a weekly summary (default Monday, `--digest`) lists what needs attention and what
+shipped. What was sent is remembered in a state file.
+
+```bash
+TELEGRAM_BOT_TOKEN=… TELEGRAM_CHAT_ID=… pnpm notify test                      # check the bot can write to the chat
+pnpm notify run --inventory inventory.yaml --dry-run --lang ru                 # print instead of sending
+pnpm notify run --inventory inventory.yaml --state notify-state.json --lang ru # e.g. from cron on any server
+```
+
+In this repository, `.github/workflows/notify.yml` runs after every feed update when the secrets `TELEGRAM_BOT_TOKEN`,
+`TELEGRAM_CHAT_ID` and `NOTIFY_INVENTORY` (the YAML itself) are set, with the state in the private bucket
+(`r2:notify/state.json`) and the language from the repository variable `NOTIFY_LANG`. The inventory never enters the
+repository. Setup: create a bot with @BotFather, send it a message, read your chat id from
+`https://api.telegram.org/bot<token>/getUpdates`, set the three secrets. In S5 this becomes the Telegram channel of the
+self-hosted notifications.

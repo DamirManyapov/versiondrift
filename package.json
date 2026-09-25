@@ -15,7 +15,8 @@
     "schema:gen": "pnpm -F @versiondrift/schema gen",
     "modules:validate": "pnpm -F @versiondrift/schema validate",
     "collect": "node apps/collector/src/cli.ts collect",
-    "collector": "node apps/collector/src/cli.ts"
+    "collector": "node apps/collector/src/cli.ts",
+    "notify": "node apps/notify/src/cli.ts"
   },
   "packageManager": "pnpm@12.6.0",
   "devDependencies": {

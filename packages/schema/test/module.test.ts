@@ -162,3 +162,35 @@ describe('Module', () => {
     expect(issues.find((i) => i.path === path)?.message).toContain(message);
   });
 });
+
+describe('Inventory', async () => {
+  const { Inventory, inventoryEntries } = await import('../src/index.ts');
+  it('accepts lists, single instances and a version shorthand', () => {
+    const inv = Inventory.parse({
+      boards: {
+        prod: {
+          products: {
+            grafana: [{ version: '12.4.5', host: 'mon-01' }, { version: '13.2.1' }],
+            'poste-io': '2.5.17',
+          },
+        },
+        lab: { products: { zabbix: { version: '7.0.30', track: '7.0' } } },
+      },
+    });
+    expect(inventoryEntries(inv)).toEqual([
+      {
+        board: 'prod',
+        productId: 'grafana',
+        instances: [{ version: '12.4.5', host: 'mon-01' }, { version: '13.2.1' }],
+      },
+      { board: 'prod', productId: 'poste-io', instances: [{ version: '2.5.17' }] },
+      { board: 'lab', productId: 'zabbix', instances: [{ version: '7.0.30', track: '7.0' }] },
+    ]);
+  });
+
+  it('rejects unquoted numeric versions, which YAML would corrupt (12.10 → 12.1)', () => {
+    const result = Inventory.safeParse({ boards: { prod: { products: { debian: 12.1 } } } });
+    expect(result.success).toBe(false);
+    expect(JSON.stringify(result.error?.issues)).toContain('quote versions');
+  });
+});

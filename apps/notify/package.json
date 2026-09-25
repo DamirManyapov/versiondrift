@@ -1,0 +1,27 @@
+{
+  "name": "@versiondrift/notify",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Telegram alerts for your own stack from the public feed and a private inventory.yaml.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@versiondrift/adapters": "workspace:*",
+    "@versiondrift/collector": "workspace:*",
+    "@versiondrift/core": "workspace:*",
+    "@versiondrift/schema": "workspace:*",
+    "commander": "^14.0.3",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

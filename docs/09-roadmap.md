@@ -52,11 +52,15 @@ Goal: the author uses `versiondrift.dev` for his own stack.
 - S2-T6 `/week` view from `week/*.json` + board filter.
 - S2-T7 `/p/:id` product page (basic).
 - S2-T8 Deploy with `adapter-cloudflare` to Pages; `/status` page from `health.json`.
-- S2-T9 `notify` CLI — Telegram alerts long before self-hosted: reads the published feed + an `inventory.yaml`
+- S2-T9 ✅ `notify` CLI — Telegram alerts long before self-hosted: reads the published feed + an `inventory.yaml`
   (same format as `docs/07-self-hosted.md`), runs `computeStatus`, sends a Telegram message when a product's status
   changes (`update`, `eol`; `critical` automatically once S3 lands) and a weekly digest; remembers what was sent in a
   small state file. Runs from cron on any server or from a scheduled GitHub Actions workflow in a **separate private
   repo** (inventory + bot token as secrets, never in this repo). Becomes the Telegram channel of S5-T5.
+  Implemented as `apps/notify` + `notify.yml` (secrets of this repo instead of a separate repo — the inventory still
+  never enters git); goes live once the bot token, chat id and inventory secrets are set.
+  Implemented as `apps/notify` + `notify.yml` (secrets of this repo instead of a separate repo — the inventory still
+  never enters git); goes live once the bot token, chat id and inventory secrets are set.
 
 **Done when:** the author's board (≥ 12 products with versions) shows correct `update/ok/eol` states and changelogs,
 and the author gets Telegram messages about their own stack without opening the site.
