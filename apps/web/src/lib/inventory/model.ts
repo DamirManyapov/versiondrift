@@ -88,7 +88,7 @@ export const removeItem = (data: InventoryData, index: number): InventoryData =>
   items: data.items.filter((_, i) => i !== index),
 });
 
-/** inventory.yaml with one board, "main". Products without a version are exported as "latest" tracking entries. */
+/** inventory.yaml with one board, "main". Products followed without a version are left out: the format needs one. */
 export function toYaml(data: InventoryData): string {
   const products: Record<string, InstanceSpec[]> = {};
   for (const item of data.items) {

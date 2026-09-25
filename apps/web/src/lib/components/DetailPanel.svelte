@@ -6,6 +6,7 @@
   import { REPO_URL } from '$lib/config';
   import { feed } from '$lib/feed/state.svelte';
   import { formatDate } from '$lib/format';
+  import { categoryLabel } from '$lib/i18n';
   import { i18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
   import StatusChip from './StatusChip.svelte';
@@ -125,7 +126,7 @@
     <div class="grow">
       <h2 id="detail-title"><a class="plain" href={resolve('/p/[id]', { id: row.id })}>{row.name}</a></h2>
       <div class="muted">
-        {row.category} · {t('moduleFile')}
+        {categoryLabel(t, row.category)} · {t('moduleFile')}
         <a class="mono" href="{REPO_URL}/blob/main/products/{row.id}.yaml" target="_blank" rel="noreferrer"
           >products/{row.id}.yaml</a
         >

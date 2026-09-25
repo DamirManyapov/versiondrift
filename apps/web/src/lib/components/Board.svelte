@@ -4,6 +4,7 @@
   import { productCache } from '$lib/board/products.svelte';
   import { buildRows, filterRows, summarize, SUMMARY_STATUSES, type SummaryStatus } from '$lib/board/rows';
   import { feed } from '$lib/feed/state.svelte';
+  import { categoryLabel } from '$lib/i18n';
   import { i18n } from '$lib/i18n/context';
   import type { InventoryItem, InventorySettings } from '$lib/inventory/model';
   import DetailPanel from './DetailPanel.svelte';
@@ -44,7 +45,11 @@
   const rows = $derived(buildRows(items, feed.index, productCache.products, settings));
   const visible = $derived(filterRows(rows, { status, category, query, hideOk: settings.hideOk }));
   const counts = $derived(summarize(rows));
-  const categories = $derived([...new Set(rows.map((r) => r.category))].sort());
+  const categories = $derived(
+    [...new Set(rows.map((r) => r.category))].sort((a, b) =>
+      categoryLabel(t, a).localeCompare(categoryLabel(t, b)),
+    ),
+  );
   const selected = $derived(rows.find((r) => r.id === selectedId) ?? visible[0]);
   const filtered = $derived(status !== undefined || category !== undefined || query !== '');
 
@@ -117,7 +122,7 @@
         <button
           class="chip"
           aria-pressed={category === c}
-          onclick={() => (category = category === c ? undefined : c)}>{c}</button
+          onclick={() => (category = category === c ? undefined : c)}>{categoryLabel(t, c)}</button
         >
       {/each}
       <span class="grow"></span>

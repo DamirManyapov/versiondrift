@@ -1,5 +1,6 @@
 <script lang="ts">
   import { formatDate } from '$lib/format';
+  import { categoryLabel } from '$lib/i18n';
   import { i18n } from '$lib/i18n/context';
   import type { Row } from '$lib/board/rows';
   import StatusChip from './StatusChip.svelte';
@@ -21,7 +22,7 @@
   <span class="head">
     <span class="title">
       <span class="name">{row.name}</span>
-      <span class="muted">{row.category}</span>
+      <span class="muted">{categoryLabel(t, row.category)}</span>
     </span>
     {#if row.known}
       <StatusChip status={row.status} cvss={s?.maxCvss} />

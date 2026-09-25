@@ -22,7 +22,9 @@ describe('sealing', () => {
     expect(a.seal('{"token":"x"}')).not.toBe(sealed);
     expect(() => createSealer('key two').open(sealed)).toThrow(StoreError);
     const [v, iv, tag, data] = sealed.split(':');
-    expect(() => a.open([v, iv, tag, `A${data!.slice(1)}`].join(':'))).toThrow(StoreError);
+    const flipped = Buffer.from(data!, 'base64');
+    flipped[0]! ^= 1;
+    expect(() => a.open([v, iv, tag, flipped.toString('base64')].join(':'))).toThrow(StoreError);
   });
 });
 

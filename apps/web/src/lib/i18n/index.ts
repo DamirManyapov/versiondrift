@@ -51,3 +51,9 @@ export function translator(locale: Locale): Translate {
     return interpolate(message[form] ?? message.other, { ...params, n });
   };
 }
+
+/** A module category ("ci-cd") in the reader's language; unknown ids show as they are. */
+export function categoryLabel(t: Translate, id: string): string {
+  const key = `cat_${id}`;
+  return key in en ? t(key as MessageKey) : id;
+}

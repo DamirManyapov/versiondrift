@@ -5,6 +5,7 @@
   import { searchCatalog } from '$lib/catalog';
   import { REPO_URL } from '$lib/config';
   import { feed } from '$lib/feed/state.svelte';
+  import { categoryLabel } from '$lib/i18n';
   import { i18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
 
@@ -23,7 +24,11 @@
   });
 
   const products = $derived(catalog?.products ?? []);
-  const categories = $derived([...new Set(products.map((p) => p.category))].sort());
+  const categories = $derived(
+    [...new Set(products.map((p) => p.category))].sort((a, b) =>
+      categoryLabel(t, a).localeCompare(categoryLabel(t, b)),
+    ),
+  );
   const results = $derived(searchCatalog(products, query, category));
   const onBoard = $derived(new Set(inventory.demo ? [] : inventory.data.items.map((i) => i.p)));
 </script>
@@ -52,7 +57,7 @@
         <button
           class="chip"
           aria-pressed={category === c}
-          onclick={() => (category = category === c ? undefined : c)}>{c}</button
+          onclick={() => (category = category === c ? undefined : c)}>{categoryLabel(t, c)}</button
         >
       {/each}
     </div>
@@ -63,7 +68,7 @@
           <span class="info">
             <span class="name">{p.name}</span>
             <span class="muted"
-              >{p.category}{p.vendor ? ` · ${p.vendor}` : ''}{p.description
+              >{categoryLabel(t, p.category)}{p.vendor ? ` · ${p.vendor}` : ''}{p.description
                 ? ` — ${p.description}`
                 : ''}</span
             >

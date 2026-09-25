@@ -7,6 +7,7 @@
   import TypeChip from '$lib/components/TypeChip.svelte';
   import { REPO_URL } from '$lib/config';
   import { formatDate } from '$lib/format';
+  import { categoryLabel } from '$lib/i18n';
   import { i18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
   import { jsonLdScript } from '$lib/seo/pages';
@@ -65,7 +66,7 @@
     <div class="grow">
       <h1>{product.name}</h1>
       <p class="muted">
-        {data.entry.category} ·
+        {categoryLabel(t, data.entry.category)} ·
         <a class="mono" href="{REPO_URL}/blob/main/products/{product.id}.yaml">products/{product.id}.yaml</a>
         · <a href={resolve('/rss/p/[id].xml', { id: product.id })}>{t('rssFeed')}</a>
       </p>
