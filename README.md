@@ -20,12 +20,19 @@ Products are simple YAML modules — if yours is missing, add a file and open a 
 | **versiondrift.dev** (account) | product + version only, for sync & alerts | sign in |
 | **Self-hosted** (Docker) | your server | `docker compose up -d` |
 
-Self-hosted adds automatic version detection inside your network (HTTP endpoints, SSH, Docker, SNMP, Zabbix, Proxmox, Ansible)
-and alerts via Telegram, e-mail, ntfy, Gotify or webhooks.
+Self-hosted keeps several boards on your server, signs people in (password, OIDC or your proxy), serves a verified copy
+of the feed to your network and sends alerts via Telegram, e-mail, ntfy, Gotify or webhooks. Automatic version detection
+inside your network (HTTP endpoints, Docker, SSH, SNMP, Zabbix, Proxmox) is next.
 
 ## Status
 
 Pre-alpha. See [`docs/09-roadmap.md`](docs/09-roadmap.md).
+
+- **versiondrift.dev**: 72 products collected daily into a signed feed; a board in your browser, share links,
+  comparison and "is this version affected?" pages, RSS.
+- **Self-hosted** (no published image yet): `Dockerfile` and `charts/versiondrift`; setup in
+  [`docs/07-self-hosted.md`](docs/07-self-hosted.md).
+- **Telegram alerts without a server**: `pnpm notify` from a GitHub Action or cron (same doc).
 
 ## Add a product
 
