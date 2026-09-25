@@ -3,6 +3,7 @@ import type { Handle, HandleFetch, ServerInit } from '@sveltejs/kit';
 import { isLocale, localeFromHeader } from '$lib/i18n';
 import { json } from '@sveltejs/kit';
 import { bootstrapAdmin, crossSite, currentUser, isOpenPath } from '$lib/server/auth';
+import { runAlerts } from '$lib/server/alerts';
 import { startFeedSync } from '$lib/server/feed-sync';
 import { mode, selfHostedStore } from '$lib/server/storage';
 
@@ -12,7 +13,7 @@ export const init: ServerInit = async () => {
   if (mode() !== 'selfhosted' || building) return;
   selfHostedStore().defaultBoard();
   await bootstrapAdmin();
-  startFeedSync();
+  startFeedSync(() => runAlerts());
 };
 
 // Language: the vd_lang cookie (set in the footer), else Accept-Language. Theme: the vd_theme cookie, else auto.

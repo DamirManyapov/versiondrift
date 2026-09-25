@@ -98,7 +98,7 @@ https without `ORIGIN`, which would refuse every form post on a plain-http LAN i
 | `VD_OIDC_ISSUER`, `VD_OIDC_CLIENT_ID`, `VD_OIDC_CLIENT_SECRET` | | Authentik/Keycloak/etc. |
 | `VD_TRUST_PROXY_HEADER` | | e.g. `Remote-User` for forward-auth setups |
 | `VD_BASE_URL` | | for links in notifications |
-| `VD_SECRET_KEY` | generated | encrypts stored credentials (detector/integration secrets) |
+| `VD_SECRET_KEY` | generated | encrypts stored credentials (notification channels; later detectors, integrations); without it a random key is kept in `/data/secret.key` — back it up with the database |
 
 ## SQLite schema (Drizzle)
 
@@ -171,6 +171,20 @@ boards:
 
 ## Notifications
 
+Implemented in S5-T5 (`packages/alerts`, shared with `pnpm notify`; `apps/web/src/lib/server/alerts.ts`):
+Settings → Notifications lists channels — Telegram, ntfy, Gotify, webhook, e-mail (SMTP) — each with its own
+subscriptions (vulnerabilities, end of life incl. 90 days before, new releases, weekly summary), message language and
+summary weekday. After every feed sync (and on "Check now") each enabled channel gets what changed for every board's
+products with a version since its own last delivery; a new channel first gets an overview, a failed delivery keeps
+the channel's state so the next run reports the same changes again ("Last error" shows why). "Send test" checks the
+settings without touching that state. Credentials are sealed in the database and never sent back to the browser
+(an empty field on edit keeps the stored value). Webhooks receive
+`{ source, title, text, html }` with `X-VersionDrift-Signature: sha256=<HMAC-SHA256 of the body with the secret>`.
+Not implemented yet from the draft below: Slack/Matrix, per-board rules, quiet hours, a minimum CVSS per rule
+(the instance-wide critical threshold applies).
+
+Draft:
+
 Triggered after each feed sync and detector run, by diffing product status per instance:
 - `critical` — new affecting advisory, or instance became critical
 - `eol` — branch became EOL, or EOL within 30 days
@@ -183,7 +197,7 @@ Slack/Matrix webhooks. Dedupe through `events`. Message templates in `apps/web/s
 ## Security
 
 - No outbound calls except feed URL, configured detectors/integrations and notification endpoints.
-- Credentials encrypted at rest with `VD_SECRET_KEY` (libsodium secretbox).
+- Credentials encrypted at rest with AES-256-GCM (`node:crypto`), keyed by `VD_SECRET_KEY` or `/data/secret.key`.
 - CSRF protection, secure cookies, rate-limited login, audit log of settings changes.
 - Container runs as non-root, read-only root FS except `/data`.
 

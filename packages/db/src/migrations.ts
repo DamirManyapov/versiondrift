@@ -19,5 +19,11 @@ export const MIGRATIONS: readonly { tag: string; statements: readonly string[] }
       "CREATE UNIQUE INDEX `users_name_unique` ON `users` (`name`);",
       "CREATE UNIQUE INDEX `users_oidc_sub_unique` ON `users` (`oidc_sub`);"
     ]
+  },
+  {
+    "tag": "0002_channels",
+    "statements": [
+      "CREATE TABLE `channels` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`name` text NOT NULL,\n\t`kind` text NOT NULL,\n\t`config` text NOT NULL,\n\t`events` text NOT NULL,\n\t`lang` text DEFAULT 'en' NOT NULL,\n\t`digest_day` integer,\n\t`enabled` integer DEFAULT true NOT NULL,\n\t`state` text,\n\t`last_sent_at` text,\n\t`last_error` text,\n\t`created_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')) NOT NULL\n);"
+    ]
   }
 ];

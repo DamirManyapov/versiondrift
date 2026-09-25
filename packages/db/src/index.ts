@@ -11,3 +11,12 @@ export {
 } from './store.ts';
 export { MIGRATIONS } from './migrations.ts';
 export { AuthStore, hashPassword, verifyPassword, type Role, type User } from './auth.ts';
+export {
+  ALERT_EVENTS,
+  ChannelStore,
+  createSealer,
+  type AlertEventName,
+  type ChannelInput,
+  type ChannelRecord,
+  type Sealer,
+} from './channels.ts';

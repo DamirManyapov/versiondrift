@@ -15,6 +15,7 @@ export const feedDir = () => path.join(path.resolve(env.VD_DATA_DIR || './data')
 
 let running: Promise<void> | undefined;
 let schedule: Cron | undefined;
+let afterSync: (() => Promise<void>) | undefined;
 
 /** One sync at a time; failures are logged and recorded in the sync state, the old mirror stays. */
 export function syncNow(log: (line: string) => void = console.log): Promise<void> {
@@ -33,13 +34,16 @@ export function syncNow(log: (line: string) => void = console.log): Promise<void
     .catch((error: unknown) =>
       log(`VersionDrift: feed sync failed, keeping the local copy: ${(error as Error).message}`),
     )
+    // Notifications run after every sync attempt: the local copy is what they read either way.
+    .then(() => afterSync?.())
     .finally(() => (running = undefined));
   return running;
 }
 
-/** Called once at server start in self-hosted mode. */
-export function startFeedSync(): void {
+/** Called once at server start in self-hosted mode; `then` runs after each sync (notifications). */
+export function startFeedSync(then?: () => Promise<void>): void {
   if (schedule) return;
+  afterSync = then;
   void syncNow();
   const pattern = env.VD_FEED_SYNC || '0 3 * * *';
   schedule = new Cron(

@@ -2,7 +2,9 @@
 import Database from 'better-sqlite3';
 import { asc, eq, sql } from 'drizzle-orm';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import { randomBytes } from 'node:crypto';
 import { AuthStore } from './auth.ts';
+import { ChannelStore, createSealer } from './channels.ts';
 import { MIGRATIONS } from './migrations.ts';
 import * as schema from './schema.ts';
 
@@ -171,17 +173,29 @@ export class BoardStore {
 export interface Storage {
   store: BoardStore;
   auth: AuthStore;
+  channels: ChannelStore;
   db: Db;
   close(): void;
 }
 
-/** Opens (or creates) the database file, applies migrations and returns the store. ":memory:" works for tests. */
-export function openStorage(file: string): Storage {
+/**
+ * Opens (or creates) the database file, applies migrations and returns the stores. ":memory:" works for tests.
+ * `secret` seals channel credentials; without it a throwaway key is used (tests only — sealed data can't be read
+ * after a restart).
+ */
+export function openStorage(file: string, options: { secret?: string | Buffer } = {}): Storage {
   const sqlite = new Database(file);
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
   sqlite.pragma('busy_timeout = 5000');
   migrate(sqlite);
   const db = drizzle(sqlite, { schema });
-  return { store: new BoardStore(db), auth: new AuthStore(db), db, close: () => sqlite.close() };
+  const sealer = createSealer(options.secret ?? randomBytes(32));
+  return {
+    store: new BoardStore(db),
+    auth: new AuthStore(db),
+    channels: new ChannelStore(db, sealer),
+    db,
+    close: () => sqlite.close(),
+  };
 }

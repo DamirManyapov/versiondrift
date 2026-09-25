@@ -72,3 +72,26 @@ export const sessions = sqliteTable(
   },
   (t) => [index('sessions_user').on(t.userId)],
 );
+
+/**
+ * Notification channels (docs/07 "Notifications"). `config` is the channel's settings as sealed JSON (tokens and
+ * passwords are secrets); `state` is what was last sent through it, so each channel reports changes on its own.
+ */
+export const channels = sqliteTable('channels', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  kind: text('kind', { enum: ['telegram', 'ntfy', 'gotify', 'webhook', 'email'] }).notNull(),
+  config: text('config').notNull(),
+  /** Subscribed events: critical, eol, update, digest. */
+  events: text('events', { mode: 'json' }).$type<string[]>().notNull(),
+  lang: text('lang', { enum: ['en', 'ru'] })
+    .notNull()
+    .default('en'),
+  /** Weekday of the weekly digest, 0 = Sunday; null = none. */
+  digestDay: integer('digest_day'),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+  state: text('state', { mode: 'json' }),
+  lastSentAt: text('last_sent_at'),
+  lastError: text('last_error'),
+  createdAt: text('created_at').notNull().default(now),
+});

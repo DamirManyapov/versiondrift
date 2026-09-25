@@ -98,7 +98,7 @@ Goal: red tiles are real.
 - S5-T3 ✅ Auth modes none/password/oidc/trusted-header.
 - S5-T4 ✅ Feed sync with signature verification (local mirror served at /feed/); offline mode flag (runs collector
   in-process) — deferred, see docs/07.
-- S5-T5 Notifications: Telegram, e-mail, ntfy, Gotify, webhook; rules; weekly digest.
+- S5-T5 ✅ Notifications: Telegram, e-mail, ntfy, Gotify, webhook; rules (per-channel subscriptions); weekly digest.
 - S5-T6 `inventory.yaml` watch/import; docs for compose + reverse proxy.
 
 ## S6 — Detection & integrations

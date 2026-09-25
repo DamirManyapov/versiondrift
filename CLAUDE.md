@@ -59,7 +59,9 @@ packages/
   core/                   # version schemes, comparison, status engine, affected-range matching
   adapters/               # source adapters: github, gitlab, rss, html, dockerhub, endoflife, osv, ghsa, debian, kev
   classify/               # change-item classification: structured → keywords → LLM (optional)
-  db/                     # self-hosted SQLite: Drizzle schema, embedded migrations, board store
+  db/                     # self-hosted SQLite: Drizzle schema, embedded migrations, boards, users, channels
+  feed/                   # minisign + the verified feed mirror (self-hosted sync, notify)
+  alerts/                 # what changed since the last alert + channels (Telegram, ntfy, Gotify, webhook, e-mail)
 apps/
   collector/              # CLI: validate modules, collect, build feed, publish, health report
   web/                    # SvelteKit app (public + self-hosted)
