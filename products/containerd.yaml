@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: containerd
+name: containerd
+vendor: CNCF
+category: containers
+homepage: https://containerd.io
+description: Industry-standard container runtime.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: containerd/containerd }
+  security:
+    - { type: ghsa, repo: containerd/containerd }
+  eol: { type: endoflife, product: containerd }
+maintainers: ["@DamirManyapov"]

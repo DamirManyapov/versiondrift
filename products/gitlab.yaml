@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: gitlab
+name: GitLab
+vendor: GitLab Inc.
+category: ci-cd
+homepage: https://about.gitlab.com
+logo: simpleicons:gitlab
+description: DevOps platform (Community Edition releases).
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: gitlabhq/gitlabhq, useTags: true }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:gitlab:gitlab" }
+  eol: { type: endoflife, product: gitlab }
+detect:
+  - docker: { image: gitlab/gitlab-ce }
+maintainers: ["@DamirManyapov"]

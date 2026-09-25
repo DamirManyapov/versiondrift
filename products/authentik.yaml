@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: authentik
+name: authentik
+vendor: Authentik Security
+category: identity
+homepage: https://goauthentik.io
+description: Identity provider.
+versionScheme: calver
+sources:
+  releases: { type: github, repo: goauthentik/authentik, versionRegex: '^version/(\d+\.\d+\.\d+)$' }
+  security:
+    - { type: ghsa, repo: goauthentik/authentik }
+  eol: { type: endoflife, product: authentik }
+maintainers: ["@DamirManyapov"]

@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: stalwart
+name: Stalwart Mail Server
+vendor: Stalwart Labs
+category: mail
+homepage: https://stalw.art
+description: All-in-one mail and collaboration server.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: stalwartlabs/stalwart }
+  security:
+    - { type: ghsa, repo: stalwartlabs/stalwart }
+detect:
+  - docker: { image: stalwartlabs/stalwart }
+maintainers: ["@DamirManyapov"]

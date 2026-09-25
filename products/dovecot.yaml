@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: dovecot
+name: Dovecot
+vendor: Open-Xchange
+category: mail
+homepage: https://www.dovecot.org
+description: IMAP and POP3 server.
+versionScheme: loose
+tagFilter:
+  include: '^\d+\.\d+\.\d+(\.\d+)?$'
+sources:
+  releases: { type: github, repo: dovecot/core, useTags: true }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:dovecot:dovecot" }
+  eol: { type: endoflife, product: dovecot }
+maintainers: ["@DamirManyapov"]

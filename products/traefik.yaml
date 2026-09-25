@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: traefik
+name: Traefik
+vendor: Traefik Labs
+category: web
+homepage: https://traefik.io
+logo: simpleicons:traefikproxy
+description: Cloud-native reverse proxy and load balancer.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+tracks:
+  - { id: "3", match: '^3\.' }
+  - { id: "2", match: '^2\.' }
+sources:
+  releases: { type: github, repo: traefik/traefik }
+  security:
+    - { type: ghsa, repo: traefik/traefik }
+  eol: { type: endoflife, product: traefik }
+detect:
+  - docker: { image: traefik }
+maintainers: ["@DamirManyapov"]

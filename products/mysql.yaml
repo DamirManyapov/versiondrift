@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: mysql
+name: MySQL
+vendor: Oracle
+category: database
+homepage: https://www.mysql.com
+logo: simpleicons:mysql
+description: Relational database.
+versionScheme: semver
+tracks:                                        # from 2026-07 MySQL also ships year-based versions (26.7)
+  - { id: "9.7", match: '^9\.7\.', label: LTS }
+  - { id: "8.4", match: '^8\.4\.', label: LTS }
+  - { id: "8.0", match: '^8\.0\.' }
+sources:
+  releases: { type: github, repo: mysql/mysql-server, useTags: true, versionRegex: '^mysql-(\d+\.\d+\.\d+)$' }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:oracle:mysql" }
+  eol: { type: endoflife, product: mysql }
+detect:
+  - sql: { engine: mysql, query: "SELECT VERSION()" }
+maintainers: ["@DamirManyapov"]

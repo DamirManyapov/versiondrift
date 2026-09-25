@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: mongodb
+name: MongoDB
+vendor: MongoDB Inc.
+category: database
+homepage: https://www.mongodb.com
+logo: simpleicons:mongodb
+description: Document database.
+versionScheme: semver
+sources:
+  releases: { type: github, repo: mongodb/mongo, useTags: true, versionRegex: '^r(\d+\.\d+\.\d+)$' }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:mongodb:mongodb" }
+  eol: { type: endoflife, product: mongodb }
+maintainers: ["@DamirManyapov"]

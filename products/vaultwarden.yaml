@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: vaultwarden
+name: Vaultwarden
+vendor: Vaultwarden
+category: security
+homepage: https://github.com/dani-garcia/vaultwarden
+logo: simpleicons:vaultwarden
+description: Bitwarden-compatible password server.
+versionScheme: semver
+tagFilter:
+  include: '^\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: dani-garcia/vaultwarden }
+  security:
+    - { type: ghsa, repo: dani-garcia/vaultwarden }
+detect:
+  - docker: { image: vaultwarden/server }
+maintainers: ["@DamirManyapov"]

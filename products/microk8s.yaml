@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: microk8s
+name: MicroK8s
+vendor: Canonical
+category: orchestration
+homepage: https://microk8s.io
+logo: simpleicons:kubernetes
+description: Lightweight Kubernetes from Canonical (releases follow Kubernetes minor versions; patches ship via snap).
+versionScheme: loose
+tagFilter:
+  include: '^v?\d+\.\d+$'   # skips the installer-v* releases
+sources:
+  releases: { type: github, repo: canonical/microk8s }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:canonical:microk8s" }
+maintainers: ["@DamirManyapov"]

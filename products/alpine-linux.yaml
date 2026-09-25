@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: alpine-linux
+name: Alpine Linux
+aliases: [alpine]
+vendor: Alpine Linux
+category: os
+homepage: https://alpinelinux.org
+logo: simpleicons:alpinelinux
+description: Lightweight Linux distribution.
+versionScheme: loose
+sources:
+  releases: { type: endoflife, product: alpine-linux }   # latest point release per cycle; history accumulates
+  eol: { type: endoflife, product: alpine-linux }
+detect:
+  - file: { path: /etc/alpine-release }
+maintainers: ["@DamirManyapov"]

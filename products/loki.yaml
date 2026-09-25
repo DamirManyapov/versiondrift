@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: loki
+name: Grafana Loki
+vendor: Grafana Labs
+category: logging
+homepage: https://grafana.com/oss/loki/
+description: Log aggregation system.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: grafana/loki }
+  security:
+    - { type: ghsa, repo: grafana/loki }
+  eol: { type: endoflife, product: grafana-loki }
+detect:
+  - docker: { image: grafana/loki }
+maintainers: ["@DamirManyapov"]

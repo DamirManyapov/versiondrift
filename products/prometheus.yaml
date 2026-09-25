@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: prometheus
+name: Prometheus
+vendor: CNCF
+category: monitoring
+homepage: https://prometheus.io
+logo: simpleicons:prometheus
+description: Metrics collection and alerting.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: prometheus/prometheus }
+  security:
+    - { type: ghsa, repo: prometheus/prometheus }
+  eol: { type: endoflife, product: prometheus }
+detect:
+  - docker: { image: prom/prometheus }
+maintainers: ["@DamirManyapov"]

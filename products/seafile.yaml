@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: seafile
+name: Seafile Server
+vendor: Seafile Ltd.
+category: storage
+homepage: https://www.seafile.com
+description: File sync and share server.
+versionScheme: semver
+sources:
+  releases: { type: github, repo: haiwen/seafile-server, useTags: true, versionRegex: '^v(\d+\.\d+\.\d+)-server$' }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:seafile:seafile_server" }
+detect:
+  - docker: { image: seafileltd/seafile-mc }
+maintainers: ["@DamirManyapov"]

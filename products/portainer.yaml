@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: portainer
+name: Portainer
+vendor: Portainer.io
+category: containers
+homepage: https://www.portainer.io
+logo: simpleicons:portainer
+description: Container management UI.
+versionScheme: semver
+tagFilter:
+  include: '^\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: portainer/portainer }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:portainer:portainer" }
+detect:
+  - docker: { image: portainer/portainer-ce }
+maintainers: ["@DamirManyapov"]

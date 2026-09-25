@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: clickhouse
+name: ClickHouse
+vendor: ClickHouse Inc.
+category: database
+homepage: https://clickhouse.com
+logo: simpleicons:clickhouse
+description: Column-oriented analytics database.
+versionScheme: loose
+sources:
+  releases: { type: github, repo: ClickHouse/ClickHouse, versionRegex: '^v?(\d+\.\d+\.\d+\.\d+)-(?:lts|stable)$' }
+  security:
+    - { type: ghsa, repo: ClickHouse/ClickHouse }
+  eol: { type: endoflife, product: clickhouse }
+maintainers: ["@DamirManyapov"]

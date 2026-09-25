@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: gitea
+name: Gitea
+vendor: Gitea
+category: ci-cd
+homepage: https://about.gitea.com
+logo: simpleicons:gitea
+description: Self-hosted Git service.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: go-gitea/gitea }
+  security:
+    - { type: ghsa, repo: go-gitea/gitea }
+detect:
+  - docker: { image: gitea/gitea }
+maintainers: ["@DamirManyapov"]

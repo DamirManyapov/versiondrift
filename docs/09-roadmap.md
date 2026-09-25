@@ -87,7 +87,7 @@ Goal: red tiles are real.
 - S4-T2 Compare pages `/p/:id/:a...:b` and version pages `/p/:id/v/:v` (SSR in Workers, edge cache), canonical URLs.
 - S4-T3 Sitemap, JSON-LD, OG images.
 - S4-T4 RSS: per product, per board (hash of inventory), weekly.
-- S4-T5 Grow catalog to 60+ modules (priority list in `docs/11`).
+- S4-T5 ✅ Grow catalog to 60+ modules (priority list in `docs/11`): 72 modules; new `gitea` and `endoflife` release sources.
 - S4-T6 Landing section on `/` for first-time visitors (what it is, 3 modes, GitHub link).
 - S4-T7 Launch checklist (`docs/11`).
 

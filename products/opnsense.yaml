@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: opnsense
+name: OPNsense
+vendor: Deciso
+category: network
+homepage: https://opnsense.org
+logo: simpleicons:opnsense
+description: Firewall and routing platform.
+versionScheme: calver
+tagFilter:
+  include: '^\d+\.\d+(\.\d+)?$'
+sources:
+  releases: { type: github, repo: opnsense/core, useTags: true }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:opnsense:opnsense" }
+  eol: { type: endoflife, product: opnsense }
+maintainers: ["@DamirManyapov"]

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: redis
+name: Redis
+vendor: Redis Ltd.
+category: database
+homepage: https://redis.io
+logo: simpleicons:redis
+description: In-memory data store.
+versionScheme: semver
+tagFilter:
+  include: '^\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: redis/redis }
+  security:
+    - { type: ghsa, repo: redis/redis }
+  eol: { type: endoflife, product: redis }
+detect:
+  - docker: { image: redis }
+maintainers: ["@DamirManyapov"]

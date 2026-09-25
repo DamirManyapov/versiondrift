@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: docker-engine
+name: Docker Engine
+aliases: [docker, moby]
+vendor: Docker
+category: containers
+homepage: https://docs.docker.com/engine/
+logo: simpleicons:docker
+description: Container runtime and CLI (Moby).
+versionScheme: loose
+tagFilter:
+  include: '^(docker-)?v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: moby/moby, versionRegex: '^(?:docker-)?v?(\d+\.\d+\.\d+)$' }
+  security:
+    - { type: ghsa, repo: moby/moby }
+  eol: { type: endoflife, product: docker-engine }
+detect:
+  - docker: { image: docker }
+maintainers: ["@DamirManyapov"]

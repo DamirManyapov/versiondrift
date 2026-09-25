@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: percona-server
+name: Percona Server for MySQL
+vendor: Percona
+category: database
+homepage: https://www.percona.com/mysql/software/percona-server-for-mysql
+description: MySQL-compatible database server.
+versionScheme: loose
+tracks:
+  - { id: "8.4", match: '^8\.4\.', label: LTS }
+  - { id: "8.0", match: '^8\.0\.' }
+sources:
+  releases: { type: github, repo: percona/percona-server, useTags: true, versionRegex: '^Percona-Server-(\d+\.\d+\.\d+-\d+)$' }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:percona:percona_server" }
+detect:
+  - sql: { engine: mysql, query: "SELECT VERSION()" }
+maintainers: ["@DamirManyapov"]

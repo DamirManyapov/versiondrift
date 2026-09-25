@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: ubuntu
+name: Ubuntu
+vendor: Canonical
+category: os
+homepage: https://ubuntu.com
+logo: simpleicons:ubuntu
+description: Linux distribution.
+versionScheme: loose
+sources:
+  releases: { type: endoflife, product: ubuntu }   # latest point release per cycle; history accumulates
+  eol: { type: endoflife, product: ubuntu }
+detect:
+  - file: { path: /etc/os-release }
+maintainers: ["@DamirManyapov"]

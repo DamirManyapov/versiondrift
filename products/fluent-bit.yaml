@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: fluent-bit
+name: Fluent Bit
+vendor: CNCF
+category: logging
+homepage: https://fluentbit.io
+logo: simpleicons:fluentbit
+description: Log and metrics processor.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: fluent/fluent-bit }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:treasuredata:fluent_bit" }
+  eol: { type: endoflife, product: fluent-bit }
+maintainers: ["@DamirManyapov"]

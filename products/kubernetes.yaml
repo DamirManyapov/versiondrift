@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: kubernetes
+name: Kubernetes
+aliases: [k8s]
+vendor: CNCF
+category: orchestration
+homepage: https://kubernetes.io
+logo: simpleicons:kubernetes
+description: Container orchestration.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: kubernetes/kubernetes }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:kubernetes:kubernetes" }
+  eol: { type: endoflife, product: kubernetes }
+maintainers: ["@DamirManyapov"]

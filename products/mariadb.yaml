@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: mariadb
+name: MariaDB
+vendor: MariaDB Foundation
+category: database
+homepage: https://mariadb.org
+logo: simpleicons:mariadb
+description: Relational database (MySQL fork).
+versionScheme: semver
+sources:
+  releases: { type: github, repo: MariaDB/server, useTags: true, versionRegex: '^mariadb-(\d+\.\d+\.\d+)$' }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:mariadb:mariadb" }
+  eol: { type: endoflife, product: mariadb }
+detect:
+  - sql: { engine: mysql, query: "SELECT VERSION()" }
+maintainers: ["@DamirManyapov"]

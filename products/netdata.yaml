@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: netdata
+name: Netdata
+vendor: Netdata Inc.
+category: monitoring
+homepage: https://www.netdata.cloud
+logo: simpleicons:netdata
+description: Real-time infrastructure monitoring.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: netdata/netdata }
+  security:
+    - { type: ghsa, repo: netdata/netdata }
+detect:
+  - docker: { image: netdata/netdata }
+maintainers: ["@DamirManyapov"]

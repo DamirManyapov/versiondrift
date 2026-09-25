@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: onlyoffice
+name: ONLYOFFICE Docs
+vendor: Ascensio System
+category: collaboration
+homepage: https://www.onlyoffice.com
+logo: simpleicons:onlyoffice
+description: Online document editors.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: ONLYOFFICE/DocumentServer }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:onlyoffice:document_server" }
+detect:
+  - docker: { image: onlyoffice/documentserver }
+maintainers: ["@DamirManyapov"]

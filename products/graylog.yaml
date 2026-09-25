@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: graylog
+name: Graylog
+vendor: Graylog
+category: logging
+homepage: https://graylog.org
+logo: simpleicons:graylog
+description: Log management platform.
+versionScheme: semver
+tagFilter:
+  include: '^\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: Graylog2/graylog2-server, useTags: true }
+  security:
+    - { type: ghsa, repo: Graylog2/graylog2-server }
+  eol: { type: endoflife, product: graylog }
+maintainers: ["@DamirManyapov"]

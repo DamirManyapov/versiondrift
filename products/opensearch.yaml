@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: opensearch
+name: OpenSearch
+vendor: OpenSearch Project
+category: logging
+homepage: https://opensearch.org
+logo: simpleicons:opensearch
+description: Search and analytics suite (Elasticsearch fork).
+versionScheme: semver
+tagFilter:
+  include: '^\d+\.\d+\.\d+$'
+tracks:
+  - { id: "3", match: '^3\.' }
+  - { id: "2", match: '^2\.' }
+sources:
+  releases: { type: github, repo: opensearch-project/OpenSearch }
+  security:
+    - { type: ghsa, repo: opensearch-project/OpenSearch }
+  eol: { type: endoflife, product: opensearch }
+maintainers: ["@DamirManyapov"]

@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: almalinux
+name: AlmaLinux
+vendor: AlmaLinux OS Foundation
+category: os
+homepage: https://almalinux.org
+logo: simpleicons:almalinux
+description: Enterprise Linux (RHEL-compatible).
+versionScheme: loose
+sources:
+  releases: { type: endoflife, product: almalinux }   # latest point release per cycle; history accumulates
+  eol: { type: endoflife, product: almalinux }
+detect:
+  - file: { path: /etc/almalinux-release }
+maintainers: ["@DamirManyapov"]

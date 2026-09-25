@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: openvpn
+name: OpenVPN
+vendor: OpenVPN Inc.
+category: network
+homepage: https://openvpn.net
+logo: simpleicons:openvpn
+description: VPN server and client.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: OpenVPN/openvpn, useTags: true }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:openvpn:openvpn" }
+  eol: { type: endoflife, product: openvpn }
+maintainers: ["@DamirManyapov"]

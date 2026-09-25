@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: forgejo
+name: Forgejo
+vendor: Codeberg e.V.
+category: ci-cd
+homepage: https://forgejo.org
+logo: simpleicons:forgejo
+description: Self-hosted Git forge (Gitea fork).
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+tracks:
+  - { id: "15", match: '^15\.', label: LTS }
+sources:
+  releases: { type: gitea, host: codeberg.org, repo: forgejo/forgejo }   # bodies link to the published release notes
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:forgejo:forgejo" }
+  eol: { type: endoflife, product: forgejo }
+detect:
+  - docker: { image: codeberg.org/forgejo/forgejo }
+maintainers: ["@DamirManyapov"]

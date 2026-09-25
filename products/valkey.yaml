@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: valkey
+name: Valkey
+vendor: Linux Foundation
+category: database
+homepage: https://valkey.io
+description: In-memory data store (Redis fork).
+versionScheme: semver
+tagFilter:
+  include: '^\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: valkey-io/valkey }
+  security:
+    - { type: ghsa, repo: valkey-io/valkey }
+  eol: { type: endoflife, product: valkey }
+detect:
+  - docker: { image: valkey/valkey }
+maintainers: ["@DamirManyapov"]

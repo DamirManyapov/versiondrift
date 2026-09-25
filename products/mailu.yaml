@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: mailu
+name: Mailu
+vendor: Mailu
+category: mail
+homepage: https://mailu.io
+description: Dockerized mail server.
+versionScheme: loose
+tagFilter:
+  include: '^\d{4}\.\d{2}\.\d+$'
+sources:
+  releases: { type: github, repo: Mailu/Mailu }
+  security:
+    - { type: ghsa, repo: Mailu/Mailu }
+    - { type: nvd, cpe: "cpe:2.3:a:mailu:mailu" }
+detect:
+  - docker: { image: ghcr.io/mailu/admin }
+maintainers: ["@DamirManyapov"]

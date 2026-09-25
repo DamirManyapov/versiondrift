@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: home-assistant
+name: Home Assistant
+vendor: Open Home Foundation
+category: other
+homepage: https://www.home-assistant.io
+logo: simpleicons:homeassistant
+description: Home automation platform.
+versionScheme: calver
+tagFilter:
+  include: '^\d{4}\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: home-assistant/core }
+  security:
+    - { type: ghsa, repo: home-assistant/core }
+detect:
+  - docker: { image: homeassistant/home-assistant }
+maintainers: ["@DamirManyapov"]

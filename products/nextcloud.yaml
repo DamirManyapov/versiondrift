@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: nextcloud
+name: Nextcloud Server
+vendor: Nextcloud GmbH
+category: collaboration
+homepage: https://nextcloud.com
+logo: simpleicons:nextcloud
+description: File sync, share and collaboration.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: nextcloud/server }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:nextcloud:nextcloud_server" }
+  eol: { type: endoflife, product: nextcloud }
+detect:
+  - docker: { image: nextcloud }
+maintainers: ["@DamirManyapov"]

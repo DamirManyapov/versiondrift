@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: uptime-kuma
+name: Uptime Kuma
+vendor: Louis Lam
+category: monitoring
+homepage: https://uptime.kuma.pet
+logo: simpleicons:uptimekuma
+description: Self-hosted uptime monitoring.
+versionScheme: semver
+tagFilter:
+  include: '^\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: louislam/uptime-kuma }
+  security:
+    - { type: ghsa, repo: louislam/uptime-kuma }
+detect:
+  - docker: { image: louislam/uptime-kuma }
+maintainers: ["@DamirManyapov"]

@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: jellyfin
+name: Jellyfin
+vendor: Jellyfin
+category: other
+homepage: https://jellyfin.org
+logo: simpleicons:jellyfin
+description: Media server.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+sources:
+  releases: { type: github, repo: jellyfin/jellyfin }
+  security:
+    - { type: ghsa, repo: jellyfin/jellyfin }
+detect:
+  - docker: { image: jellyfin/jellyfin }
+maintainers: ["@DamirManyapov"]

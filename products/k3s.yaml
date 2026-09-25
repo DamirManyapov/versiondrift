@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-26 (S4-T5); checked against the live sources.
+id: k3s
+name: K3s
+vendor: SUSE
+category: orchestration
+homepage: https://k3s.io
+logo: simpleicons:k3s
+description: Lightweight Kubernetes distribution.
+versionScheme: loose
+tagFilter:
+  include: '^v\d+\.\d+\.\d+\+k3s\d+$'
+sources:
+  releases: { type: github, repo: k3s-io/k3s }
+  security:
+    - { type: ghsa, repo: k3s-io/k3s }
+maintainers: ["@DamirManyapov"]
