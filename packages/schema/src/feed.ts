@@ -23,7 +23,8 @@ export type ChangeItem = z.output<typeof ChangeItem>;
 
 // ── Product file: v1/products/<id>.json ─────────────────────────────────────────────────────────────────
 
-export const FEED_FORMAT_VERSION = '1.0';
+/** 1.1 added FeedProduct.moduleHash. */
+export const FEED_FORMAT_VERSION = '1.1';
 
 const IsoDateTime = z
   .string()
@@ -107,6 +108,11 @@ export const FeedProduct = z.strictObject({
   collectedAt: IsoDateTime,
   lastSuccessAt: IsoDateTime.nullable(),
   stale: z.boolean(),
+  /**
+   * Hash of the module definition and classifier version that produced the items (since 1.1). When it changes,
+   * items of releases the source still offers are recomputed; otherwise published items never change.
+   */
+  moduleHash: z.string().optional(),
 });
 export type FeedProduct = z.output<typeof FeedProduct>;
 

@@ -12,6 +12,9 @@ import {
 export type { ClassifyHints } from './rules.ts';
 export { toBlocks, type Block } from './blocks.ts';
 
+/** Bump when the rules change enough that published items should be recomputed (see moduleHash in the feed). */
+export const CLASSIFIER_VERSION = '2';
+
 export const MAX_ITEM_LENGTH = 300;
 export const MAX_ITEMS = 40;
 const MAX_PROSE_ITEMS = 3;

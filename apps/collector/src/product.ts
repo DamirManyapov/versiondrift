@@ -10,7 +10,8 @@ import {
   type RawBranch,
   type RawRelease,
 } from '@versiondrift/adapters';
-import { classifyNotes } from '@versiondrift/classify';
+import { createHash } from 'node:crypto';
+import { CLASSIFIER_VERSION, classifyNotes } from '@versiondrift/classify';
 import { parse, trackOf, type Version } from '@versiondrift/core';
 import {
   FEED_FORMAT_VERSION,
@@ -196,6 +197,12 @@ export async function collectProduct(
     }
   }
 
+  const moduleHash = createHash('sha256')
+    .update(JSON.stringify(module))
+    .update(CLASSIFIER_VERSION)
+    .digest('hex')
+    .slice(0, 16);
+  const reclassify = previous !== undefined && previous.moduleHash !== moduleHash;
   const merged = new Map<string, Release>();
   for (const release of previous?.releases ?? []) {
     const refreshed = refresh(module, release);
@@ -205,12 +212,20 @@ export async function collectProduct(
   for (const [key, c] of candidates) {
     const known = merged.get(key);
     if (known) {
-      // Fill gaps only; published items stay as they are.
-      merged.set(key, {
+      // Published items stay as they are unless the module or the classifier changed.
+      const next: Release = {
         ...known,
         date: known.date ?? c.raw.date ?? null,
         url: known.url ?? c.raw.url ?? null,
-      });
+      };
+      if (reclassify) {
+        const fresh = toRelease(module, c, now).release;
+        next.items = fresh.items;
+        next.url = fresh.url;
+        if (fresh.moreItems === undefined) delete next.moreItems;
+        else next.moreItems = fresh.moreItems;
+      }
+      merged.set(key, next);
       continue;
     }
     merged.set(key, toRelease(module, c, now).release);
@@ -249,6 +264,8 @@ export async function collectProduct(
     collectedAt: now,
     lastSuccessAt: now,
     stale: false,
+    moduleHash,
   };
+  if (reclassify) warnings.push('module or classifier changed: items of current releases recomputed');
   return { ok: true, product, newReleases, warnings };
 }

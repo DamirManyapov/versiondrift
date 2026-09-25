@@ -146,6 +146,26 @@ describe('runCollector', () => {
     expect(health.modules.broken?.consecutiveFailures).toBe(2);
   });
 
+  it('recomputes items of current releases when the module changes', async () => {
+    const env = await setup(['poste-io']);
+    await runCollector(options(env));
+    const before = await readJson(path.join(env.out, 'v1/products/poste-io.json'), FeedProduct);
+    expect(before.releases[0]?.items[0]?.type).toBe('security');
+    await writeFile(
+      path.join(env.productsDir, 'poste-io.yaml'),
+      MODULES['poste-io']!.replace('classify: { keywords: { security: [roundcube] } }\n', ''),
+    );
+    const out = path.join(env.root, 'feed2');
+    const result = await runCollector(options(env, { previous: env.out, now: DAY2, out }));
+    expect(result.outcomes[0]?.result.warnings).toContain(
+      'module or classifier changed: items of current releases recomputed',
+    );
+    const after = await readJson(path.join(out, 'v1/products/poste-io.json'), FeedProduct);
+    expect(after.releases[0]?.items[0]).toMatchObject({ text: 'Roundcube 1.6.19', type: 'other' });
+    expect(after.releases[0]?.firstSeenAt).toBe(before.releases[0]?.firstSeenAt);
+    expect(after.moduleHash).not.toBe(before.moduleHash);
+  });
+
   it('keeps the previous data, marked stale, when a source fails', async () => {
     const env = await setup();
     await runCollector(options(env));
