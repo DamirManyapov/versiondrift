@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+id: routeros
+name: MikroTik RouterOS
+aliases: [mikrotik]
+vendor: MikroTik
+category: network
+homepage: https://mikrotik.com/software
+logo: simpleicons:mikrotik
+description: Operating system of MikroTik routers and switches.
+versionScheme: loose
+tagFilter:
+  exclude: '(beta|rc)'
+tracks:
+  - { id: "7", match: '^7\.' }
+  - { id: "6", match: '^6\.' }
+sources:
+  releases:
+    type: rss
+    url: https://mikrotik.com/current.rss
+    versionFrom: title
+    versionRegex: 'RouterOS (\d+\.\d+(?:\.\d+)?) \[stable\]'
+  security:
+    - { type: nvd, cpe: "cpe:2.3:o:mikrotik:routeros" }
+detect:
+  - snmp: { oid: "1.3.6.1.4.1.14988.1.1.4.4.0" }
+maintainers: []

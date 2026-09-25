@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Stack Radar — дашборд</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#121316;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#ECEAE4}
+a{color:#7CB7FF}a:hover{color:#A8CFFF}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;text-align:left}
+button:focus-visible{outline:2px solid #7CB7FF;outline-offset:2px}
+.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.tile{transition:filter .12s ease, transform .12s ease}
+.tile:hover{filter:brightness(1.15)}
+.ghost:hover{background:#2A2D33}
+.scroll::-webkit-scrollbar{width:8px}.scroll::-webkit-scrollbar-thumb{background:#34373E;border-radius:4px}
+</style>
+</helmet>
+
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; position: relative; display: flex; flex-direction: column; background: #121316; overflow: hidden">
+
+  <div style="height: 72px; flex-shrink: 0; box-sizing: border-box; padding: 0 32px; display: flex; align-items: center; gap: 24px; border-bottom: 1px solid #26282D">
+    <div style="display: flex; align-items: center; gap: 12px; width: 300px">
+      <div style="width: 36px; height: 36px; border-radius: 10px; background: #F5A524; color: #1A1206; display: flex; align-items: center; justify-content: center">
+        <svg class="ic" viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><path d="M12 12 L19 5"></path><circle cx="12" cy="12" r="1.2"></circle></svg>
+      </div>
+      <div style="display: flex; flex-direction: column">
+        <div style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em">Stack Radar</div>
+        <div style="font-size: 12px; color: #A3A09A">мой стек · {{productCount}} продуктов</div>
+      </div>
+    </div>
+
+    <div style="display: flex; background: #1F2125; border: 1px solid #2E3136; border-radius: 10px; padding: 4px; gap: 4px">
+      <sc-for list="{{views}}" as="vw" hint-placeholder-count="2">
+        <button onClick="{{vw.pick}}" style="padding: 8px 16px; border-radius: 7px; font-size: 14px; font-weight: 500; background: {{vw.bg}}; color: {{vw.fg}}">{{vw.label}}</button>
+      </sc-for>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+
+    <div style="display: flex; flex-direction: column; align-items: flex-end">
+      <div style="font-size: 12px; color: #A3A09A">Последняя проверка</div>
+      <div style="font-size: 13px">{{checked}}</div>
+    </div>
+    <button class="ghost" onClick="{{recheck}}" style="height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #34373E; display: flex; align-items: center; gap: 8px; font-size: 14px">
+      <svg class="ic" viewBox="0 0 24 24" width="18" height="18"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>
+      Проверить сейчас
+    </button>
+    <button onClick="{{openModal}}" style="height: 44px; padding: 0 18px; border-radius: 10px; background: #ECEAE4; color: #121316; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600">
+      <svg class="ic" viewBox="0 0 24 24" width="18" height="18"><path d="M12 5v14M5 12h14"></path></svg>
+      Продукт
+    </button>
+  </div>
+
+  <div style="flex-shrink: 0; padding: 8px 32px; background: #1A1B1F; border-bottom: 1px solid #26282D; font-size: 12px; color: #A3A09A">Прототип: версии, даты и CVE ниже — демо-данные для показа интерфейса. Номера CVE заменены на XXXX.</div>
+
+  <div style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 24px 32px; display: flex; gap: 24px">
+
+    <div style="width: 860px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; min-height: 0">
+
+      <sc-if value="{{isTiles}}" hint-placeholder-val="{{true}}">
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+          <sc-for list="{{stats}}" as="st" hint-placeholder-count="4">
+            <button onClick="{{st.pick}}" style="padding: 14px 16px; border-radius: 12px; background: #1F2125; border: 1px solid {{st.bd}}; display: flex; align-items: center; gap: 14px">
+              <div style="width: 12px; height: 12px; border-radius: 6px; background: {{st.dot}}"></div>
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <div style="font-size: 26px; font-weight: 600; line-height: 1">{{st.n}}</div>
+                <div style="font-size: 13px; color: #A3A09A">{{st.label}}</div>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+          <sc-for list="{{tags}}" as="tg" hint-placeholder-count="8">
+            <button onClick="{{tg.pick}}" style="height: 34px; padding: 0 14px; border-radius: 17px; font-size: 13px; background: {{tg.bg}}; color: {{tg.fg}}; border: 1px solid {{tg.bd}}">{{tg.label}}</button>
+          </sc-for>
+          <div style="flex-grow: 1"></div>
+          <sc-if value="{{hasFilter}}" hint-placeholder-val="{{false}}">
+            <button onClick="{{clearFilter}}" style="font-size: 13px; color: #7CB7FF; padding: 8px 4px">Сбросить фильтр</button>
+          </sc-if>
+        </div>
+
+        <div class="scroll" style="flex-grow: 1; min-height: 0; overflow-y: auto; padding: 2px">
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+            <sc-for list="{{tiles}}" as="t" hint-placeholder-count="9">
+              <button class="tile" onClick="{{t.pick}}" style="min-height: 172px; box-sizing: border-box; padding: 16px; border-radius: 14px; background: {{t.bg}}; border: 1px {{t.bdStyle}} {{t.bd}}; box-shadow: {{t.ring}}; display: flex; flex-direction: column; gap: 10px">
+                <div style="display: flex; align-items: flex-start; gap: 8px; width: 100%">
+                  <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+                    <div style="font-size: 17px; font-weight: 600">{{t.name}}</div>
+                    <div style="font-size: 12px; color: #A3A09A">{{t.tag}}</div>
+                  </div>
+                  <div style="padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; background: {{t.chipBg}}; color: {{t.chipFg}}">{{t.chip}}</div>
+                </div>
+                <div class="mono" style="display: flex; align-items: center; gap: 8px; font-size: 15px">
+                  <span>{{t.cur}}</span>
+                  <sc-if value="{{t.hasNewer}}" hint-placeholder-val="{{true}}">
+                    <svg class="ic" viewBox="0 0 24 24" width="16" height="16" style="color: #A3A09A"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+                    <span style="font-weight: 600">{{t.latest}}</span>
+                  </sc-if>
+                </div>
+                <div style="font-size: 13px; color: #CFCCC5">{{t.behind}}</div>
+                <div style="flex-grow: 1"></div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #A3A09A; width: 100%">
+                  <span style="flex-grow: 1">{{t.foot}}</span>
+                  <sc-if value="{{t.weekNew}}" hint-placeholder-val="{{false}}">
+                    <span style="padding: 2px 6px; border-radius: 4px; border: 1px solid #5A5D64; color: #ECEAE4">новое за неделю</span>
+                  </sc-if>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{noTiles}}" hint-placeholder-val="{{false}}">
+            <div style="padding: 48px; text-align: center; color: #A3A09A; font-size: 14px">Под фильтр ничего не попало.</div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isFeed}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <div style="font-size: 22px; font-weight: 600">Что вышло за неделю</div>
+          <div style="font-size: 14px; color: #A3A09A">{{feedSummary}}</div>
+        </div>
+        <div class="scroll" style="flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 4px">
+          <sc-for list="{{feed}}" as="f" hint-placeholder-count="6">
+            <button class="tile" onClick="{{f.pick}}" style="padding: 16px 18px; border-radius: 12px; background: #1F2125; border: 1px solid {{f.bd}}; display: flex; gap: 20px; width: 100%; box-sizing: border-box">
+              <div style="width: 64px; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px">
+                <div class="mono" style="font-size: 15px; font-weight: 600">{{f.day}}</div>
+                <div style="font-size: 12px; color: #A3A09A">{{f.wd}}</div>
+              </div>
+              <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span style="font-size: 16px; font-weight: 600">{{f.pname}}</span>
+                  <span class="mono" style="font-size: 14px">{{f.v}}</span>
+                  <div style="flex-grow: 1"></div>
+                  <span style="padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: {{f.relBg}}; color: {{f.relFg}}">{{f.rel}}</span>
+                </div>
+                <sc-for list="{{f.items}}" as="it" hint-placeholder-count="2">
+                  <div style="display: flex; gap: 10px; align-items: baseline">
+                    <span class="mono" style="flex-shrink: 0; width: 92px; text-align: center; padding: 2px 0; border-radius: 4px; font-size: 11px; font-weight: 600; background: {{it.bg}}; color: {{it.fg}}">{{it.label}}</span>
+                    <span style="font-size: 14px; line-height: 1.45; color: #DAD7D0">{{it.text}}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+
+    <div class="scroll" style="flex-grow: 1; min-width: 0; min-height: 0; overflow-y: auto; box-sizing: border-box; border-radius: 16px; background: #1A1B1F; border: 1px solid #2A2C31; padding: 24px">
+      <div style="display: flex; flex-direction: column; gap: 20px">
+
+        <div style="display: flex; align-items: flex-start; gap: 12px">
+          <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px">
+            <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.01em">{{d.name}}</div>
+            <div style="font-size: 13px; color: #A3A09A">{{d.tag}} · модуль <span class="mono">products/{{d.id}}.yaml</span></div>
+          </div>
+          <div style="padding: 6px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; background: {{d.chipBg}}; color: {{d.chipFg}}">{{d.chip}}</div>
+        </div>
+
+        <sc-if value="{{d.pending}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 20px; border-radius: 12px; border: 1px dashed #3A3D43; font-size: 14px; line-height: 1.55; color: #CFCCC5">Модуль подключён из каталога. Сборщик заберёт релизы и CVE при следующем ночном прогоне, после этого здесь появятся версии, и можно будет указать свою.</div>
+        </sc-if>
+
+        <sc-if value="{{d.ready}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; align-items: center; gap: 20px; padding: 18px 20px; border-radius: 12px; background: #202227">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <div style="font-size: 12px; color: #A3A09A">У тебя</div>
+              <div class="mono" style="font-size: 22px; font-weight: 600">{{d.cur}}</div>
+            </div>
+            <sc-if value="{{d.hasNewer}}" hint-placeholder-val="{{true}}">
+              <svg class="ic" viewBox="0 0 24 24" width="22" height="22" style="color: #A3A09A"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div style="font-size: 12px; color: #A3A09A">Последняя</div>
+                <div class="mono" style="font-size: 22px; font-weight: 600">{{d.latest}}</div>
+              </div>
+            </sc-if>
+            <div style="flex-grow: 1"></div>
+            <sc-if value="{{d.hasNewer}}" hint-placeholder-val="{{true}}">
+              <button onClick="{{d.upgrade}}" style="height: 44px; padding: 0 16px; border-radius: 10px; background: #3DD68C; color: #06170E; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px">
+                <svg class="ic" viewBox="0 0 24 24" width="18" height="18"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+                Я обновился
+              </button>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{d.hasNote}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; gap: 10px; padding: 12px 14px; border-radius: 10px; background: #2A2620; border: 1px solid #5B5140; font-size: 14px; line-height: 1.5">
+              <svg class="ic" viewBox="0 0 24 24" width="18" height="18" style="color: #F5A524; margin-top: 1px"><path d="M12 3l9.5 17h-19z"></path><path d="M12 10v4M12 17.5v.01"></path></svg>
+              <span>{{d.note}}</span>
+            </div>
+          </sc-if>
+
+          <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{d.counts}}" as="c" hint-placeholder-count="5">
+              <div style="padding: 10px; border-radius: 10px; background: #202227; display: flex; flex-direction: column; gap: 6px">
+                <div style="font-size: 20px; font-weight: 600">{{c.n}}</div>
+                <div class="mono" style="align-self: flex-start; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: {{c.bg}}; color: {{c.fg}}">{{c.label}}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div style="font-size: 13px; color: #A3A09A">Моя версия (кликни, чтобы сменить)</div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap">
+              <sc-for list="{{d.pills}}" as="pl" hint-placeholder-count="6">
+                <button class="mono" onClick="{{pl.pick}}" style="height: 32px; padding: 0 10px; border-radius: 8px; font-size: 13px; background: {{pl.bg}}; color: {{pl.fg}}; border: 1px solid {{pl.bd}}">{{pl.v}}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #2E3136">
+            <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="3">
+              <button onClick="{{tb.pick}}" style="padding: 10px 14px; font-size: 14px; font-weight: 500; color: {{tb.fg}}; border-bottom: 2px solid {{tb.line}}; margin-bottom: -1px">{{tb.label}}</button>
+            </sc-for>
+            <div style="flex-grow: 1"></div>
+            <sc-if value="{{isChanges}}" hint-placeholder-val="{{true}}">
+              <button onClick="{{toggleImp}}" style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #CFCCC5; padding: 8px 0">
+                <span style="width: 32px; height: 18px; border-radius: 9px; background: {{impTrack}}; position: relative; display: inline-block">
+                  <span style="position: absolute; top: 2px; left: {{impKnob}}; width: 14px; height: 14px; border-radius: 7px; background: #ECEAE4"></span>
+                </span>
+                Только важное
+              </button>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{isChanges}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; flex-direction: column; gap: 18px">
+              <sc-if value="{{d.upToDate}}" hint-placeholder-val="{{false}}">
+                <div style="padding: 18px; border-radius: 12px; background: #17261E; border: 1px solid #2C5A41; font-size: 14px">Ты на последней версии. Новые релизы появятся здесь после ночной проверки.</div>
+              </sc-if>
+              <sc-for list="{{d.rels}}" as="r" hint-placeholder-count="3">
+                <div style="display: flex; flex-direction: column; gap: 10px">
+                  <div style="display: flex; align-items: center; gap: 10px">
+                    <span class="mono" style="font-size: 16px; font-weight: 600">{{r.v}}</span>
+                    <span style="font-size: 13px; color: #A3A09A">{{r.date}}</span>
+                    <sc-if value="{{r.isWeek}}" hint-placeholder-val="{{false}}">
+                      <span style="padding: 2px 6px; border-radius: 4px; border: 1px solid #5A5D64; font-size: 11px">на этой неделе</span>
+                    </sc-if>
+                    <div style="flex-grow: 1; height: 1px; background: #2E3136"></div>
+                  </div>
+                  <sc-for list="{{r.items}}" as="it" hint-placeholder-count="2">
+                    <div style="display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: {{it.rowBg}}">
+                      <span class="mono" style="flex-shrink: 0; width: 92px; text-align: center; padding: 2px 0; border-radius: 4px; font-size: 11px; font-weight: 600; background: {{it.bg}}; color: {{it.fg}}">{{it.label}}</span>
+                      <div style="display: flex; flex-direction: column; gap: 4px">
+                        <span style="font-size: 14px; line-height: 1.5">{{it.text}}</span>
+                        <sc-if value="{{it.hasCve}}" hint-placeholder-val="{{false}}">
+                          <span class="mono" style="font-size: 12px; color: #FF9A92">{{it.cveLine}}</span>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{r.hidden}}" hint-placeholder-val="{{false}}">
+                    <div style="font-size: 13px; color: #8D8A84; padding-left: 4px">{{r.hiddenText}}</div>
+                  </sc-if>
+                </div>
+              </sc-for>
+              <sc-if value="{{d.hasNewer}}" hint-placeholder-val="{{true}}">
+                <div style="display: flex; align-items: center; gap: 12px; color: #A3A09A; font-size: 13px">
+                  <div style="flex-grow: 1; height: 1px; background: #3A3D43"></div>
+                  <span>здесь твоя версия <span class="mono" style="color: #ECEAE4">{{d.cur}}</span></span>
+                  <div style="flex-grow: 1; height: 1px; background: #3A3D43"></div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{isCve}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <sc-if value="{{d.noCves}}" hint-placeholder-val="{{false}}">
+                <div style="padding: 18px; border-radius: 12px; background: #17261E; border: 1px solid #2C5A41; font-size: 14px">Для твоей версии открытых уязвимостей в базе нет.</div>
+              </sc-if>
+              <sc-for list="{{d.cves}}" as="cv" hint-placeholder-count="2">
+                <div style="display: flex; gap: 16px; align-items: center; padding: 14px 16px; border-radius: 12px; background: #202227; border: 1px solid {{cv.bd}}">
+                  <div style="width: 56px; height: 56px; flex-shrink: 0; border-radius: 10px; background: {{cv.bg}}; color: {{cv.fg}}; display: flex; flex-direction: column; align-items: center; justify-content: center">
+                    <span style="font-size: 18px; font-weight: 700">{{cv.score}}</span>
+                    <span style="font-size: 10px; font-weight: 600">{{cv.sev}}</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1">
+                    <span class="mono" style="font-size: 13px; color: #A3A09A">{{cv.id}}</span>
+                    <span style="font-size: 14px; line-height: 1.45">{{cv.text}}</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0">
+                    <span style="font-size: 12px; color: #A3A09A">исправлено в</span>
+                    <span class="mono" style="font-size: 14px; font-weight: 600">{{cv.fixed}}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{isModule}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <div style="font-size: 14px; color: #CFCCC5; line-height: 1.5">Так продукт описан в открытом репозитории. Чтобы добавить новый, достаточно прислать PR с таким файлом.</div>
+              <div class="mono" style="padding: 16px 18px; border-radius: 12px; background: #0E0F11; border: 1px solid #2A2C31; font-size: 13px; line-height: 1.6; white-space: pre; overflow-x: auto; color: #CFE3FF">{{d.yaml}}</div>
+            </div>
+          </sc-if>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{modal}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 0; top: 0; width: 1440px; height: 1024px; background: rgba(8,9,10,0.72); display: flex; align-items: center; justify-content: center">
+      <div style="width: 640px; box-sizing: border-box; border-radius: 16px; background: #1F2125; border: 1px solid #34373E; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px">
+            <div style="font-size: 20px; font-weight: 600">Добавить продукт</div>
+            <div style="font-size: 13px; color: #A3A09A">Модули из общего репозитория <span class="mono">products/*.yaml</span></div>
+          </div>
+          <button class="ghost" onClick="{{closeModal}}" aria-label="Закрыть" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center">
+            <svg class="ic" viewBox="0 0 24 24" width="20" height="20"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </button>
+        </div>
+        <label style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; border-radius: 10px; background: #16171A; border: 1px solid #34373E">
+          <svg class="ic" viewBox="0 0 24 24" width="18" height="18" style="color: #A3A09A"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+          <input placeholder="Поиск по каталогу: nginx, zabbix, postgres…" aria-label="Поиск по каталогу" style="flex-grow: 1; background: transparent; border: 0; outline: none; color: #ECEAE4; font: inherit; font-size: 14px">
+        </label>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <sc-for list="{{catalog}}" as="cg" hint-placeholder-count="8">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 10px; background: #1A1B1F">
+              <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 15px; font-weight: 500">{{cg.name}}</span>
+                <span style="font-size: 12px; color: #A3A09A">{{cg.tag}} · источник: {{cg.src}}</span>
+              </div>
+              <button onClick="{{cg.add}}" style="height: 36px; padding: 0 14px; border-radius: 8px; font-size: 13px; font-weight: 600; background: {{cg.bg}}; color: {{cg.fg}}">{{cg.btn}}</button>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size: 13px; color: #A3A09A">Нет нужного? Скопируй любой модуль как шаблон и открой PR — CI проверит схему и сделает тестовый сбор.</div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+var WEEK_FROM = "2026-09-17";
+var TODAY = "2026-09-24";
+
+var TYPES = {
+  security:   { label: "SECURITY",   bg: "#FF6B61", fg: "#1A0A08", imp: true },
+  breaking:   { label: "BREAKING",   bg: "#F5A524", fg: "#1A1206", imp: true },
+  deprecated: { label: "DEPRECATED", bg: "#C4A7FF", fg: "#150D26", imp: true },
+  feature:    { label: "FEATURE",    bg: "#7CB7FF", fg: "#08121F", imp: false },
+  fix:        { label: "FIX",        bg: "#4A4D54", fg: "#ECEAE4", imp: false }
+};
+
+var STATUS = {
+  crit:    { label: "Критично",        bg: "#35181A", bd: "#8C2F2A", chipBg: "#FF6B61", chipFg: "#1A0A08", rank: 0, dot: "#FF6B61" },
+  eol:     { label: "Ветка EOL",       bg: "#29251E", bd: "#7A6F5C", chipBg: "#D9D2C3", chipFg: "#1B1A17", rank: 1, dot: "#D9D2C3" },
+  upd:     { label: "Есть обновления", bg: "#2A2417", bd: "#6E5320", chipBg: "#F5A524", chipFg: "#1A1206", rank: 2, dot: "#F5A524" },
+  ok:      { label: "Актуально",       bg: "#1F2125", bd: "#2E3136", chipBg: "#3DD68C", chipFg: "#06170E", rank: 3, dot: "#3DD68C" },
+  pending: { label: "Ждёт проверки",   bg: "#1A1B1F", bd: "#4A4D54", chipBg: "#3A3D43", chipFg: "#ECEAE4", rank: 4, dot: "#8D8A84" }
+};
+
+var TAGS = ["Все", "ОС", "Мониторинг", "Логи", "Почта", "Виртуализация", "Сеть", "БД"];
+
+var PRODUCTS = [
+  { id: "grafana", name: "Grafana", tag: "Мониторинг", current: "11.3.1",
+    yaml: "id: grafana\nname: Grafana\ntags: [monitoring]\nversion_scheme: semver\nsources:\n  releases: { type: github, repo: grafana/grafana }\n  security: { type: ghsa, repo: grafana/grafana }\n  eol:      { type: endoflife, product: grafana }\nseverity_keywords: [security, CVE-, critical]\ndetect:\n  http: { path: /api/health, jq: .version }",
+    releases: [
+      { v: "12.1.2", date: "2026-09-22", items: [
+        { t: "security", cvss: 8.1, cve: "CVE-2026-XXXX1", text: "Stored XSS через аннотации дашборда: скрипт выполняется у любого зрителя" },
+        { t: "fix", text: "Экспорт в PDF больше не обрезает высокие панели" } ] },
+      { v: "12.1.1", date: "2026-09-03", items: [
+        { t: "security", cvss: 5.3, cve: "CVE-2026-XXXX2", text: "Viewer мог видеть имена и URL дата-сорсов через API поиска" },
+        { t: "fix", text: "Утечка памяти в алертинге при большом числе правил" } ] },
+      { v: "12.1.0", date: "2026-08-12", items: [
+        { t: "feature", text: "Новый редактор дашбордов включён по умолчанию" },
+        { t: "deprecated", text: "Legacy alerting API помечен устаревшим, удаление планируется в 13.0" } ] },
+      { v: "12.0.0", date: "2026-05-06", items: [
+        { t: "breaking", text: "Удалена поддержка Angular-плагинов: проверь сторонние панели до обновления" },
+        { t: "breaking", text: "Изменён формат provisioning для правил алертинга" },
+        { t: "feature", text: "Dashboards as code: схема JSON v2 и синхронизация с Git" } ] },
+      { v: "11.6.0", date: "2026-03-25", items: [
+        { t: "feature", text: "Корреляции между логами и трейсами в Explore" },
+        { t: "fix", text: "Стабильнее работа MySQL-дата-сорса при таймаутах" } ] },
+      { v: "11.3.1", date: "2024-11-19", items: [] }
+    ] },
+
+  { id: "poste-io", name: "poste.io", tag: "Почта", current: "2.4.5",
+    yaml: "id: poste-io\nname: poste.io\ntags: [mail]\nversion_scheme: semver\nsources:\n  releases:\n    type: html_changelog\n    url: https://poste.io/changelog\n    selector: \"h2, h2 + ul\"\n  image: { type: dockerhub, repo: analogic/poste.io }\nseverity_keywords: [security, CVE-, roundcube, dovecot]\ndetect:\n  docker: { image: analogic/poste.io }",
+    releases: [
+      { v: "2.5.2", date: "2026-09-21", items: [
+        { t: "security", cvss: 9.1, cve: "CVE-2026-XXXX4", text: "Roundcube: удалённое выполнение кода через специально сформированное вложение" },
+        { t: "security", cvss: 7.4, cve: "CVE-2026-XXXX5", text: "Dovecot: обход аутентификации при включённом master user" },
+        { t: "fix", text: "Обновлён Rspamd, меньше ложных срабатываний" } ] },
+      { v: "2.5.0", date: "2026-07-30", items: [
+        { t: "breaking", text: "Том /data переструктурирован: сделай бэкап перед обновлением" },
+        { t: "feature", text: "Новая админка и поддержка MTA-STS" } ] },
+      { v: "2.4.9", date: "2026-06-02", items: [
+        { t: "fix", text: "Исправлено автообновление сертификатов Let's Encrypt" } ] },
+      { v: "2.4.5", date: "2025-12-10", items: [] }
+    ] },
+
+  { id: "elasticsearch", name: "Elasticsearch", tag: "Логи", current: "8.15.2",
+    yaml: "id: elasticsearch\nname: Elasticsearch\ntags: [logs, elk]\nversion_scheme: semver\nsources:\n  releases: { type: github, repo: elastic/elasticsearch }\n  security:\n    type: rss\n    url: https://discuss.elastic.co/c/announcements/security-announcements/31.rss\n  eol: { type: endoflife, product: elasticsearch }\ndetect:\n  http: { path: /, jq: .version.number }",
+    releases: [
+      { v: "9.1.4", date: "2026-09-18", items: [
+        { t: "security", cvss: 6.5, cve: "CVE-2026-XXXX6", text: "Пользователь с правами monitor мог читать метаданные снапшотов" },
+        { t: "fix", text: "Быстрее восстановление шардов после рестарта узла" } ] },
+      { v: "9.0.0", date: "2026-04-15", items: [
+        { t: "breaking", text: "Индексы, созданные в 7.x, не читаются: нужен reindex до апгрейда" },
+        { t: "breaking", text: "Удалены устаревшие настройки discovery.zen.*" },
+        { t: "feature", text: "LogsDB-режим по умолчанию для логов: заметно меньше места на диске" } ] },
+      { v: "8.19.3", date: "2026-08-20", items: [
+        { t: "fix", text: "Исправлен дедлок при force-merge" },
+        { t: "deprecated", text: "8.19 — последний минор ветки 8.x" } ] },
+      { v: "8.18.0", date: "2026-02-10", items: [
+        { t: "feature", text: "ES|QL: JOIN по lookup-индексам" } ] },
+      { v: "8.15.2", date: "2024-10-01", items: [] }
+    ] },
+
+  { id: "kibana", name: "Kibana", tag: "Логи", current: "8.15.2",
+    yaml: "id: kibana\nname: Kibana\ntags: [logs, elk]\nversion_scheme: semver\nsources:\n  releases: { type: github, repo: elastic/kibana }\n  eol: { type: endoflife, product: kibana }\ndetect:\n  http: { path: /api/status, jq: .version.number }",
+    releases: [
+      { v: "9.1.4", date: "2026-09-18", items: [
+        { t: "fix", text: "Discover быстрее открывает большие индексы" } ] },
+      { v: "9.0.0", date: "2026-04-15", items: [
+        { t: "breaking", text: "Требуется Elasticsearch 9.x" },
+        { t: "feature", text: "Новая навигация и единый поиск по объектам" } ] },
+      { v: "8.19.3", date: "2026-08-20", items: [
+        { t: "fix", text: "Исправлен экспорт отчётов в CSV" } ] },
+      { v: "8.15.2", date: "2024-10-01", items: [] }
+    ] },
+
+  { id: "logstash", name: "Logstash", tag: "Логи", current: "9.1.4",
+    yaml: "id: logstash\nname: Logstash\ntags: [logs, elk]\nversion_scheme: semver\nsources:\n  releases: { type: github, repo: elastic/logstash }\n  eol: { type: endoflife, product: logstash }\ndetect:\n  http: { path: \"/\", port: 9600, jq: .version }",
+    releases: [
+      { v: "9.1.4", date: "2026-09-18", items: [
+        { t: "fix", text: "Исправлена утечка памяти в pipeline-to-pipeline" } ] },
+      { v: "9.1.3", date: "2026-08-20", items: [
+        { t: "fix", text: "Плагин beats корректнее закрывает соединения" } ] }
+    ] },
+
+  { id: "debian", name: "Debian", tag: "ОС", current: "12.7",
+    yaml: "id: debian\nname: Debian GNU/Linux\ntags: [os]\nversion_scheme: debian\nsources:\n  releases: { type: rss, url: https://www.debian.org/News/news }\n  security: { type: debian_tracker, packages: from_inventory }\n  eol: { type: endoflife, product: debian }\ndetect:\n  file: /etc/debian_version",
+    releases: [
+      { v: "13.2", date: "2026-09-20", items: [
+        { t: "feature", text: "Point-release trixie: накопленные исправления безопасности и багфиксы" } ] },
+      { v: "12.12", date: "2026-09-13", items: [
+        { t: "security", cvss: null, cve: "DSA-XXXX-1", text: "Накопленные DSA: openssh, glibc, openssl" },
+        { t: "fix", text: "Последний point-release bookworm перед LTS" } ] },
+      { v: "12.10", date: "2026-03-15", items: [
+        { t: "security", cvss: null, cve: "DSA-XXXX-2", text: "Ядро 6.1: исправления уязвимостей" } ] },
+      { v: "13.0", date: "2025-08-09", items: [
+        { t: "breaking", text: "Новый stable (trixie): ядро 6.12, обновлённые пакеты, апгрейд через смену sources" },
+        { t: "breaking", text: "i386 больше не поддерживается как основная архитектура" } ] },
+      { v: "12.7", date: "2024-08-31", items: [], note: "Ветка 12 (bookworm) получает только LTS-поддержку. Стоит запланировать переход на 13." }
+    ] },
+
+  { id: "proxmox-ve", name: "Proxmox VE", tag: "Виртуализация", current: "8.3.2",
+    yaml: "id: proxmox-ve\nname: Proxmox VE\ntags: [virtualization]\nversion_scheme: semver\nsources:\n  releases: { type: rss, url: https://www.proxmox.com/en/about/news/rss }\n  eol: { type: endoflife, product: proxmox-ve }\ndetect:\n  command: pveversion",
+    releases: [
+      { v: "9.0.10", date: "2026-09-16", items: [
+        { t: "fix", text: "Исправлена миграция ВМ с TPM-state между узлами" } ] },
+      { v: "9.0.0", date: "2025-08-05", items: [
+        { t: "breaking", text: "База Debian 13: апгрейд через pve8to9 и чек-лист" },
+        { t: "feature", text: "Снапшоты на LVM-thick поверх общего хранилища" } ] },
+      { v: "8.4.1", date: "2025-04-22", items: [
+        { t: "security", cvss: 6.1, cve: "CVE-2026-XXXX7", text: "Эскалация прав через API у пользователя с ролью VM.Audit" },
+        { t: "feature", text: "Улучшен мастер импорта ВМ из VMware" } ] },
+      { v: "8.3.2", date: "2024-12-18", items: [] }
+    ] },
+
+  { id: "routeros", name: "MikroTik RouterOS", tag: "Сеть", current: "7.19.4",
+    yaml: "id: routeros\nname: MikroTik RouterOS\ntags: [network]\nversion_scheme: semver\nchannel: stable\nsources:\n  releases: { type: rss, url: https://mikrotik.com/current.rss }\ndetect:\n  snmp: { oid: 1.3.6.1.4.1.14988.1.1.4.4.0 }",
+    releases: [
+      { v: "7.19.4", date: "2026-07-28", items: [
+        { t: "fix", text: "BGP: исправлена обработка большого числа префиксов" } ] },
+      { v: "7.19.3", date: "2026-06-30", items: [
+        { t: "fix", text: "WireGuard: стабильнее переподключение peer'ов" } ] }
+    ] },
+
+  { id: "percona-xtradb", name: "Percona XtraDB Cluster", tag: "БД", current: "5.7.44",
+    yaml: "id: percona-xtradb\nname: Percona XtraDB Cluster\ntags: [database, mysql]\nversion_scheme: semver\nsources:\n  releases: { type: github, repo: percona/percona-xtradb-cluster, tags: true }\n  eol: { type: endoflife, product: percona-xtradb-cluster }\ndetect:\n  mysql: { query: \"SELECT VERSION()\" }",
+    releases: [
+      { v: "8.4.6", date: "2026-09-19", items: [
+        { t: "security", cvss: 6.8, cve: "CVE-2026-XXXX8", text: "Исправления InnoDB из апстрима MySQL" },
+        { t: "fix", text: "SST через xtrabackup надёжнее на больших таблицах" } ] },
+      { v: "8.4.0", date: "2024-06-12", items: [
+        { t: "feature", text: "Новая LTS-ветка 8.4" },
+        { t: "breaking", text: "mysql_native_password выключен по умолчанию" } ] },
+      { v: "8.0.36", date: "2024-03-04", items: [
+        { t: "breaking", text: "Переход 5.7 → 8.0: новый словарь данных, нужен in-place апгрейд" } ] },
+      { v: "5.7.44", date: "2023-11-01", items: [], eol: true, note: "Ветка 5.7 больше не поддерживается: исправления безопасности для неё не выходят." }
+    ] }
+];
+
+var CATALOG = [
+  { id: "zabbix", name: "Zabbix", tag: "Мониторинг", src: "github zabbix/zabbix" },
+  { id: "postgresql", name: "PostgreSQL", tag: "БД", src: "rss postgresql.org" },
+  { id: "nginx", name: "nginx", tag: "Сеть", src: "rss nginx.org" },
+  { id: "minio", name: "MinIO", tag: "Хранилище", src: "github minio/minio" },
+  { id: "outline", name: "Outline", tag: "Wiki", src: "github outline/outline" },
+  { id: "rabbitmq", name: "RabbitMQ", tag: "Очереди", src: "github rabbitmq/rabbitmq-server" },
+  { id: "pbs", name: "Proxmox Backup Server", tag: "Бэкапы", src: "rss proxmox.com" },
+  { id: "bbb", name: "BigBlueButton", tag: "Видеосвязь", src: "github bigbluebutton/bigbluebutton" }
+];
+
+function fmtDate(s) { var p = s.split("-"); return p[2] + "." + p[1] + "." + p[0]; }
+function fmtShort(s) { var p = s.split("-"); return p[2] + "." + p[1]; }
+function plural(n, a, b, c) {
+  var m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return a;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return b;
+  return c;
+}
+var WD = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
+function weekday(s) { var d = new Date(s + "T12:00:00Z"); return WD[d.getUTCDay()]; }
+function sevOf(c) {
+  if (c === null || c === undefined) return { score: "DSA", sev: "Debian", bg: "#F5A524", fg: "#1A1206", bd: "#6E5320" };
+  if (c >= 9) return { score: c.toFixed(1), sev: "CRITICAL", bg: "#FF6B61", fg: "#1A0A08", bd: "#8C2F2A" };
+  if (c >= 7) return { score: c.toFixed(1), sev: "HIGH", bg: "#FF8F66", fg: "#1A0A08", bd: "#7A3A26" };
+  if (c >= 4) return { score: c.toFixed(1), sev: "MEDIUM", bg: "#F5A524", fg: "#1A1206", bd: "#6E5320" };
+  return { score: c.toFixed(1), sev: "LOW", bg: "#4A4D54", fg: "#ECEAE4", bd: "#34373E" };
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: "grafana", view: "tiles", tab: "changes", status: "all", tag: "Все",
+      vers: {}, onlyImp: false, modal: false, added: [], checked: "сегодня, 06:00" };
+  }
+
+  all() {
+    var added = this.state.added.map(function (id) {
+      var c = CATALOG.find(function (x) { return x.id === id; });
+      return { id: c.id, name: c.name, tag: c.tag, pending: true, releases: [], src: c.src };
+    });
+    return PRODUCTS.concat(added);
+  }
+
+  info(p) {
+    if (p.pending) {
+      return { p: p, status: "pending", cur: "—", latest: "—", newer: [], items: [], curRel: null };
+    }
+    var cur = this.state.vers[p.id] || p.current;
+    var idx = p.releases.findIndex(function (r) { return r.v === cur; });
+    if (idx < 0) idx = 0;
+    var newer = p.releases.slice(0, idx);
+    var curRel = p.releases[idx];
+    var items = [];
+    newer.forEach(function (r) { r.items.forEach(function (it) { items.push(Object.assign({ rv: r.v }, it)); }); });
+    var sec = items.filter(function (i) { return i.t === "security"; });
+    var maxCvss = sec.reduce(function (m, i) { return i.cvss && i.cvss > m ? i.cvss : m; }, 0);
+    var status = curRel.eol ? "eol" : (maxCvss >= 7 ? "crit" : (newer.length ? "upd" : "ok"));
+    return { p: p, status: status, cur: cur, latest: p.releases[0].v, newer: newer, items: items, sec: sec, maxCvss: maxCvss, curRel: curRel };
+  }
+
+  renderVals() {
+    var self = this, s = this.state;
+    var infos = this.all().map(function (p) { return self.info(p); });
+    var count = function (t, list) { return list.filter(function (i) { return i.t === t; }).length; };
+
+    // stats
+    var statKeys = ["crit", "eol", "upd", "ok"];
+    var stats = statKeys.map(function (k) {
+      var active = s.status === k;
+      return { n: infos.filter(function (i) { return i.status === k; }).length,
+        label: STATUS[k].label, dot: STATUS[k].dot,
+        bd: active ? STATUS[k].dot : "#2E3136",
+        pick: function () { self.setState({ status: active ? "all" : k }); } };
+    });
+
+    var tags = TAGS.map(function (t) {
+      var active = s.tag === t;
+      return { label: t, bg: active ? "#ECEAE4" : "transparent", fg: active ? "#121316" : "#CFCCC5",
+        bd: active ? "#ECEAE4" : "#34373E", pick: function () { self.setState({ tag: t }); } };
+    });
+
+    var filtered = infos.filter(function (i) {
+      if (s.status !== "all" && i.status !== s.status) return false;
+      if (s.tag !== "Все" && i.p.tag !== s.tag) return false;
+      return true;
+    }).sort(function (a, b) { return STATUS[a.status].rank - STATUS[b.status].rank || a.p.name.localeCompare(b.p.name); });
+
+    var tiles = filtered.map(function (i) {
+      var st = STATUS[i.status], n = i.newer.length;
+      var chip = st.label;
+      if (i.status === "crit") chip = "CVSS " + i.maxCvss.toFixed(1);
+      var behind;
+      if (i.status === "pending") behind = "Модуль добавлен, данных ещё нет";
+      else if (!n) behind = "Последняя версия";
+      else {
+        var parts = ["+" + n + " " + plural(n, "релиз", "релиза", "релизов")];
+        var sc = count("security", i.items), bc = count("breaking", i.items);
+        if (sc) parts.push(sc + " security");
+        if (bc) parts.push(bc + " breaking");
+        behind = parts.join(" · ");
+      }
+      var foot = i.status === "pending" ? "первая проверка в 06:00" :
+        (i.curRel && i.curRel.eol ? "поддержка ветки закончилась" : "последний релиз " + fmtDate(i.p.releases[0].date));
+      var selected = s.sel === i.p.id;
+      return { name: i.p.name, tag: i.p.tag, cur: i.cur, latest: i.latest, hasNewer: n > 0,
+        chip: chip, chipBg: st.chipBg, chipFg: st.chipFg, bg: st.bg, bd: st.bd,
+        bdStyle: i.status === "pending" ? "dashed" : "solid",
+        ring: selected ? "0 0 0 2px #ECEAE4" : "none",
+        behind: behind, foot: foot,
+        weekNew: i.newer.some(function (r) { return r.date >= WEEK_FROM; }),
+        pick: function () { self.setState({ sel: i.p.id }); } };
+    });
+
+    // feed
+    var feed = [];
+    infos.forEach(function (i) {
+      if (i.status === "pending") return;
+      i.p.releases.forEach(function (r) {
+        if (r.date < WEEK_FROM) return;
+        var isNewer = i.newer.indexOf(r) >= 0;
+        var hasSec = r.items.some(function (x) { return x.t === "security"; });
+        var rel, relBg, relFg;
+        if (r.v === i.cur) { rel = "уже стоит"; relBg = "#1E3A2B"; relFg = "#8EE8B8"; }
+        else if (isNewer) { rel = hasSec ? "касается тебя · security" : "касается тебя"; relBg = hasSec ? "#FF6B61" : "#F5A524"; relFg = "#1A0A08"; }
+        else { rel = "другая ветка"; relBg = "#2E3136"; relFg = "#CFCCC5"; }
+        feed.push({ date: r.date, day: fmtShort(r.date), wd: weekday(r.date), pname: i.p.name, v: r.v,
+          rel: rel, relBg: relBg, relFg: relFg, isNewer: isNewer, hasSec: hasSec,
+          bd: s.sel === i.p.id ? "#ECEAE4" : "#2E3136",
+          items: r.items.map(function (it) { var m = TYPES[it.t]; return { label: m.label, bg: m.bg, fg: m.fg, text: it.text }; }),
+          pick: function () { self.setState({ sel: i.p.id, tab: "changes" }); } });
+      });
+    });
+    feed.sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var fN = feed.length, fMine = feed.filter(function (f) { return f.isNewer; }).length,
+        fSec = feed.filter(function (f) { return f.isNewer && f.hasSec; }).length;
+    var feedSummary = "17–24 сентября: " + fN + " " + plural(fN, "релиз", "релиза", "релизов") +
+      ", из них новее твоих версий — " + fMine + ", с исправлениями безопасности — " + fSec + ".";
+
+    // detail
+    var di = infos.find(function (i) { return i.p.id === s.sel; }) || infos[0];
+    var dst = STATUS[di.status];
+    var d = { id: di.p.id, name: di.p.name, tag: di.p.tag, chip: dst.label, chipBg: dst.chipBg, chipFg: dst.chipFg,
+      pending: di.status === "pending", ready: di.status !== "pending", cur: di.cur, latest: di.latest,
+      hasNewer: di.newer.length > 0, upToDate: di.status !== "pending" && di.newer.length === 0,
+      yaml: di.p.yaml || ("id: " + di.p.id + "\nname: " + di.p.name + "\nsources:\n  releases: { " + (di.p.src || "") + " }"),
+      upgrade: function () { var v = {}; v[di.p.id] = di.latest; self.setState({ vers: Object.assign({}, s.vers, v) }); } };
+    if (di.status === "crit") d.chip = "Критично · CVSS " + di.maxCvss.toFixed(1);
+    d.note = di.curRel && di.curRel.note ? di.curRel.note : "";
+    d.hasNote = !!d.note;
+    d.counts = ["security", "breaking", "deprecated", "feature", "fix"].map(function (t) {
+      var m = TYPES[t]; return { n: count(t, di.items), label: m.label, bg: m.bg, fg: m.fg };
+    });
+    var curV = di.cur;
+    d.pills = di.p.releases.map(function (r) {
+      var isCur = r.v === curV;
+      return { v: r.v, bg: isCur ? "#ECEAE4" : "#202227", fg: isCur ? "#121316" : "#CFCCC5", bd: isCur ? "#ECEAE4" : "#34373E",
+        pick: function () { var v = {}; v[di.p.id] = r.v; self.setState({ vers: Object.assign({}, s.vers, v) }); } };
+    });
+    d.rels = di.newer.map(function (r) {
+      var shown = r.items.filter(function (it) { return !s.onlyImp || TYPES[it.t].imp; });
+      var hiddenN = r.items.length - shown.length;
+      return { v: r.v, date: fmtDate(r.date), isWeek: r.date >= WEEK_FROM,
+        hidden: hiddenN > 0, hiddenText: "скрыто " + hiddenN + " " + plural(hiddenN, "изменение", "изменения", "изменений") + " (fix / feature)",
+        items: shown.map(function (it) {
+          var m = TYPES[it.t];
+          var cveLine = it.cve ? (it.cve + (it.cvss ? " · CVSS " + it.cvss.toFixed(1) : "")) : "";
+          return { label: m.label, bg: m.bg, fg: m.fg, text: it.text, hasCve: !!it.cve, cveLine: cveLine,
+            rowBg: it.t === "security" ? "#2A1A1B" : (it.t === "breaking" ? "#2A2418" : "#202227") };
+        }) };
+    });
+    d.cves = (di.sec || []).slice().sort(function (a, b) { return (b.cvss || 0) - (a.cvss || 0); }).map(function (it) {
+      var sv = sevOf(it.cvss);
+      return { id: it.cve, text: it.text, fixed: it.rv, score: sv.score, sev: sv.sev, bg: sv.bg, fg: sv.fg, bd: sv.bd };
+    });
+    d.noCves = d.cves.length === 0;
+
+    var secN = (di.sec || []).length;
+    var tabDefs = [
+      { k: "changes", label: "Изменения с моей версии (" + di.items.length + ")" },
+      { k: "cve", label: "CVE (" + secN + ")" },
+      { k: "module", label: "Модуль" }
+    ];
+    var tabs = tabDefs.map(function (t) {
+      var active = s.tab === t.k;
+      return { label: t.label, fg: active ? "#ECEAE4" : "#A3A09A", line: active ? "#ECEAE4" : "transparent",
+        pick: function () { self.setState({ tab: t.k }); } };
+    });
+
+    var views = [
+      { k: "tiles", label: "Плитки" },
+      { k: "feed", label: "Лента за неделю" }
+    ].map(function (v) {
+      var active = s.view === v.k;
+      return { label: v.label, bg: active ? "#ECEAE4" : "transparent", fg: active ? "#121316" : "#CFCCC5",
+        pick: function () { self.setState({ view: v.k }); } };
+    });
+
+    var catalog = CATALOG.map(function (c) {
+      var added = s.added.indexOf(c.id) >= 0;
+      return { name: c.name, tag: c.tag, src: c.src, btn: added ? "Добавлено" : "Добавить",
+        bg: added ? "#1E3A2B" : "#ECEAE4", fg: added ? "#8EE8B8" : "#121316",
+        add: function () { if (!added) self.setState({ added: s.added.concat([c.id]), sel: c.id }); } };
+    });
+
+    return {
+      productCount: infos.length,
+      views: views,
+      isTiles: s.view === "tiles", isFeed: s.view === "feed",
+      stats: stats, tags: tags, tiles: tiles, noTiles: tiles.length === 0,
+      hasFilter: s.status !== "all" || s.tag !== "Все",
+      clearFilter: function () { self.setState({ status: "all", tag: "Все" }); },
+      feed: feed, feedSummary: feedSummary,
+      d: d, tabs: tabs,
+      isChanges: s.tab === "changes", isCve: s.tab === "cve", isModule: s.tab === "module",
+      impTrack: s.onlyImp ? "#3DD68C" : "#4A4D54", impKnob: s.onlyImp ? "16px" : "2px",
+      toggleImp: function () { self.setState({ onlyImp: !s.onlyImp }); },
+      checked: s.checked,
+      recheck: function () { self.setState({ checked: "только что" }); },
+      modal: s.modal,
+      openModal: function () { self.setState({ modal: true }); },
+      closeModal: function () { self.setState({ modal: false }); },
+      catalog: catalog
+    };
+  }
+}
+</script>
+</body>
+</html>

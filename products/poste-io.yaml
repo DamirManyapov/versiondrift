@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+id: poste-io
+name: poste.io
+vendor: Analogic s.r.o.
+category: mail
+homepage: https://poste.io
+description: Complete mail server in one Docker image.
+versionScheme: loose
+sources:
+  releases:
+    type: html
+    url: https://poste.io/changelog
+    select: { item: "h2", title: "h2", body: "h2 + ul", date: "h2 small" }
+    versionRegex: '(\d+\.\d+\.\d+)'
+  releasesExtra:
+    - { type: dockerhub, repo: analogic/poste.io, tagRegex: '^\d+\.\d+\.\d+$' }
+classify:
+  keywords:
+    security: ["CVE-", "security", "roundcube", "dovecot", "vulnerab"]
+detect:
+  - docker: { image: analogic/poste.io }
+maintainers: []

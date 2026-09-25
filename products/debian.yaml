@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+id: debian
+name: Debian GNU/Linux
+aliases: [debian-linux]
+vendor: Debian Project
+category: os
+homepage: https://www.debian.org
+logo: simpleicons:debian
+description: Universal operating system.
+versionScheme: loose            # point releases 12.7, 13.2 (packages use the "debian" scheme)
+tracks:
+  - { id: "13", match: '^13\.', label: trixie }
+  - { id: "12", match: '^12\.', label: bookworm }
+  - { id: "11", match: '^11\.', label: bullseye }
+sources:
+  releases:
+    type: rss
+    url: https://www.debian.org/News/news
+    versionFrom: title
+    versionRegex: 'Debian (\d+\.\d+) released|Updated Debian \d+: (\d+\.\d+) released'
+  security:
+    - { type: debian, packages: fromInventory }
+  eol: { type: endoflife, product: debian }
+detect:
+  - file: { path: /etc/debian_version }
+maintainers: []

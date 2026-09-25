@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+id: grafana
+name: Grafana
+aliases: [grafana-oss]
+vendor: Grafana Labs
+category: monitoring
+homepage: https://grafana.com
+logo: simpleicons:grafana
+description: Dashboards, visualization and alerting.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+  exclude: '(beta|rc|preview|security)'
+tracks:
+  - { id: "12", match: '^12\.' }
+  - { id: "11", match: '^11\.' }
+  - { id: "10", match: '^10\.' }
+defaultTrack: latest
+sources:
+  releases: { type: github, repo: grafana/grafana }
+  security:
+    - { type: ghsa, repo: grafana/grafana }
+    - { type: nvd, cpe: "cpe:2.3:a:grafana:grafana" }
+  eol: { type: endoflife, product: grafana }
+classify:
+  sections:
+    security: ["Security", "Security fixes"]
+    breaking: ["Breaking changes"]
+    deprecated: ["Deprecations"]
+    feature: ["Features and enhancements"]
+    fix: ["Bug fixes"]
+detect:
+  - http: { path: /api/health, jsonPath: $.version, defaultPort: 3000 }
+  - docker: { image: grafana/grafana }
+maintainers: []

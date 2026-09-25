@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Copy to products/<id>.yaml and fill in. Guide: docs/10-contributing-modules.md
+id: my-product
+name: My Product
+vendor: Example Inc.
+category: other
+homepage: https://example.com
+description: One line about what it is.
+
+versionScheme: semver          # semver | loose | calver | debian | regex
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+  exclude: '(alpha|beta|rc)'
+prerelease: skip
+
+# tracks:                      # only if several major lines are supported in parallel
+#   - { id: "2", match: '^2\.' }
+#   - { id: "1", match: '^1\.' }
+
+sources:
+  releases:
+    type: github
+    repo: example/my-product
+  # security:
+  #   - { type: ghsa, repo: example/my-product }
+  #   - { type: nvd, cpe: "cpe:2.3:a:example:my_product" }
+  # eol: { type: endoflife, product: my-product }
+
+# detect:
+#   - http: { path: /api/version, jsonPath: $.version, defaultPort: 8080 }
+#   - docker: { image: example/my-product }
+
+maintainers: []
