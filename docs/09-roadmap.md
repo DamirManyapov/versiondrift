@@ -93,7 +93,7 @@ Goal: red tiles are real.
 
 ## S5 — Self-hosted v0.1
 
-- S5-T1 `adapter-node` build, Dockerfile (multi-stage, non-root, multi-arch), GHCR release workflow.
+- S5-T1 ✅ `adapter-node` build, Dockerfile (multi-stage, non-root, multi-arch), GHCR release workflow.
 - S5-T2 Drizzle schema + SQLite store, migrations; multiple boards; instances.
 - S5-T3 Auth modes none/password/oidc/trusted-header.
 - S5-T4 Feed sync with signature verification; offline mode flag (runs collector in-process).

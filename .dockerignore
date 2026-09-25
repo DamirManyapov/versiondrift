@@ -1,0 +1,12 @@
+# Keep the build context small and free of local state (inventory files, secrets, caches).
+.git
+**/node_modules
+**/.svelte-kit
+apps/web/build
+.feed
+.env*
+**/*.log
+**/coverage
+**/test-results
+inventory*.yaml
+notify-state.json

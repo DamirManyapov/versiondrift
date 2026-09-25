@@ -22,11 +22,24 @@ services:
 Distribution targets: Docker Compose, Helm chart (`charts/versiondrift`), Proxmox VE community helper script (LXC),
 Unraid/TrueNAS templates, a static binary is **not** planned.
 
+## Image (S5-T1)
+
+`Dockerfile` at the repository root: a build stage (runs once on the build machine's platform — the output is plain
+JavaScript) installs the workspace with pnpm, builds `apps/web` with `adapter-node` and `pnpm deploy`s its production
+dependencies; the runtime stage is `node:22-alpine` with only `build/` and those dependencies, running as `node`
+(uid 1000) with `/data` as the only writable path (`docker run --read-only` works), `HEALTHCHECK` on `/healthz`.
+CI builds the image and starts it on every push; `.github/workflows/release.yml` publishes
+`ghcr.io/<owner>/versiondrift` for `linux/amd64` and `linux/arm64` on a `v*` tag (`1.2.3`, `1.2`, `latest`) or by hand
+(branch and sha tags). Until S5-T2…T4 land, the image is the public site's UI reading the public feed from the browser.
+
+Behind a reverse proxy set `ORIGIN=https://versiondrift.example.com` (adapter-node needs it to accept form posts), or
+`PROTOCOL_HEADER=x-forwarded-proto` + `HOST_HEADER=x-forwarded-host`.
+
 ## Configuration (env)
 
 | Var | Default | Meaning |
 |---|---|---|
-| `VD_PORT` | 8080 | |
+| `PORT` | 8080 | listening port (adapter-node); `HOST` defaults to `0.0.0.0` |
 | `VD_DATA_DIR` | /data | SQLite DB, cache, private modules |
 | `VD_FEED_URL` | https://feed.versiondrift.dev/v1/ | public feed |
 | `VD_FEED_PUBKEY` | baked-in | minisign public key |
