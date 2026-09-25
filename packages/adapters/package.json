@@ -9,11 +9,14 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "record": "node test/record.ts"
   },
   "dependencies": {
     "@versiondrift/core": "workspace:*",
-    "@versiondrift/schema": "workspace:*"
+    "@versiondrift/schema": "workspace:*",
+    "cheerio": "^1.2.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@types/node": "catalog:",

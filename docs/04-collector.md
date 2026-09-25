@@ -43,16 +43,20 @@ Adapters never call `fetch` directly; they get a `Fetcher` in their context:
 
 ## Adapters: notes
 
-- **github**: REST `GET /repos/{repo}/releases?per_page=100` (paginate until known version); `useTags` →
-  `GET /repos/{repo}/tags` + commit date. Conditional requests with stored ETag. Many projects (Grafana, Elastic)
-  put notes in the release body as Markdown → parse headings into sections.
+- **github** (verified 2026-09): REST `GET /repos/{repo}/releases?per_page=100&page=N`, drafts skipped, paging stops
+  at a page containing a known version, at releases older than the retention window, or after 10 pages. `useTags` →
+  GraphQL `refs(refPrefix: "refs/tags/", orderBy: TAG_COMMIT_DATE)`, 100 tags with tagger/commit dates per request
+  (needs a token). `notesFrom: changelogFile` → `GET /repos/{repo}/contents/{path}` (raw), split by version headings.
+  Many projects (Grafana, Elastic) put notes in the release body as Markdown → parse headings into sections.
 - **html**: fetch with a descriptive User-Agent (`VersionDriftBot/1.0 (+https://versiondrift.dev/bot)`), parse
   with `cheerio`, extract items per `select`. Respect robots.txt. Store a normalized HTML fingerprint to detect
   layout changes (selector yields 0 items → failure, not "no releases").
-- **dockerhub**: `GET https://hub.docker.com/v2/repositories/{repo}/tags?page_size=100` — gives versions and dates only;
-  combine with `html`/`rss` for notes.
-- **endoflife**: endoflife.date API (verify current version of the API in Sprint 1; v1 is `/api/v1/products/{product}`).
-  Map cycles → `branches`.
+- **dockerhub** (verified 2026-09): `GET https://hub.docker.com/v2/repositories/{repo}/tags?page_size=100&ordering=last_updated`
+  (`nginx` → `library/nginx`), `tagRegex` applied in the adapter — gives versions and dates only; combine with
+  `html`/`rss` for notes.
+- **endoflife** (verified 2026-09, schema 1.2.1): `GET https://endoflife.date/api/v1/products/{product}` →
+  `result.releases[]` (`name, codename, releaseDate, isLts, isEol, eolFrom, latest`) → `branches`.
+- **rss** (verified 2026-09): RSS 2.0 (`pubDate`, `content:encoded`/`description`), RSS 1.0/RDF (`dc:date`) and Atom.
 - **osv**: `POST https://api.osv.dev/v1/query` with `{package:{ecosystem,name}}`; good for packages
   (Debian, npm, PyPI, Go, crates, Maven…). Many *products* are not in OSV — use ghsa/nvd for those.
 - **ghsa**: GitHub GraphQL `securityVulnerabilities` (ecosystem packages) or REST

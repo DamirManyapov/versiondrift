@@ -104,7 +104,25 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `kev` | CISA KEV catalog (global, not per module) | — | "known exploited" flag by CVE id |
 | `manual` | products with no machine-readable source | `file: products/<id>.releases.yaml` | releases maintained by hand |
 
-New source types = new adapter in `packages/adapters` + fixtures + docs row here.
+New source types = new adapter in `packages/adapters` + fixtures + docs row here. `gitlab` and `gitea` are specified
+but not implemented yet (a module using them fails collection with "not implemented").
+
+**Versions from text** (`rss`, `html`): `versionRegex` — the first non-empty capture group wins (so alternatives
+like `'Debian (\d+\.\d+) released|Updated Debian \d+: (\d+\.\d+) released'` work). Without it, the first
+dotted number is used (`v2.0.0`, `12.15`, `8.0.36-28`). RSS/Atom entries that yield no version are skipped as
+other news.
+
+**`html` selectors:** `item` matches one element per release. `title`, `date` and `body` are CSS selectors looked up
+*inside* the item (or the item itself when it matches). Without `title` the item's text is the title. Without
+`body`, an item that is a heading (`h1`–`h6`) owns its following siblings up to the next item — the common
+`<h2>1.2.3</h2><ul>…</ul>` layout — otherwise the item's own content is the body. Without `date`, a date is searched
+in the title using `dateFormat` (tokens `YYYY MM M DD D MMM`, e.g. `YYYYMMDD`, `D MMM YYYY`) or as an ISO date.
+Sibling combinators like `h2 ~ *` don't work (selectors are relative to the item). An `item` selector that
+matches nothing is a collection failure, not "no releases".
+
+**`manual` files:** `products/<id>.releases.yaml` is a YAML list of `{ version: "1.2", date?, url?, notes? }`
+(quote versions: YAML reads `1.10` as `1.1`); a manual `eol` file lists `{ name, releaseDate?, eolDate?, eol?, lts?,
+codename? }`.
 
 ## Validation rules (CI)
 
