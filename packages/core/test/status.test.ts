@@ -221,3 +221,16 @@ describe('worstStatus', () => {
     expect(worstStatus([])).toBe('news');
   });
 });
+
+describe('fixedIn', async () => {
+  const { fixedIn } = await import('../src/index.ts');
+  it('returns the fix of the branch the version is in', () => {
+    const ranges = [
+      { introduced: '7.0', fixed: '7.23.6' },
+      { introduced: '7.24', fixed: '7.24.3' },
+    ];
+    expect(fixedIn('loose', '7.24.2', ranges)).toBe('7.24.3');
+    expect(fixedIn('loose', '7.20.1', ranges)).toBe('7.23.6');
+    expect(fixedIn('loose', '7.24.4', ranges)).toBeUndefined();
+  });
+});

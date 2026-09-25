@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { parse } from '@versiondrift/core';
+  import { fixedIn as fixFor, parse } from '@versiondrift/core';
   import { resolve } from '$app/paths';
   import type { ItemType, Release } from '@versiondrift/schema';
   import type { Row } from '$lib/board/rows';
@@ -92,7 +92,8 @@
   }
 
   function fixedIn(affected: { fixed?: string | undefined }[]): string | undefined {
-    return affected.find((a) => a.fixed)?.fixed;
+    if (!product || !s?.installed) return undefined;
+    return fixFor(product, s.installed, affected);
   }
 </script>
 

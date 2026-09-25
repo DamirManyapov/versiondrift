@@ -14,6 +14,7 @@ export {
   changelog,
   computeStatus,
   DEFAULT_SETTINGS,
+  fixedIn,
   isAffected,
   specOf,
   STATUS_ORDER,

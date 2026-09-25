@@ -106,6 +106,11 @@ export function isAffected(spec: SchemeSpec, version: string, ranges: Advisory['
   });
 }
 
+/** The fix for this version: the `fixed` bound of the range that contains it (per-branch fixes differ). */
+export function fixedIn(spec: SchemeSpec, version: string, ranges: Advisory['affected']): string | undefined {
+  return ranges.find((range) => range.fixed !== undefined && isAffected(spec, version, [range]))?.fixed;
+}
+
 function isCritical(a: Advisory, settings: StatusSettings): boolean {
   return (
     (settings.treatKevAsCritical && a.kev) ||

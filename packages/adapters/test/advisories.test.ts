@@ -103,3 +103,33 @@ describe('advisory sources', () => {
     expect(kev.has('CVE-2026-67279')).toBe(true);
   });
 });
+
+describe('rangesFromConfigurations', async () => {
+  const { rangesFromConfigurations } = await import('../src/index.ts');
+  it('ignores bounds that are dates, not versions (NVD data quirk)', () => {
+    const cve = {
+      id: 'CVE-2021-3014',
+      published: '',
+      descriptions: [],
+      configurations: [
+        {
+          nodes: [
+            {
+              cpeMatch: [
+                {
+                  vulnerable: true,
+                  criteria: 'cpe:2.3:o:mikrotik:routeros:*:*:*:*:*:*:*:*',
+                  versionEndIncluding: '2021-01-04',
+                },
+                { vulnerable: true, criteria: 'cpe:2.3:o:mikrotik:routeros:6.48:*:*:*:*:*:*:*' },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    expect(rangesFromConfigurations(cve, 'cpe:2.3:o:mikrotik:routeros')).toEqual([
+      { introduced: '6.48', last_affected: '6.48' },
+    ]);
+  });
+});

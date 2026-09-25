@@ -41,6 +41,9 @@ function productOf(cpe: string): string {
   return cpe.split(':').slice(2, 5).join(':');
 }
 
+/** NVD sometimes puts dates where versions belong ("RouterOS through 2021-01-04"); such bounds are unusable. */
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 export function rangesFromConfigurations(cve: NvdCve, cpe: string): AffectedRange[] {
   const wanted = productOf(cpe);
   const ranges: AffectedRange[] = [];
@@ -49,6 +52,13 @@ export function rangesFromConfigurations(cve: NvdCve, cpe: string): AffectedRang
       for (const m of node.cpeMatch ?? []) {
         if (!m.vulnerable || productOf(m.criteria) !== wanted) continue;
         const exact = m.criteria.split(':')[5];
+        const bounds = [
+          m.versionStartIncluding,
+          m.versionStartExcluding,
+          m.versionEndIncluding,
+          m.versionEndExcluding,
+        ];
+        if (bounds.some((b) => b !== undefined && DATE.test(b))) continue;
         const hasBounds =
           m.versionStartIncluding ??
           m.versionStartExcluding ??
