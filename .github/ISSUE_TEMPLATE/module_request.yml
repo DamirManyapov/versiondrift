@@ -1,0 +1,51 @@
+name: Module request
+description: Ask for a product to be tracked.
+title: 'module: '
+labels: [module-request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A module is a small YAML file, no code needed. If you can, open a PR with `products/<id>.yaml` instead —
+        see the [module guide](../blob/main/docs/10-contributing-modules.md).
+  - type: input
+    id: name
+    attributes:
+      label: Product
+      placeholder: Grafana
+    validations:
+      required: true
+  - type: input
+    id: homepage
+    attributes:
+      label: Homepage
+    validations:
+      required: true
+  - type: input
+    id: releases
+    attributes:
+      label: Where are releases published?
+      description: GitHub/GitLab repository, release-notes page, RSS feed, Docker Hub image…
+    validations:
+      required: true
+  - type: input
+    id: security
+    attributes:
+      label: Security advisories
+      description: Vendor security page, GitHub advisories, NVD CPE… Leave empty if you don't know.
+  - type: input
+    id: eol
+    attributes:
+      label: Lifecycle / end of life
+      description: endoflife.date slug or the vendor's support-policy page.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Several major lines supported in parallel? How to find the installed version?
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I can open a PR with the module myself

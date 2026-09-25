@@ -1,0 +1,39 @@
+name: Bug report
+description: Something in VersionDrift does not work as expected, or a product shows wrong data.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - versiondrift.dev
+        - Self-hosted (Docker)
+        - Wrong or missing data for a product
+        - Feed (feed.versiondrift.dev)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: product
+    attributes:
+      label: Product module
+      description: If the data for a product is wrong.
+      placeholder: grafana
+  - type: input
+    id: version
+    attributes:
+      label: VersionDrift version or image tag
+      description: Self-hosted only.
+  - type: textarea
+    id: details
+    attributes:
+      label: Logs, screenshots, links
+      description: This issue is public. Remove hostnames, IPs and anything else about your infrastructure you don't want to share.
