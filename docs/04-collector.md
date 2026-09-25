@@ -32,8 +32,10 @@ Failure policy: a module whose collection fails keeps its previous data with `st
 - Normalization: `tagFilter` on the raw version → parse under `versionScheme` (unparseable versions are dropped and
   reported as a warning with examples) → pre-releases (source flag, or alpha/beta/rc/pre/preview/dev/snapshot/
   nightly/canary in the version) dropped unless `prerelease: include`.
-- Merge: releases from the previous feed are kept (union). Their items are never recomputed; `sortKey` and `track`
-  are, so editing a module's tracks or scheme applies immediately. New releases get `firstSeenAt` = run time.
+- Merge: releases from the previous feed are kept (union). Their items are recomputed only when the module definition
+  or `CLASSIFIER_VERSION` changed (`moduleHash`), and only for releases the source still offers; `sortKey` and
+  `track` are always recomputed, so editing a module applies immediately. New releases get `firstSeenAt` = run time.
+  Bump `CLASSIFIER_VERSION` in `packages/classify` when rule changes should reach published items.
 - First runs fetch back to the retention window (3 years); later runs stop at the first page with a known version.
 - A module whose release source fails, or that yields no usable release, keeps its previous product file with
   `stale: true` and `lastSuccessAt`; a module without previous data is left out. Lifecycle/extra source failures are

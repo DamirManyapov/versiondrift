@@ -108,6 +108,8 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 - `branches`: only from a lifecycle source (`eol` in the module), ids as that source names them (`13.2`, `12`);
   releases belong to a branch by prefix (`13.2.1` → `13.2`, `12.7` → `12`). `latest` is computed from the feed's
   releases. No lifecycle source → `branches: []` (EOL unknown, never "not EOL").
+- `moduleHash` (since 1.1): hash of the module definition and classifier version that produced the items. Published
+  items never change unless it does; then items of the releases the source still offers are recomputed.
 - `versionRegex` / `branchGroups` are included for `versionScheme: regex` so clients parse versions like the collector.
 - `health.json`: `{ ok: 0–1, modules: { <id>: { status: ok|failed, lastAttemptAt, lastSuccessAt, consecutiveFailures,
   releases, error?, warnings[] } } }`.

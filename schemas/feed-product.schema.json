@@ -400,6 +400,9 @@
     },
     "stale": {
       "type": "boolean"
+    },
+    "moduleHash": {
+      "type": "string"
     }
   },
   "required": [
