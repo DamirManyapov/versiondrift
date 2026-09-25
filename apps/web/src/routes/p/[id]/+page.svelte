@@ -3,11 +3,13 @@
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import type { ItemType } from '@versiondrift/schema';
+  import Meta from '$lib/components/Meta.svelte';
   import TypeChip from '$lib/components/TypeChip.svelte';
   import { REPO_URL } from '$lib/config';
   import { formatDate } from '$lib/format';
   import { i18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
+  import { jsonLdScript } from '$lib/seo/pages';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -24,6 +26,18 @@
 
   onMount(() => inventory.init());
 
+  const structured = $derived(
+    jsonLdScript({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: product.name,
+      applicationCategory: data.entry.category,
+      ...(latest && { softwareVersion: latest.version }),
+      ...(latest?.date && { datePublished: latest.date.slice(0, 10) }),
+      url: `${page.url.origin}${page.url.pathname}`,
+    }),
+  );
+
   function countTypes(items: { type: ItemType }[]): [ItemType, number][] {
     const counts: Partial<Record<ItemType, number>> = {};
     for (const item of items) counts[item.type] = (counts[item.type] ?? 0) + 1;
@@ -31,13 +45,13 @@
   }
 </script>
 
+<Meta
+  title="{t('productPageTitle', { name: product.name })} · VersionDrift"
+  description={t('productPageDescription', { name: product.name, latest: latest?.version ?? '' })}
+/>
 <svelte:head>
-  <title>{t('productPageTitle', { name: product.name })} · VersionDrift</title>
-  <meta
-    name="description"
-    content={t('productPageDescription', { name: product.name, latest: latest?.version ?? '' })}
-  />
-  <link rel="canonical" href="{page.url.origin}{page.url.pathname}" />
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -- JSON-LD, escaped by jsonLdScript() -->
+  {@html structured}
 </svelte:head>
 
 <article class="page">

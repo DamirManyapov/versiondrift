@@ -1,6 +1,6 @@
 // Reads the public feed (docs/03-feed-format.md) from the browser, Workers or Node: conditional requests with
 // ETags, an in-memory cache, and a sha256 check of every product file against the index.
-import { Catalog, FeedIndex, FeedProduct, Health, WeekDigest } from '@versiondrift/schema';
+import { Catalog, FeedIndex, FeedProduct, Health, Versions, WeekDigest } from '@versiondrift/schema';
 
 export class FeedError extends Error {
   override name = 'FeedError';
@@ -75,8 +75,17 @@ export class FeedClient {
   }
 
   async week(id: string): Promise<WeekDigest | undefined> {
+    return this.optional(`week/${id}.json`, WeekDigest);
+  }
+
+  /** versions.json (feed 1.2+); undefined for older feeds. */
+  async versions(): Promise<Versions | undefined> {
+    return this.optional('versions.json', Versions);
+  }
+
+  private async optional<T>(path: string, schema: { parse(data: unknown): T }): Promise<T | undefined> {
     try {
-      return WeekDigest.parse(JSON.parse(await this.text(`week/${id}.json`)));
+      return schema.parse(JSON.parse(await this.text(path)));
     } catch (error) {
       if (error instanceof FeedError && /HTTP 404/.test(error.message)) return undefined;
       throw error;

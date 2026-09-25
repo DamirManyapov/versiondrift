@@ -23,7 +23,8 @@ Recommendation: register `versiondrift.dev` (+ `.io` as redirect) at Cloudflare 
 
 ## Pre-launch checklist (end of S4)
 
-- [ ] remove `Disallow: /` from `apps/web/static/robots.txt` (pre-launch crawl block)
+- [ ] remove `Disallow: /` from `apps/web/static/robots.txt` (pre-launch crawl block) and add
+  `Sitemap: https://versiondrift.dev/sitemap.xml`
 
 - [ ] 60+ modules, all green in `/status`
 - [ ] demo board on first visit, light + dark theme, mobile layout OK

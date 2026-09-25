@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createFetcher, fixtureFetch, type FetchFn } from '@versiondrift/adapters';
-import { FeedIndex, FeedProduct, Health } from '@versiondrift/schema';
+import { FeedIndex, FeedProduct, Health, Versions } from '@versiondrift/schema';
 import { describe, expect, it } from 'vitest';
 import { isoWeek, runCollector, type RunOptions } from '../src/index.ts';
 
@@ -129,6 +129,21 @@ describe('runCollector', () => {
     });
     expect(health.ok).toBe(0.75);
     expect(await readdir(path.join(env.out, 'v1/week'))).toHaveLength(12);
+
+    const versions = await readJson(path.join(env.out, 'v1/versions.json'), Versions);
+    expect(Object.keys(versions.products)).toEqual(['grafana', 'poste-io', 'zabbix']);
+    expect(versions.products.grafana?.recent).toEqual(
+      grafana.releases
+        .filter((r) => !r.prerelease)
+        .map((r) => r.version)
+        .slice(0, 20),
+    );
+    expect(versions.products['poste-io']?.recent).toHaveLength(20);
+    // The newest release of each lifecycle branch: 13.2 → 13.2.2, 12.4 → 12.4.11, …
+    expect(versions.products.grafana?.branches.slice(0, 2)).toEqual(['13.2.2', '13.1.6']);
+    expect(versions.products.grafana?.branches).toContain('12.4.11');
+    expect(versions.products['poste-io']?.branches).toEqual([]);
+    expect(versions.products.grafana?.notes).toBe(true);
   });
 
   it('is stable across runs: nothing new, items and firstSeenAt unchanged', async () => {
@@ -219,6 +234,7 @@ describe('runCollector', () => {
     expect(Object.keys(index.products)).toEqual(['grafana', 'poste-io', 'zabbix']);
     expect(await readdir(path.join(out, 'v1/products'))).toEqual(['zabbix.json']);
     await expect(readdir(path.join(out, 'v1/week'))).rejects.toThrow();
+    await expect(readFile(path.join(out, 'v1/versions.json'))).rejects.toThrow();
   });
 });
 

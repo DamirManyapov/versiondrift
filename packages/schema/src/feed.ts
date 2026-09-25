@@ -24,7 +24,7 @@ export type ChangeItem = z.output<typeof ChangeItem>;
 // ── Product file: v1/products/<id>.json ─────────────────────────────────────────────────────────────────
 
 /** 1.1 added FeedProduct.moduleHash. */
-export const FEED_FORMAT_VERSION = '1.1';
+export const FEED_FORMAT_VERSION = '1.2';
 
 const IsoDateTime = z
   .string()
@@ -198,3 +198,23 @@ export const WeekDigest = z.strictObject({
   ),
 });
 export type WeekDigest = z.output<typeof WeekDigest>;
+
+// ── v1/versions.json (since 1.2) ─────────────────────────────────────────────────────────────────────────
+
+/** Versions worth a page of their own (sitemap, links) without downloading every product file. */
+export const Versions = z.strictObject({
+  formatVersion: FormatVersion,
+  generatedAt: IsoDateTime,
+  products: z.record(
+    z.string(),
+    z.strictObject({
+      /** The newest stable releases, newest first. */
+      recent: z.array(z.string()),
+      /** The newest stable release of every lifecycle branch, newest first. */
+      branches: z.array(z.string()),
+      /** Whether the recent releases carry change items (a comparison page has something to show). */
+      notes: z.boolean(),
+    }),
+  ),
+});
+export type Versions = z.output<typeof Versions>;

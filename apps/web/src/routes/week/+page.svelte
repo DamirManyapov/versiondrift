@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Meta from '$lib/components/Meta.svelte';
   import { onMount, untrack } from 'svelte';
   import type { WeekDigest } from '@versiondrift/schema';
   import { resolve } from '$app/paths';
@@ -97,7 +98,7 @@
   const hrefFor = (w: string) => resolve('/week') + (w === current ? '' : `?w=${w}`);
 </script>
 
-<svelte:head><title>{t('weekTitle')} · {range} · VersionDrift</title></svelte:head>
+<Meta title="{t('weekTitle')} · {range} · VersionDrift" />
 
 <div class="week">
   <header>

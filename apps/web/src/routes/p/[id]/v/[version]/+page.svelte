@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
+  import Meta from '$lib/components/Meta.svelte';
   import StatusChip from '$lib/components/StatusChip.svelte';
   import { formatDate } from '$lib/format';
   import { i18n } from '$lib/i18n/context';
@@ -12,7 +13,6 @@
   const id = $derived(data.id);
   const version = $derived(data.release.version);
   const s = $derived(data.status);
-  const canonical = $derived(`${page.url.origin}${page.url.pathname}`);
   const eol = $derived(s.status === 'eol' || (s.status === 'critical' && s.branch?.eol === true));
 
   const verdict = $derived(
@@ -35,10 +35,11 @@
   );
 </script>
 
+<Meta
+  title="{t('versionMetaTitle', { name: data.name, version, verdict })} · VersionDrift"
+  description={t('versionDescription', { name: data.name, version })}
+/>
 <svelte:head>
-  <title>{t('versionMetaTitle', { name: data.name, version, verdict })} · VersionDrift</title>
-  <meta name="description" content={t('versionDescription', { name: data.name, version })} />
-  <link rel="canonical" href={canonical} />
   <!-- eslint-disable-next-line svelte/no-at-html-tags -- JSON-LD, escaped by jsonLd() -->
   {@html structured}
 </svelte:head>

@@ -1,5 +1,6 @@
 // Feed files from collected products (docs/03-feed-format.md): index, catalog, health, weekly digests.
 import { createHash } from 'node:crypto';
+import { branchFor } from '@versiondrift/core';
 import { maxSeverity, severityFixedIn } from './advisories.ts';
 import {
   FEED_FORMAT_VERSION,
@@ -10,6 +11,7 @@ import {
   type HealthEntry,
   type IndexEntry,
   type Module,
+  type Versions,
   type WeekDigest,
 } from '@versiondrift/schema';
 
@@ -80,6 +82,28 @@ export function buildCatalog(modules: Module[], generatedAt: string): Catalog {
         ...(m.aliases?.length && { aliases: m.aliases }),
       })),
   };
+}
+
+const RECENT_VERSIONS = 20;
+
+/** versions.json: per product the newest stable releases and the newest stable release of each branch. */
+export function buildVersions(products: FeedProduct[], generatedAt: string): Versions {
+  const out: Versions['products'] = {};
+  for (const product of [...products].sort((a, b) => a.id.localeCompare(b.id))) {
+    const stable = product.releases.filter((r) => !r.prerelease);
+    const branches = new Map<string, string>();
+    for (const release of stable) {
+      const branch = branchFor(product.branches, release.version);
+      if (branch && !branches.has(branch.id)) branches.set(branch.id, release.version);
+    }
+    const recent = stable.slice(0, RECENT_VERSIONS);
+    out[product.id] = {
+      recent: recent.map((r) => r.version),
+      branches: [...branches.values()],
+      notes: recent.some((r) => r.items.length > 0),
+    };
+  }
+  return { formatVersion: FEED_FORMAT_VERSION, generatedAt, products: out };
 }
 
 export function buildHealth(modules: Record<string, HealthEntry>, generatedAt: string): Health {

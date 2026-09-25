@@ -57,8 +57,15 @@ export function compareView(product: FeedProduct, range: string): CompareResult 
   if (canonical !== decodeURIComponent(range)) return { kind: 'redirect', range: canonical };
 
   const { releases } = changelog(product, a.version, b.version);
-  // No thin pages: a range without releases in between has nothing to show.
-  if (releases.length === 0) return { kind: 'notFound', reason: 'no releases in range' };
+  const from = a;
+  const to = b;
+  const fixedAdvisories = product.advisories.filter(
+    (adv) =>
+      isAffected(product, from.version, adv.affected) && !isAffected(product, to.version, adv.affected),
+  );
+  // No thin pages (docs/06): nothing in the notes and nothing fixed means nothing to show.
+  if (releases.every((r) => r.items.length === 0) && fixedAdvisories.length === 0)
+    return { kind: 'notFound', reason: 'nothing changed in between' };
   const counts = emptyCounts();
   const pick = (type: ItemType): Tagged[] =>
     releases.flatMap((r) =>
@@ -75,10 +82,7 @@ export function compareView(product: FeedProduct, range: string): CompareResult 
       security: pick('security'),
       breaking: pick('breaking'),
       deprecated: pick('deprecated'),
-      fixedAdvisories: product.advisories.filter(
-        (adv) =>
-          isAffected(product, a.version, adv.affected) && !isAffected(product, b.version, adv.affected),
-      ),
+      fixedAdvisories,
     },
   };
 }

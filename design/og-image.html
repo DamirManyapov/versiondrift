@@ -1,0 +1,144 @@
+<!doctype html>
+<!--
+  Social preview card (Open Graph / Twitter), 1200×630. Rendered to apps/web/static/og.png with a headless browser:
+  open this file at a 1200×630 viewport and take a screenshot (docs/06 "SEO").
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        background: #121316;
+        color: #eceae4;
+        font-family: 'IBM Plex Sans', sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 64px 72px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        font-size: 44px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .brand svg {
+        width: 76px;
+        height: 76px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 60px;
+        line-height: 1.1;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        max-width: 980px;
+      }
+      .tiles {
+        display: flex;
+        gap: 18px;
+      }
+      .tile {
+        flex: 1;
+        border-radius: 16px;
+        padding: 20px 22px;
+        background: #1f2125;
+        border: 2px solid #2e3136;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .name {
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .ver {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 20px;
+        color: #a3a09a;
+      }
+      .chip {
+        align-self: flex-start;
+        font-family: 'IBM Plex Mono', monospace;
+        font-weight: 600;
+        font-size: 18px;
+        border-radius: 8px;
+        padding: 4px 10px;
+      }
+      .critical {
+        border-color: #8c2f2a;
+        background: #35181a;
+      }
+      .critical .chip {
+        background: #ff6b61;
+        color: #1a0a08;
+      }
+      .eol {
+        border-color: #7a6f5c;
+        background: #29251e;
+      }
+      .eol .chip {
+        background: #d9d2c3;
+        color: #1b1a17;
+      }
+      .update {
+        border-color: #6e5320;
+        background: #2a2417;
+      }
+      .update .chip {
+        background: #f5a524;
+        color: #1a1206;
+      }
+      .ok {
+        border-color: #2c5a41;
+        background: #17261e;
+      }
+      .ok .chip {
+        background: #3dd68c;
+        color: #06170e;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect width="24" height="24" rx="6" fill="#F5A524" />
+        <g fill="none" stroke="#1A1206" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="12" cy="12" r="7" />
+          <circle cx="12" cy="12" r="3.5" />
+          <path d="M12 12 17 7" />
+        </g>
+      </svg>
+      VersionDrift
+    </div>
+    <h1>See how far your stack has drifted from upstream.</h1>
+    <div class="tiles">
+      <div class="tile critical">
+        <span class="name">RouterOS</span><span class="ver">7.24.2 → 7.24.4</span
+        ><span class="chip">CVSS 9.1</span>
+      </div>
+      <div class="tile eol">
+        <span class="name">nginx</span><span class="ver">1.26.2 → 1.30.1</span><span class="chip">EOL</span>
+      </div>
+      <div class="tile update">
+        <span class="name">Grafana</span><span class="ver">12.4.5 → 13.2.2</span><span class="chip">Update</span>
+      </div>
+      <div class="tile ok">
+        <span class="name">Debian</span><span class="ver">13.7</span><span class="chip">Up to date</span>
+      </div>
+    </div>
+  </body>
+</html>

@@ -37,6 +37,17 @@
   }
 </script>
 
+<svelte:head>
+  <!-- Site-wide social preview (design/og-image.html); pages add og:title/og:description through Meta. -->
+  <meta property="og:site_name" content="VersionDrift" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="{page.url.origin}/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content={t('appTagline')} />
+  <meta name="twitter:card" content="summary_large_image" />
+</svelte:head>
+
 <div class="app">
   <header>
     <a class="brand" href={resolve('/')}>

@@ -14,6 +14,7 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 | `v1/products/<id>/archive-<year>.json` | | releases older than the retention window (not implemented yet: product files keep every release; the largest are ~400 KB raw, ~60 KB gzipped) |
 | `v1/health.json` | | per-module collection status (for the status page and module maintainers) |
 | `v1/week/<isoYear>-W<isoWeek>.json` | | precomputed weekly digest across all products (for RSS / SEO / "This week") |
+| `v1/versions.json` | small | since 1.2: per product the 20 newest stable releases, the newest release of each lifecycle branch and whether the notes have items (sitemap, links) |
 
 ## `index.json`
 
@@ -114,6 +115,9 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 - `health.json`: `{ ok: 0–1, modules: { <id>: { status: ok|failed, lastAttemptAt, lastSuccessAt, consecutiveFailures,
   releases, error?, warnings[] } } }`.
 - `week/*.json`: the last 12 ISO weeks are rewritten on every full run (not on `--only` runs).
+- `versions.json` (since 1.2, full runs only): `{ products: { <id>: { recent: [..20 versions], branches: [..], notes:
+  bool } } }`. `branches` holds the newest stable release of each lifecycle branch; `notes` says whether the recent
+  releases carry any items (the site links comparison pages only then).
 - `releases[].sortKey`: opaque, from `sortKey()` in `packages/core`; comparing two keys as plain byte strings gives
   the scheme's version order (equal keys = equal versions), so clients and SQL can `ORDER BY` it without parsing.
   Only comparable within one product. Changes to the encoding bump `formatVersion`.

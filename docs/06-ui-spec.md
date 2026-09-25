@@ -141,6 +141,15 @@ my board". In dev, server-side loads read the local feed through a `handleFetch`
 - JSON-LD `SoftwareApplication` + `ItemList` of releases.
 - `sitemap.xml`: product pages + compare pages for (each of last 20 releases → latest) and (each branch's latest → latest).
 - OG image rendered per page (Workers + satori/resvg) — Sprint 4.
+
+Implemented in S4-T3: `sitemap.xml` is built from `index.json` and `versions.json` (one small file instead of every
+product file): product pages, version pages for the 20 recent releases and each branch head, and their comparison with
+the latest release when the product's notes have items. `Meta.svelte` sets title, description, `og:title`,
+`og:description`, `og:url` and the canonical link; the root layout adds `og:site_name`, `og:image` and
+`twitter:card`. JSON-LD `SoftwareApplication` on product and version pages, plus `ItemList` on compare pages.
+Per-page OG images are deferred: satori/resvg in Workers would blow the CPU budget of a request, so every page
+uses one static card (`static/og.png`, drawn from `design/og-image.html`). Generating images per product in the
+collector is the likely next step.
 - Pages must add value beyond vendor notes: merged view, counts, CVE mapping, upgrade notes. No thin pages:
   a compare page with zero items returns 404.
 

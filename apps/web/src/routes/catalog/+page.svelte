@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Meta from '$lib/components/Meta.svelte';
   import { onMount } from 'svelte';
   import type { Catalog } from '@versiondrift/schema';
   import { searchCatalog } from '$lib/catalog';
@@ -27,7 +28,7 @@
   const onBoard = $derived(new Set(inventory.demo ? [] : inventory.data.items.map((i) => i.p)));
 </script>
 
-<svelte:head><title>{t('catalogTitle')} · VersionDrift</title></svelte:head>
+<Meta title="{t('catalogTitle')} · VersionDrift" />
 
 <div class="catalog">
   <h1>{t('catalogTitle')}</h1>

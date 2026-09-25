@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { resolve } from '$app/paths';
   import Board from '$lib/components/Board.svelte';
+  import Meta from '$lib/components/Meta.svelte';
   import SharePanel from '$lib/components/SharePanel.svelte';
   import Toast from '$lib/components/Toast.svelte';
   import { feed } from '$lib/feed/state.svelte';
@@ -18,10 +19,7 @@
   const showToast = (message: string, undo?: () => void) => (toast = { message, ...(undo && { undo }) });
 </script>
 
-<svelte:head>
-  <title>VersionDrift</title>
-  <meta name="description" content={t('appTagline')} />
-</svelte:head>
+<Meta title="VersionDrift" description={t('appTagline')} />
 
 <h1 class="visually-hidden">VersionDrift</h1>
 

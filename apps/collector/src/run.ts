@@ -17,7 +17,15 @@ import {
   type IndexEntry,
   type Module,
 } from '@versiondrift/schema';
-import { buildCatalog, buildHealth, buildIndex, buildWeeks, indexEntry, serializeProduct } from './build.ts';
+import {
+  buildCatalog,
+  buildHealth,
+  buildIndex,
+  buildVersions,
+  buildWeeks,
+  indexEntry,
+  serializeProduct,
+} from './build.ts';
 import { guardProblems } from './guard.ts';
 import { EMPTY_FEED, loadPreviousFeed, type PreviousFeed } from './previous.ts';
 import { collectProduct, isoSeconds, type ProductResult } from './product.ts';
@@ -225,9 +233,11 @@ export async function runCollector(options: RunOptions): Promise<RunResult> {
     ),
   );
   files.set('v1/health.json', JSON.stringify(buildHealth(health, nowIso)));
-  if (fullRun)
+  if (fullRun) {
     for (const [week, digest] of buildWeeks(products, now))
       files.set(`v1/week/${week}.json`, JSON.stringify(digest));
+    files.set('v1/versions.json', JSON.stringify(buildVersions(products, nowIso)));
+  }
 
   const problems = guardProblems({ previous: previous.index, next: index, releaseCounts });
   const text = report(outcomes, problems, options.dryRun ?? false);

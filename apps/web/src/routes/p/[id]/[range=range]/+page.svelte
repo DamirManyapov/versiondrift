@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
+  import Meta from '$lib/components/Meta.svelte';
   import TypeChip from '$lib/components/TypeChip.svelte';
   import { formatDate } from '$lib/format';
   import { i18n } from '$lib/i18n/context';
@@ -14,7 +15,6 @@
   const from = $derived(view.from.version);
   const to = $derived(view.to.version);
   const id = $derived(data.id);
-  const canonical = $derived(`${page.url.origin}${page.url.pathname}`);
   const TYPES: ItemType[] = ['security', 'breaking', 'deprecated', 'feature', 'fix'];
 
   const counts = $derived({
@@ -50,10 +50,11 @@
   );
 </script>
 
+<Meta
+  title="{t('compareMetaTitle', { name: data.name, from, to, ...counts })} · VersionDrift"
+  description={t('compareDescription', { name: data.name, from, to, ...counts })}
+/>
 <svelte:head>
-  <title>{t('compareMetaTitle', { name: data.name, from, to, ...counts })} · VersionDrift</title>
-  <meta name="description" content={t('compareDescription', { name: data.name, from, to, ...counts })} />
-  <link rel="canonical" href={canonical} />
   <!-- eslint-disable-next-line svelte/no-at-html-tags -- JSON-LD, escaped by jsonLd() -->
   {@html structured}
 </svelte:head>

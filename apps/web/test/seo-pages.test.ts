@@ -75,6 +75,10 @@ describe('compare pages', () => {
     expect(compareView(product, '11.3.1...99.0.0').kind).toBe('notFound');
     expect(compareView(product, '11.3.1...11.3.1').kind).toBe('notFound');
     expect(compareView(product, 'garbage').kind).toBe('notFound');
+    // 11.3.1 → 11.3.2 has a security item; without items and fixes the page would be empty.
+    const bare = { ...product, advisories: [], releases: product.releases.map((r) => ({ ...r, items: [] })) };
+    expect(compareView(bare, '11.3.1...11.3.2').kind).toBe('notFound');
+    expect(compareView(product, '11.3.1...11.3.2').kind).toBe('page');
   });
 });
 

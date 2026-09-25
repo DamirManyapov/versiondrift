@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Meta from '$lib/components/Meta.svelte';
   import { resolve } from '$app/paths';
   import { formatUpdated } from '$lib/format';
   import { i18n } from '$lib/i18n/context';
@@ -11,9 +12,7 @@
   const okCount = $derived(modules.length - failing.length);
 </script>
 
-<svelte:head>
-  <title>{t('statusPageTitle')} · VersionDrift</title>
-</svelte:head>
+<Meta title="{t('statusPageTitle')} · VersionDrift" />
 
 <div class="page">
   <h1>{t('statusPageTitle')}</h1>
