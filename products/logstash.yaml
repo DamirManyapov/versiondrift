@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+id: logstash
+name: Logstash
+aliases: [elk, elastic-stack]
+vendor: Elastic
+category: logging
+homepage: https://www.elastic.co/logstash
+description: Log and event processing pipeline.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'
+tracks:
+  - { id: "9", match: '^9\.' }
+  - { id: "8", match: '^8\.' }
+  - { id: "7", match: '^7\.' }
+sources:
+  releases: { type: github, repo: elastic/logstash }
+  releasesExtra:
+    - type: html
+      url: https://www.elastic.co/docs/release-notes/logstash
+      select: { item: "h2", title: "h2", body: "h2 ~ *" }
+  security:
+    - { type: rss, url: "https://discuss.elastic.co/c/announcements/security-announcements/31.rss" }
+    - { type: nvd, cpe: "cpe:2.3:a:elastic:logstash" }
+  eol: { type: endoflife, product: logstash }
+detect:
+  - http: { path: /, jsonPath: $.version, defaultPort: 9600 }
+  - docker: { image: docker.elastic.co/logstash/logstash }
+maintainers: []

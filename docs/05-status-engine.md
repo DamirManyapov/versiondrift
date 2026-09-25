@@ -1,0 +1,86 @@
+# 05 — Versions & status engine (`packages/core`)
+
+Pure TypeScript, no Node-only APIs. Used by the browser, Workers, the self-hosted server and the collector.
+
+## Version schemes
+
+| Scheme | Examples | Parse rule | Branch (`branchOf`) |
+|---|---|---|---|
+| `semver` | `12.1.2`, `v9.1.4`, `8.0.36-28` | strict semver after stripping `v`; build/extra suffix `-N` treated as 4th numeric segment | `major.minor` |
+| `loose` | `7.19.4`, `2.5.2`, `5.7.44` | split on `.`/`-`, numeric segments compared numerically, text segments lexically, missing = 0 | first 2 segments |
+| `calver` | `2026.09`, `24.04.1` | as loose, but branch = first 2 segments | first 2 segments |
+| `debian` | `12.7`, `1:2.3.4-1+deb12u1` | Debian ordering (epoch, upstream, revision; `~` sorts before anything) | major (`12`) |
+| `regex` | anything | `versionRegex` capture groups → numeric tuple | configurable `branchGroups` |
+
+API:
+
+```ts
+parse(scheme, raw): Version | null
+compare(scheme, a, b): -1 | 0 | 1
+sortKey(scheme, raw): string          // lexicographically sortable, stored in feed
+branchOf(scheme, raw): string
+trackOf(module, raw): string | null   // first matching track regex
+isAffected(scheme, version, ranges): boolean
+```
+
+Property tests (fast-check): `compare` is a total order; `sortKey` order == `compare` order.
+
+## Inputs to status
+
+```ts
+interface Installed { productId: string; version?: string; track?: string; label?: string; host?: string }
+interface Settings  { criticalCvss: number /* 7.0 */; treatKevAsCritical: true; eolWarnDays: 90 }
+```
+
+## Algorithm
+
+```
+product = feed product
+if installed.version is empty            → status "news" (show recent releases only)
+if product.stale && older than 7 days    → status "stale" (still show last data)
+
+track   = installed.track ?? module.defaultTrack ?? trackOf(installed.version) ?? "latest"
+candidates = releases where (track == "latest" or release.track == track) and not prerelease
+latest  = max(candidates)
+newer   = candidates where compare(release, installed) > 0, sorted desc
+
+affecting = advisories where isAffected(installed.version, a.affected)
+branch  = branches[branchOf(installed.version)]
+
+status =
+  "critical" if any a in affecting with (a.kev) or (a.cvss.score >= criticalCvss) or (a.severity == "critical")
+  "eol"      if branch?.eol
+  "update"   if newer.length > 0
+  "ok"       otherwise
+
+flags:
+  eolSoon       branch.eolDate within eolWarnDays
+  unknownVersion installed.version not found in releases (still compared by scheme)
+  otherTrackNewer a newer track exists (e.g. on 8.x, 9.x is out) → hint "new major available"
+```
+
+Priority `critical > eol > update > ok` (an EOL branch with an affecting CVE is `critical`, with the EOL flag shown).
+
+## Output
+
+```ts
+interface ProductStatus {
+  status: "critical" | "eol" | "update" | "ok" | "news" | "stale";
+  installed?: string; latest: string; track: string;
+  newer: Release[];                 // for the changelog view
+  counts: Record<ItemType, number>; // over `newer`
+  affecting: Advisory[];            // sorted by score desc
+  maxCvss?: number;
+  branch?: Branch; flags: string[];
+}
+```
+
+## Multiple instances (self-hosted, accounts)
+
+A product may have many `Installed` rows (hosts). Product-level status = worst instance status;
+tile shows e.g. "2 of 5 affected", and the detail view lists instances grouped by version.
+
+## Merged changelog `from..to`
+
+`changelog(product, from, to, track?)` → releases with `from < v ≤ to` in the track, newest first,
+plus advisories fixed in that range. Used by the detail panel and by compare pages.

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+id: proxmox-ve
+name: Proxmox VE
+aliases: [pve, proxmox]
+vendor: Proxmox Server Solutions
+category: virtualization
+homepage: https://www.proxmox.com/en/proxmox-virtual-environment
+logo: simpleicons:proxmox
+description: Virtualization platform for KVM and LXC.
+versionScheme: loose
+tracks:
+  - { id: "9", match: '^9\.' }
+  - { id: "8", match: '^8\.' }
+sources:
+  releases:
+    type: rss
+    url: https://forum.proxmox.com/forums/announcements.7/index.rss
+    versionFrom: title
+    versionRegex: 'Proxmox VE (\d+\.\d+(?:\.\d+)?)'
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:proxmox:virtual_environment" }
+  eol: { type: endoflife, product: proxmox-ve }
+detect:
+  - command: { run: pveversion, regex: 'pve-manager/(\S+)/' }
+  - http: { path: /api2/json/version, jsonPath: $.data.version, defaultPort: 8006, scheme: https }
+maintainers: []

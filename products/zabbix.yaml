@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+id: zabbix
+name: Zabbix
+vendor: Zabbix SIA
+category: monitoring
+homepage: https://www.zabbix.com
+logo: simpleicons:zabbix
+description: Enterprise monitoring for networks, servers and applications.
+versionScheme: semver
+tagFilter:
+  include: '^\d+\.\d+\.\d+$'
+tracks:
+  - { id: "7.4", match: '^7\.4\.' }
+  - { id: "7.0", match: '^7\.0\.', label: LTS }
+  - { id: "6.0", match: '^6\.0\.', label: LTS }
+sources:
+  releases: { type: github, repo: zabbix/zabbix, useTags: true }
+  releasesExtra:
+    - type: html
+      url: https://www.zabbix.com/release_notes
+      select: { item: "a[href*='rn']" }
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:zabbix:zabbix" }
+  eol: { type: endoflife, product: zabbix }
+detect:
+  - command: { run: "zabbix_server -V", regex: 'v(\d+\.\d+\.\d+)' }
+maintainers: []

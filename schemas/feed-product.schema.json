@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://versiondrift.dev/schemas/feed-product.schema.json",
+  "title": "VersionDrift feed: product file (v1)",
+  "description": "Hand-written draft matching docs/03-feed-format.md. Generated from zod from S0-T2 on.",
+  "type": "object",
+  "required": ["formatVersion", "id", "name", "versionScheme", "releases", "advisories", "branches", "collectedAt", "stale"],
+  "properties": {
+    "formatVersion": { "type": "string", "pattern": "^1\\.\\d+$" },
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "versionScheme": { "enum": ["semver", "loose", "calver", "debian", "regex"] },
+    "tracks": { "type": "array", "items": { "type": "object", "required": ["id", "match"],
+      "properties": { "id": { "type": "string" }, "match": { "type": "string" }, "label": { "type": "string" } } } },
+    "sources": { "type": "array", "items": { "type": "object", "required": ["type", "url"],
+      "properties": { "type": { "type": "string" }, "url": { "type": "string" } } } },
+    "branches": { "type": "array", "items": { "type": "object", "required": ["id", "eol"],
+      "properties": { "id": { "type": "string" }, "releaseDate": { "type": ["string", "null"] }, "eol": { "type": "boolean" },
+        "eolDate": { "type": ["string", "null"] }, "lts": { "type": "boolean" }, "latest": { "type": ["string", "null"] } } } },
+    "releases": { "type": "array", "items": { "$ref": "#/$defs/release" } },
+    "advisories": { "type": "array", "items": { "$ref": "#/$defs/advisory" } },
+    "collectedAt": { "type": "string", "format": "date-time" },
+    "lastSuccessAt": { "type": "string", "format": "date-time" },
+    "stale": { "type": "boolean" }
+  },
+  "$defs": {
+    "item": { "type": "object", "required": ["type", "text", "classifiedBy"],
+      "properties": {
+        "type": { "enum": ["security", "breaking", "deprecated", "feature", "fix", "other"] },
+        "text": { "type": "string", "maxLength": 300 },
+        "refs": { "type": "array", "items": { "type": "string" } },
+        "classifiedBy": { "enum": ["section", "keyword", "llm", "manual", "advisory"] } } },
+    "release": { "type": "object", "required": ["version", "sortKey", "date", "items"],
+      "properties": {
+        "version": { "type": "string" }, "sortKey": { "type": "string" }, "track": { "type": ["string", "null"] },
+        "date": { "type": "string", "format": "date-time" }, "url": { "type": "string" },
+        "prerelease": { "type": "boolean" }, "items": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+        "summary": { "type": ["string", "null"], "maxLength": 400 } } },
+    "advisory": { "type": "object", "required": ["id", "severity", "affected", "source"],
+      "properties": {
+        "id": { "type": "string" }, "aliases": { "type": "array", "items": { "type": "string" } },
+        "title": { "type": "string" },
+        "cvss": { "type": ["object", "null"], "properties": { "score": { "type": "number", "minimum": 0, "maximum": 10 },
+          "vector": { "type": "string" }, "version": { "type": "string" } } },
+        "severity": { "enum": ["critical", "high", "medium", "low", "unknown"] },
+        "kev": { "type": "boolean" },
+        "published": { "type": "string" },
+        "affected": { "type": "array", "items": { "type": "object",
+          "properties": { "introduced": { "type": "string" }, "fixed": { "type": "string" },
+            "last_affected": { "type": "string" }, "release": { "type": "string" } } } },
+        "source": { "enum": ["osv", "ghsa", "nvd", "debian", "vendor"] },
+        "url": { "type": "string" } } }
+  }
+}
