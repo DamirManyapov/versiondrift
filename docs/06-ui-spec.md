@@ -144,6 +144,19 @@ my board". In dev, server-side loads read the local feed through a `handleFetch`
 - Pages must add value beyond vendor notes: merged view, counts, CVE mapping, upgrade notes. No thin pages:
   a compare page with zero items returns 404.
 
+Implemented in S4-T2 (`apps/web/src/lib/seo/pages.ts`, routes `p/[id]/[range=range]` and `p/[id]/v/[version]`):
+- Only releases the feed knows get pages; anything else is a 404. `v` prefixes and reversed ranges answer with a 301
+  to the canonical URL, which is also the page's `<link rel="canonical">`.
+- Compare page: counts per type, "vulnerabilities fixed by this upgrade" (advisories that affect `from` and not `to`),
+  breaking changes, security changes and deprecations tagged with their release, then every release in between
+  (40 items each, the rest counted and linked to the vendor's notes). JSON-LD: `SoftwareApplication` + `ItemList`.
+- Version page: the status engine's verdict with the default threshold (advisories with "fixed in", end of life,
+  newer releases in the track, a newer major), newer releases linking to their own pages and comparisons.
+- The product page links each release to its version page and to its comparison with the latest release.
+- All three are server loads (`+page.server.ts`), so the HTML carries only what the page shows (a universal load
+  inlined the whole product file: 1.7 MB of HTML for GitLab). Responses are `public, max-age=600`; on Cloudflare
+  `hooks.server.ts` keeps them in the edge cache (`caches.default`), keyed by URL + language + theme.
+
 ## i18n
 
 `en` (default) and `ru` from day one — a small typed dictionary in `apps/web/src/lib/i18n` (ADR-0006). Language from

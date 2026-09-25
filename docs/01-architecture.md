@@ -136,4 +136,5 @@ public key baked into the image (overridable for forks/private feeds). The secre
   whichever is larger; older releases go to `products/<id>/archive-<year>.json`.
 - GitHub API: authenticated 5 000 req/h in Actions; conditional requests (ETag) return 304 which don't count against
   the primary limit for authenticated requests (verify in Sprint 1) — plus incremental "since last seen tag".
-- Compare pages (`/p/<id>/<a>...<b>`) are rendered on demand in Workers and cached at the edge by feed ETag.
+- Compare pages (`/p/<id>/<a>...<b>`) are rendered on demand in Workers and cached at the edge for 10 minutes
+  (Cache API in `hooks.server.ts`; the feed changes once a day).

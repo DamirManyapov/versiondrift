@@ -9,6 +9,11 @@ declare global {
     interface PageData {
       locale: Locale;
     }
+    /** Cloudflare (adapter-cloudflare) only; absent in the Node/Docker build. */
+    interface Platform {
+      caches?: { default: Cache };
+      ctx?: { waitUntil(promise: Promise<unknown>): void };
+    }
   }
 }
 

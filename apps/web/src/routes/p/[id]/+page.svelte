@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { resolve } from '$app/paths';
+  import { page } from '$app/state';
   import type { ItemType } from '@versiondrift/schema';
   import TypeChip from '$lib/components/TypeChip.svelte';
   import { REPO_URL } from '$lib/config';
@@ -35,6 +37,7 @@
     name="description"
     content={t('productPageDescription', { name: product.name, latest: latest?.version ?? '' })}
   />
+  <link rel="canonical" href="{page.url.origin}{page.url.pathname}" />
 </svelte:head>
 
 <article class="page">
@@ -115,9 +118,21 @@
     {#each stable.slice(0, 15) as r (r.sortKey)}
       <div class="release">
         <div class="line">
-          {#if r.url}<a class="mono ver" href={r.url} target="_blank" rel="noreferrer">{r.version}</a
-            >{:else}<span class="mono ver">{r.version}</span>{/if}
+          <a class="mono ver" href={resolve('/p/[id]/v/[version]', { id: product.id, version: r.version })}
+            >{r.version}</a
+          >
           <span class="muted">{formatDate(r.date ?? r.firstSeenAt, locale)}</span>
+          {#if latest && r.version !== latest.version}
+            <a
+              class="muted"
+              href={resolve('/p/[id]/[range=range]', {
+                id: product.id,
+                range: `${r.version}...${latest.version}`,
+              })}>→ {latest.version}</a
+            >
+          {/if}
+          {#if r.url}<a class="muted" href={r.url} target="_blank" rel="noreferrer">{t('releaseNotes')} ↗</a
+            >{/if}
           <span class="grow"></span>
           {#each countTypes(r.items).filter(([type]) => type !== 'other') as [type, n] (type)}
             <span class="count">{n}</span><TypeChip {type} />

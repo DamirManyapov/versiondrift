@@ -10,11 +10,26 @@ export const handle: Handle = async ({ event, resolve }) => {
   const theme = themeCookie === 'dark' || themeCookie === 'light' ? themeCookie : 'auto';
   event.locals.locale = locale;
   event.locals.theme = theme;
-  return resolve(event, {
-    transformPageChunk: ({ html }) => html.replace('%lang%', locale).replace('%theme%', theme),
-    // FeedClient reads ETags of feed responses in universal loads.
-    filterSerializedResponseHeaders: (name) => name === 'etag' || name === 'content-type',
-  });
+  const render = () =>
+    resolve(event, {
+      transformPageChunk: ({ html }) => html.replace('%lang%', locale).replace('%theme%', theme),
+      // FeedClient reads ETags of feed responses in universal loads.
+      filterSerializedResponseHeaders: (name) => name === 'etag' || name === 'content-type',
+    });
+
+  // Edge cache for the server-rendered product, compare and version pages on Cloudflare (docs/01): the feed
+  // changes once a day, so a rendered page is reused for as long as its Cache-Control allows. Language and theme
+  // are part of the key because the HTML depends on them.
+  const cache = event.platform?.caches?.default;
+  if (!cache || event.request.method !== 'GET' || !event.url.pathname.startsWith('/p/')) return render();
+  const key = new URL(event.url);
+  key.searchParams.set('__vd', `${locale}.${theme}`);
+  const hit = await cache.match(key);
+  if (hit) return hit;
+  const response = await render();
+  if (response.status === 200 && response.headers.get('cache-control')?.startsWith('public'))
+    event.platform?.ctx?.waitUntil(cache.put(key, response.clone()));
+  return response;
 };
 
 // Dev only (removed from builds): server-side loads read the local feed that vite serves at /feed/ in the browser.
