@@ -1,0 +1,6 @@
+What's new in 7.24.4 (2026-09-16):<br /><br />*) lte - prevent the modem firmware from being deleted for
+RBSXTLTE3-7, EC25-EU&KNe, EG25-G&KNe, EC25-EU&SXTsq, EG25-G&SXTsq (introduced in 7.24.3);<br /><br />If you
+have already upgraded to 7.23.6 or 7.24.3, follow these steps to restore LTE functionality on affected
+devices:<br /><br />1. Upgrade RouterOS to version 7.23.7 or 7.24.4<br /><br />2. Update the modem
+firmware:<br />/interface/lte/firmware-upgrade [find] upgrade=yes<br /><br />3. Reboot the router.<br /><br />For
+more details, see:<br />https://forum.mikrotik.com/t/warning-lte-interface-stops-working-after-upgrade-to-7-23-6-7-24-3
