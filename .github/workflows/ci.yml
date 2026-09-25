@@ -74,15 +74,15 @@ jobs:
           docker logs vd
       - name: Self-hosted mode signs in and keeps boards in SQLite under /data
         run: |
+          trap 'echo "--- container log"; docker logs vd-sh' ERR
           docker run -d --name vd-sh -p 8081:8080 --read-only --tmpfs /tmp \
             -e VD_MODE=selfhosted -e VD_ADMIN_PASSWORD=ci-password-1 -v vd-sh:/data versiondrift:ci
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8081/healthz && break; sleep 1; done
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8081/api/boards)" = 401
-          signin() {
-            curl -fsS -o /dev/null -c jar.txt -H 'origin: http://127.0.0.1:8081' -H 'accept: text/html' \
-              -d 'name=admin&password=ci-password-1' http://127.0.0.1:8081/login
-          }
-          signin
+          status=$(curl -sS -o signin.txt -w '%{http_code}' -c jar.txt -H 'origin: http://127.0.0.1:8081' \
+            -H 'accept: text/html' --data-urlencode 'name=admin' --data-urlencode 'password=ci-password-1' \
+            http://127.0.0.1:8081/login)
+          test "$status" = 303 || { echo "sign-in answered $status"; head -c 2000 signin.txt; false; }
           curl -fsS -b jar.txt -X PUT -H 'content-type: application/json' \
             -d '{"v":1,"items":[{"p":"grafana","ver":"12.4.5"}],"settings":{"criticalCvss":7,"hideOk":false}}' \
             http://127.0.0.1:8081/api/boards/1/inventory
