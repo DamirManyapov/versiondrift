@@ -8,6 +8,7 @@
   "include": ["src"],
   "references": [
     { "path": "../../packages/schema" },
+    { "path": "../../packages/feed" },
     { "path": "../../packages/core" },
     { "path": "../../packages/adapters" },
     { "path": "../collector" }

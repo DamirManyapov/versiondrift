@@ -89,4 +89,8 @@ jobs:
           docker restart vd-sh
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8081/healthz && break; sleep 1; done
           curl -fsS -b jar.txt http://127.0.0.1:8081/api/boards/1/inventory | grep -q '"12.4.5"'
-          docker logs vd-sh
+          # The verified feed mirror (first sync after start: the public feed, ~15 MB).
+          for i in $(seq 1 90); do curl -fsS -o /dev/null http://127.0.0.1:8081/feed/v1/index.json && break; sleep 2; done
+          curl -fsS -o /dev/null http://127.0.0.1:8081/feed/v1/index.json
+          curl -fsS -b jar.txt -o /dev/null http://127.0.0.1:8081/p/grafana
+          docker logs vd-sh | grep 'feed synced'

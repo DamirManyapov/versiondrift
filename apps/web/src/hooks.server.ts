@@ -1,9 +1,15 @@
-import { dev } from '$app/environment';
-import type { Handle, HandleFetch } from '@sveltejs/kit';
+import { building, dev } from '$app/environment';
+import type { Handle, HandleFetch, ServerInit } from '@sveltejs/kit';
 import { isLocale, localeFromHeader } from '$lib/i18n';
 import { json } from '@sveltejs/kit';
 import { bootstrapAdmin, crossSite, currentUser, isOpenPath } from '$lib/server/auth';
+import { startFeedSync } from '$lib/server/feed-sync';
 import { mode } from '$lib/server/storage';
+
+// Self-hosted: keep the local feed mirror fresh (not during `vite build`, which also loads this file).
+export const init: ServerInit = () => {
+  if (mode() === 'selfhosted' && !building) startFeedSync();
+};
 
 // Language: the vd_lang cookie (set in the footer), else Accept-Language. Theme: the vd_theme cookie, else auto.
 export const handle: Handle = async ({ event, resolve }) => {
@@ -64,7 +70,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 // Dev only (removed from builds): server-side loads read the local feed that vite serves at /feed/ in the browser.
 export const handleFetch: HandleFetch = async ({ request, fetch }) => {
-  if (dev) {
+  if (dev && mode() !== 'selfhosted') {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/feed/')) {
       const { readFile } = await import('node:fs/promises');

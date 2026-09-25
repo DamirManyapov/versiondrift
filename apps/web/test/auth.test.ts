@@ -21,6 +21,7 @@ describe('sign-in helpers', () => {
     expect(isOpenPath('/login')).toBe(true);
     expect(isOpenPath('/auth/oidc/callback')).toBe(true);
     expect(isOpenPath('/healthz')).toBe(true);
+    expect(isOpenPath('/feed/v1/index.json')).toBe(true);
     expect(isOpenPath('/api/boards')).toBe(false);
     expect(isOpenPath('/loginx')).toBe(false);
   });

@@ -15,6 +15,7 @@
     "@versiondrift/adapters": "workspace:*",
     "@versiondrift/collector": "workspace:*",
     "@versiondrift/core": "workspace:*",
+    "@versiondrift/feed": "workspace:*",
     "@versiondrift/schema": "workspace:*",
     "commander": "^14.0.3",
     "yaml": "^2.9.1"

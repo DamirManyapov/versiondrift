@@ -1,12 +1,10 @@
 // The published feed, verified: index.json against the minisign public key, each product file against the
 // sha256 the signed index lists.
 import { createFetcher, type Fetcher } from '@versiondrift/adapters';
-import { sha256, verifyFile } from '@versiondrift/collector';
+import { DEFAULT_FEED_URL, FEED_PUBLIC_KEY, sha256, verifyFile } from '@versiondrift/feed';
 import { FeedIndex, FeedProduct } from '@versiondrift/schema';
 
-/** keys/feed.pub — the key the official collector signs with. */
-export const FEED_PUBLIC_KEY = 'RWS5QKz6JGR7xISHHllazU/WZfqYkET1YLLxuKPMlK8s7N13793Wd/2N';
-export const DEFAULT_FEED_URL = 'https://feed.versiondrift.dev/';
+export { DEFAULT_FEED_URL, FEED_PUBLIC_KEY };
 
 export interface Feed {
   index: FeedIndex;

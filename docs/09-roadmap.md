@@ -96,7 +96,8 @@ Goal: red tiles are real.
 - S5-T1 ✅ `adapter-node` build, Dockerfile (multi-stage, non-root, multi-arch), GHCR release workflow.
 - S5-T2 ✅ Drizzle schema + SQLite store, migrations; multiple boards; instances.
 - S5-T3 ✅ Auth modes none/password/oidc/trusted-header.
-- S5-T4 Feed sync with signature verification; offline mode flag (runs collector in-process).
+- S5-T4 ✅ Feed sync with signature verification (local mirror served at /feed/); offline mode flag (runs collector
+  in-process) — deferred, see docs/07.
 - S5-T5 Notifications: Telegram, e-mail, ntfy, Gotify, webhook; rules; weekly digest.
 - S5-T6 `inventory.yaml` watch/import; docs for compose + reverse proxy.
 

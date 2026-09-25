@@ -7,7 +7,14 @@ import { FeedClient, FeedError } from './client.ts';
 
 export async function loadProduct(fetch: typeof globalThis.fetch, id: string) {
   const client = new FeedClient(feedBaseUrl(), fetch);
-  const index = await client.index();
+  let index;
+  try {
+    index = await client.index();
+  } catch (e) {
+    // A self-hosted instance whose first feed sync hasn't finished, or an unreachable feed.
+    if (e instanceof FeedError) error(503, e.message);
+    throw e;
+  }
   const entry = index.products[id];
   if (!entry) error(404, `Unknown product "${id}"`);
   try {

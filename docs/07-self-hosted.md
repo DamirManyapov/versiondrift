@@ -30,11 +30,29 @@ dependencies; the runtime stage is `node:22-alpine` with only `build/` and those
 (uid 1000) with `/data` as the only writable path (`docker run --read-only` works), `HEALTHCHECK` on `/healthz`.
 CI builds the image and starts it on every push; `.github/workflows/release.yml` publishes
 `ghcr.io/<owner>/versiondrift` for `linux/amd64` and `linux/arm64` on a `v*` tag (`1.2.3`, `1.2`, `latest`) or by hand
-(branch and sha tags). The image runs with `VD_MODE=selfhosted` (boards in SQLite, sign-in); until S5-T4 the browser
-still reads the public feed directly.
+(branch and sha tags). The image runs with `VD_MODE=selfhosted` (boards in SQLite, sign-in, a local feed mirror).
 
 Behind a reverse proxy that passes the original `Host` nothing needs configuring; if it rewrites `Host`, set
 `ORIGIN=https://versiondrift.example.com`.
+
+## Feed sync (S5-T4)
+
+The server keeps a verified mirror of the public feed in `${VD_DATA_DIR}/feed/v1/` (`packages/feed`, `syncFeed`) and
+serves it at `/feed/v1/…` (open without sign-in: it is public data), so browsers on the LAN only ever talk to the
+instance. A sync, at start and on `VD_FEED_SYNC`:
+
+1. fetches `index.json` (conditional on its ETag; unchanged → done) and `index.json.minisig`, and checks the
+   signature against `VD_FEED_PUBKEY` — an unsigned or forged index is rejected;
+2. downloads only the product files whose sha256 differs from what the signed index lists, and checks each one;
+3. refreshes the unsigned display files (`catalog.json`, `health.json`, `versions.json`, the last 12 weekly digests);
+4. moves everything into place with atomic renames, `index.json` last, and removes products that left the catalog.
+
+Any failure keeps the previous mirror untouched and is logged and recorded in `feed/sync-state.json`
+(`syncedAt`, `generatedAt`, `verified`, `lastError`). Until the first sync finishes (≈ 20 s) pages answer 503.
+The first sync downloads ~15 MB; later ones only what changed.
+
+Offline mode (`VD_OFFLINE`, running the collector inside the container instead of pulling the feed) is not
+implemented yet: it needs the collector and the modules in the image and outbound access to every vendor.
 
 ## Auth (S5-T3)
 
@@ -67,10 +85,12 @@ https without `ORIGIN`, which would refuse every form post on a plain-http LAN i
 |---|---|---|
 | `PORT` | 8080 | listening port (adapter-node); `HOST` defaults to `0.0.0.0` |
 | `VD_DATA_DIR` | /data | SQLite DB, cache, private modules |
-| `VD_FEED_URL` | https://feed.versiondrift.dev/v1/ | public feed |
-| `VD_FEED_PUBKEY` | baked-in | minisign public key |
-| `VD_FEED_SYNC` | `0 3 * * *` | cron |
-| `VD_OFFLINE` | false | run own collector instead of pulling feed |
+| `VD_FEED_URL` | https://feed.versiondrift.dev/ | public feed (the directory holding `v1/`; a URL ending in `/v1/` works too) |
+| `VD_FEED_PUBKEY` | baked-in | minisign public key (`keys/feed.pub`) |
+| `VD_FEED_SYNC` | `0 3 * * *` | cron for the feed sync (the public feed is rebuilt at 02:00 UTC); also runs at start |
+| `VD_TZ` | UTC | time zone for `VD_FEED_SYNC` |
+| `PUBLIC_FEED_URL` | `/feed/` in the image | where browsers read the feed: the instance's own mirror |
+| `VD_OFFLINE` | false | run own collector instead of pulling feed — **not implemented yet** |
 | `VD_PRIVATE_MODULES_DIR` | /data/modules | extra modules (collected locally, merged into the view) |
 | `VD_AUTH` | password | `none` (trusted LAN), `password`, `oidc`, `header` (a proxy authenticates; see Auth) |
 | `VD_ADMIN_PASSWORD` | | first start in `password` mode: the `admin` user's password (≥ 8 characters); otherwise one is generated and printed to the log once |

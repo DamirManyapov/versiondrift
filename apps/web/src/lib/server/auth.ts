@@ -101,9 +101,12 @@ export function endSession(cookies: Cookies): void {
   cookies.delete(SESSION_COOKIE, { path: '/' });
 }
 
-/** Paths reachable without signing in. Static files never reach the hooks. */
+/** Paths reachable without signing in (the feed mirror is public data). Static files never reach the hooks. */
 export const isOpenPath = (pathname: string) =>
-  pathname === '/login' || pathname === '/healthz' || pathname.startsWith('/auth/');
+  pathname === '/login' ||
+  pathname === '/healthz' ||
+  pathname.startsWith('/auth/') ||
+  pathname.startsWith('/feed/');
 
 /** Only same-site relative paths, so ?next= can't send people elsewhere after signing in. */
 export function safeNext(next: string | null): string {

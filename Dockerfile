@@ -23,7 +23,8 @@ ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=8080 \
     VD_MODE=selfhosted \
-    VD_DATA_DIR=/data
+    VD_DATA_DIR=/data \
+    PUBLIC_FEED_URL=/feed/
 WORKDIR /app
 COPY --from=build /out/package.json ./package.json
 COPY --from=build /out/node_modules ./node_modules
