@@ -26,7 +26,7 @@ Goal: an empty but well-wired monorepo.
 Goal: `https://feed.versiondrift.dev/v1/index.json` updates daily with real data.
 
 - S1-T1 ✅ `packages/core`: version schemes `semver`, `loose`, `debian` (+ property tests), `trackOf`, `branchOf`.
-- S1-T2 Adapter framework: `Fetcher` with ETag cache, per-host rate limiter, fixtures recorder.
+- S1-T2 ✅ Adapter framework: `Fetcher` with ETag cache, per-host rate limiter, fixtures recorder.
 - S1-T3 Adapters: `github`, `rss`, `html`, `dockerhub`, `endoflife`.
 - S1-T4 Classification v1: section mapping + keyword rules (no LLM).
 - S1-T5 Collector CLI: `collect`, `build` (index/product/catalog/health/week), merge with previous, guardrails.
