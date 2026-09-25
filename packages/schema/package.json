@@ -1,0 +1,25 @@
+{
+  "name": "@versiondrift/schema",
+  "version": "0.0.0",
+  "private": true,
+  "description": "zod schemas and types for VersionDrift modules, feed and inventory.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "gen": "node src/cli/gen-json-schema.ts",
+    "validate": "node src/cli/validate-modules.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "ajv": "^8.20.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

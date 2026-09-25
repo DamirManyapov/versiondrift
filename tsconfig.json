@@ -11,5 +11,5 @@
     "types": ["node"]
   },
   "include": ["*.ts", "*.js", "packages/*/test", "apps/*/test"],
-  "references": []
+  "references": [{ "path": "packages/schema" }]
 }

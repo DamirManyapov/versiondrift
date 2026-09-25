@@ -2,132 +2,832 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://versiondrift.dev/schemas/module.schema.json",
   "title": "VersionDrift product module",
-  "description": "Hand-written draft. From S0-T2 on this file is generated from packages/schema (zod) — do not edit by hand after that.",
+  "description": "Generated from packages/schema (zod) by `pnpm schema:gen`. Do not edit by hand.",
   "type": "object",
-  "additionalProperties": false,
-  "required": ["id", "name", "category", "versionScheme", "sources"],
   "properties": {
-    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,62}$" },
-    "name": { "type": "string", "minLength": 1 },
-    "aliases": { "type": "array", "items": { "type": "string" } },
-    "vendor": { "type": "string" },
-    "category": {
-      "enum": ["os", "virtualization", "containers", "orchestration", "monitoring", "logging", "database", "mail",
-               "network", "web", "security", "storage", "backup", "messaging", "collaboration", "ci-cd", "identity", "other"]
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,62}$",
+      "description": "Stable forever and equal to the file name. Renames need an `aliases` entry."
     },
-    "homepage": { "type": "string", "format": "uri" },
-    "logo": { "type": "string" },
-    "description": { "type": "string", "maxLength": 200 },
-    "versionScheme": { "enum": ["semver", "loose", "calver", "debian", "regex"] },
-    "versionRegex": { "type": "string" },
-    "tagFilter": {
-      "type": "object", "additionalProperties": false,
-      "properties": { "include": { "type": "string" }, "exclude": { "type": "string" } }
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Display name."
     },
-    "prerelease": { "enum": ["skip", "include"], "default": "skip" },
-    "tracks": {
+    "aliases": {
+      "description": "Old ids and search synonyms.",
       "type": "array",
       "items": {
-        "type": "object", "additionalProperties": false, "required": ["id", "match"],
-        "properties": { "id": { "type": "string" }, "match": { "type": "string" }, "label": { "type": "string" } }
+        "type": "string",
+        "minLength": 1
       }
     },
-    "defaultTrack": { "type": "string" },
-    "sources": {
-      "type": "object", "additionalProperties": false, "required": ["releases"],
+    "vendor": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "os",
+        "virtualization",
+        "containers",
+        "orchestration",
+        "monitoring",
+        "logging",
+        "database",
+        "mail",
+        "network",
+        "web",
+        "security",
+        "storage",
+        "backup",
+        "messaging",
+        "collaboration",
+        "ci-cd",
+        "identity",
+        "other"
+      ]
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri"
+    },
+    "logo": {
+      "description": "\"simpleicons:<slug>\" or a URL to an SVG in the repo.",
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "description": "One line, at most 200 characters.",
+      "type": "string",
+      "maxLength": 200
+    },
+    "versionScheme": {
+      "type": "string",
+      "enum": [
+        "semver",
+        "loose",
+        "calver",
+        "debian",
+        "regex"
+      ],
+      "description": "How versions are parsed and compared (docs/05)."
+    },
+    "versionRegex": {
+      "type": "string",
+      "minLength": 1,
+      "format": "regex",
+      "description": "Required for versionScheme: regex. Capture groups become numeric segments."
+    },
+    "branchGroups": {
+      "description": "versionScheme: regex only: how many leading capture groups form the branch.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "tagFilter": {
+      "type": "object",
       "properties": {
-        "releases": { "$ref": "#/$defs/releaseSource" },
-        "releasesExtra": { "type": "array", "items": { "$ref": "#/$defs/releaseSource" } },
-        "security": { "type": "array", "items": { "$ref": "#/$defs/securitySource" } },
-        "eol": { "$ref": "#/$defs/eolSource" }
+        "include": {
+          "type": "string",
+          "minLength": 1,
+          "format": "regex",
+          "description": "Only raw versions matching this count as releases."
+        },
+        "exclude": {
+          "type": "string",
+          "minLength": 1,
+          "format": "regex",
+          "description": "Raw versions matching this are ignored."
+        }
+      },
+      "additionalProperties": false
+    },
+    "prerelease": {
+      "default": "skip",
+      "type": "string",
+      "enum": [
+        "skip",
+        "include"
+      ]
+    },
+    "tracks": {
+      "description": "Parallel supported release lines users can pin (ES 8/9, Debian 12/13).",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/track"
       }
+    },
+    "defaultTrack": {
+      "default": "latest",
+      "description": "\"latest\" (any track) or a track id.",
+      "type": "string",
+      "minLength": 1
+    },
+    "sources": {
+      "type": "object",
+      "properties": {
+        "releases": {
+          "description": "Exactly one primary release source.",
+          "$ref": "#/$defs/releaseSource"
+        },
+        "releasesExtra": {
+          "description": "Extra sources that enrich release notes.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/releaseSource"
+          }
+        },
+        "security": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/securitySource"
+          }
+        },
+        "eol": {
+          "$ref": "#/$defs/eolSource"
+        }
+      },
+      "required": [
+        "releases"
+      ],
+      "additionalProperties": false
     },
     "classify": {
-      "type": "object", "additionalProperties": false,
+      "type": "object",
       "properties": {
-        "sections": { "$ref": "#/$defs/typeMap" },
-        "keywords": { "$ref": "#/$defs/typeMap" }
+        "sections": {
+          "description": "Release-note headings that map to item types.",
+          "$ref": "#/$defs/hintMap"
+        },
+        "keywords": {
+          "description": "Keywords that mark an item as a type.",
+          "$ref": "#/$defs/hintMap"
+        }
+      },
+      "additionalProperties": false
+    },
+    "detect": {
+      "description": "Version detectors; the first match wins.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/detectRule"
       }
     },
-    "detect": { "type": "array", "items": { "$ref": "#/$defs/detectRule" } },
-    "maintainers": { "type": "array", "items": { "type": "string", "pattern": "^@[A-Za-z0-9-]+$" } }
+    "maintainers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^@[A-Za-z0-9-]+$"
+      }
+    }
   },
+  "required": [
+    "id",
+    "name",
+    "category",
+    "versionScheme",
+    "sources"
+  ],
+  "additionalProperties": false,
   "allOf": [
-    { "if": { "properties": { "versionScheme": { "const": "regex" } } }, "then": { "required": ["versionRegex"] } }
+    {
+      "if": {
+        "properties": {
+          "versionScheme": {
+            "const": "regex"
+          }
+        },
+        "required": [
+          "versionScheme"
+        ]
+      },
+      "then": {
+        "required": [
+          "versionRegex"
+        ]
+      }
+    }
   ],
   "$defs": {
-    "typeMap": {
-      "type": "object", "additionalProperties": false,
+    "track": {
+      "type": "object",
       "properties": {
-        "security": { "type": "array", "items": { "type": "string" } },
-        "breaking": { "type": "array", "items": { "type": "string" } },
-        "deprecated": { "type": "array", "items": { "type": "string" } },
-        "feature": { "type": "array", "items": { "type": "string" } },
-        "fix": { "type": "array", "items": { "type": "string" } }
-      }
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short and stable, e.g. \"12\" or \"7.0\". Quote numbers."
+        },
+        "match": {
+          "type": "string",
+          "minLength": 1,
+          "format": "regex",
+          "description": "Versions matching this belong to the track."
+        },
+        "label": {
+          "description": "Shown next to the id, e.g. LTS or bookworm.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "match"
+      ],
+      "additionalProperties": false
     },
     "releaseSource": {
-      "type": "object", "required": ["type"],
       "oneOf": [
-        { "properties": { "type": { "const": "github" }, "repo": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
-            "useTags": { "type": "boolean" }, "notesFrom": { "enum": ["release", "changelogFile"] }, "changelogPath": { "type": "string" } },
-          "required": ["repo"], "additionalProperties": false },
-        { "properties": { "type": { "const": "gitlab" }, "host": { "type": "string" }, "project": { "type": "string" } },
-          "required": ["project"], "additionalProperties": false },
-        { "properties": { "type": { "const": "gitea" }, "host": { "type": "string" }, "repo": { "type": "string" } },
-          "required": ["host", "repo"], "additionalProperties": false },
-        { "properties": { "type": { "const": "rss" }, "url": { "type": "string", "format": "uri" },
-            "versionFrom": { "enum": ["title", "link"] }, "versionRegex": { "type": "string" } },
-          "required": ["url"], "additionalProperties": false },
-        { "properties": { "type": { "const": "html" }, "url": { "type": "string", "format": "uri" },
-            "select": { "type": "object", "required": ["item"], "additionalProperties": false,
-              "properties": { "item": { "type": "string" }, "title": { "type": "string" }, "body": { "type": "string" }, "date": { "type": "string" } } },
-            "versionRegex": { "type": "string" }, "dateFormat": { "type": "string" } },
-          "required": ["url", "select"], "additionalProperties": false },
-        { "properties": { "type": { "const": "dockerhub" }, "repo": { "type": "string" }, "tagRegex": { "type": "string" } },
-          "required": ["repo"], "additionalProperties": false },
-        { "properties": { "type": { "const": "manual" }, "file": { "type": "string" } },
-          "required": ["file"], "additionalProperties": false }
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "github"
+            },
+            "repo": {
+              "type": "string",
+              "pattern": "^[\\w.-]+\\/[\\w.-]+$"
+            },
+            "useTags": {
+              "description": "Read git tags instead of GitHub releases.",
+              "type": "boolean"
+            },
+            "notesFrom": {
+              "type": "string",
+              "enum": [
+                "release",
+                "changelogFile"
+              ]
+            },
+            "changelogPath": {
+              "description": "Path of the changelog file for notesFrom: changelogFile.",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "type",
+            "repo"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "gitlab"
+            },
+            "host": {
+              "description": "Default: gitlab.com",
+              "type": "string",
+              "minLength": 1
+            },
+            "project": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "type",
+            "project"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "gitea"
+            },
+            "host": {
+              "type": "string",
+              "minLength": 1
+            },
+            "repo": {
+              "type": "string",
+              "pattern": "^[\\w.-]+\\/[\\w.-]+$"
+            }
+          },
+          "required": [
+            "type",
+            "host",
+            "repo"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "rss"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "versionFrom": {
+              "type": "string",
+              "enum": [
+                "title",
+                "link"
+              ]
+            },
+            "versionRegex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version from the entry; the first non-empty capture group wins."
+            }
+          },
+          "required": [
+            "type",
+            "url"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "html"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "select": {
+              "type": "object",
+              "properties": {
+                "item": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "body": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "date": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "item"
+              ],
+              "additionalProperties": false,
+              "description": "CSS selectors: one `item` per release, the others relative to it."
+            },
+            "versionRegex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version from the item title."
+            },
+            "dateFormat": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "type",
+            "url",
+            "select"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "dockerhub"
+            },
+            "repo": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Image repository, e.g. analogic/poste.io"
+            },
+            "tagRegex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Only tags matching this count as releases."
+            }
+          },
+          "required": [
+            "type",
+            "repo"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "manual"
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1,
+              "description": "products/<id>.releases.yaml, maintained by hand."
+            }
+          },
+          "required": [
+            "type",
+            "file"
+          ],
+          "additionalProperties": false
+        }
       ]
     },
     "securitySource": {
-      "type": "object", "required": ["type"],
       "oneOf": [
-        { "properties": { "type": { "const": "osv" }, "ecosystem": { "type": "string" }, "package": { "type": "string" } },
-          "required": ["ecosystem", "package"], "additionalProperties": false },
-        { "properties": { "type": { "const": "ghsa" }, "repo": { "type": "string" }, "ecosystem": { "type": "string" }, "package": { "type": "string" } },
-          "additionalProperties": false },
-        { "properties": { "type": { "const": "nvd" }, "cpe": { "type": "string", "pattern": "^cpe:2\\.3:" } },
-          "required": ["cpe"], "additionalProperties": false },
-        { "properties": { "type": { "const": "debian" },
-            "packages": { "oneOf": [ { "type": "array", "items": { "type": "string" } }, { "const": "fromInventory" } ] } },
-          "additionalProperties": false },
-        { "properties": { "type": { "const": "rss" }, "url": { "type": "string", "format": "uri" } },
-          "required": ["url"], "additionalProperties": false }
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "osv"
+            },
+            "ecosystem": {
+              "type": "string",
+              "minLength": 1
+            },
+            "package": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "type",
+            "ecosystem",
+            "package"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "ghsa"
+            },
+            "repo": {
+              "description": "Repository advisories. Alternative to ecosystem + package.",
+              "type": "string",
+              "pattern": "^[\\w.-]+\\/[\\w.-]+$"
+            },
+            "ecosystem": {
+              "type": "string",
+              "minLength": 1
+            },
+            "package": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "repo"
+              ],
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "ecosystem"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "package"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "required": [
+                "ecosystem",
+                "package"
+              ],
+              "not": {
+                "required": [
+                  "repo"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "nvd"
+            },
+            "cpe": {
+              "type": "string",
+              "pattern": "^cpe:2\\.3:[aho]:"
+            }
+          },
+          "required": [
+            "type",
+            "cpe"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "debian"
+            },
+            "packages": {
+              "anyOf": [
+                {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                {
+                  "type": "string",
+                  "const": "fromInventory"
+                }
+              ],
+              "description": "Source packages to track, or fromInventory to use the packages detected per host."
+            }
+          },
+          "required": [
+            "type",
+            "packages"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "rss"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": [
+            "type",
+            "url"
+          ],
+          "additionalProperties": false
+        }
       ]
     },
     "eolSource": {
-      "type": "object", "required": ["type"],
       "oneOf": [
-        { "properties": { "type": { "const": "endoflife" }, "product": { "type": "string" } },
-          "required": ["product"], "additionalProperties": false },
-        { "properties": { "type": { "const": "manual" }, "file": { "type": "string" } },
-          "required": ["file"], "additionalProperties": false }
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "endoflife"
+            },
+            "product": {
+              "type": "string",
+              "minLength": 1,
+              "description": "endoflife.date product slug"
+            }
+          },
+          "required": [
+            "type",
+            "product"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "manual"
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "type",
+            "file"
+          ],
+          "additionalProperties": false
+        }
       ]
     },
-    "detectRule": {
-      "type": "object", "minProperties": 1, "maxProperties": 1,
+    "hintMap": {
+      "type": "object",
       "properties": {
-        "http": { "type": "object", "required": ["path"],
-          "properties": { "path": { "type": "string" }, "defaultPort": { "type": "integer" }, "scheme": { "enum": ["http", "https"] },
-            "jsonPath": { "type": "string" }, "regex": { "type": "string" }, "header": { "type": "string" } } },
-        "docker": { "type": "object", "required": ["image"], "properties": { "image": { "type": "string" } } },
-        "command": { "type": "object", "required": ["run"], "properties": { "run": { "type": "string" }, "regex": { "type": "string" } } },
-        "file": { "type": "object", "required": ["path"], "properties": { "path": { "type": "string" }, "regex": { "type": "string" } } },
-        "snmp": { "type": "object", "required": ["oid"], "properties": { "oid": { "type": "string" }, "regex": { "type": "string" } } },
-        "sql": { "type": "object", "required": ["query"], "properties": { "engine": { "enum": ["mysql", "postgresql"] }, "query": { "type": "string" }, "regex": { "type": "string" } } }
+        "security": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "breaking": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "deprecated": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "feature": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "fix": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
       },
       "additionalProperties": false
+    },
+    "detectRule": {
+      "type": "object",
+      "properties": {
+        "http": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "pattern": "^\\/"
+            },
+            "defaultPort": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "scheme": {
+              "type": "string",
+              "enum": [
+                "http",
+                "https"
+              ]
+            },
+            "jsonPath": {
+              "type": "string",
+              "minLength": 1
+            },
+            "regex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version; the first capture group wins."
+            },
+            "header": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "additionalProperties": false
+        },
+        "docker": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "image"
+          ],
+          "additionalProperties": false
+        },
+        "command": {
+          "type": "object",
+          "properties": {
+            "run": {
+              "type": "string",
+              "minLength": 1
+            },
+            "regex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version; the first capture group wins."
+            }
+          },
+          "required": [
+            "run"
+          ],
+          "additionalProperties": false
+        },
+        "file": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "regex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version; the first capture group wins."
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "additionalProperties": false
+        },
+        "snmp": {
+          "type": "object",
+          "properties": {
+            "oid": {
+              "type": "string",
+              "pattern": "^\\d+(\\.\\d+)+$"
+            },
+            "regex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version; the first capture group wins."
+            }
+          },
+          "required": [
+            "oid"
+          ],
+          "additionalProperties": false
+        },
+        "sql": {
+          "type": "object",
+          "properties": {
+            "engine": {
+              "type": "string",
+              "enum": [
+                "mysql",
+                "postgresql"
+              ]
+            },
+            "query": {
+              "type": "string",
+              "minLength": 1
+            },
+            "regex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version; the first capture group wins."
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1
     }
   }
 }
