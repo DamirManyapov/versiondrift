@@ -7,9 +7,7 @@ import { Inventory } from '@versiondrift/schema';
 import { Command } from 'commander';
 import { parse as parseYaml } from 'yaml';
 import { DEFAULT_FEED_URL, loadFeed } from './feed.ts';
-import { TEXT } from './i18n.ts';
-import { EMPTY_STATE, runNotify, type NotifyState } from './notify.ts';
-import { telegram } from './telegram.ts';
+import { EMPTY_STATE, runNotify, telegram, TEXT, type NotifyState } from '@versiondrift/alerts';
 
 const DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 

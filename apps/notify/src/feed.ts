@@ -2,14 +2,10 @@
 // sha256 the signed index lists.
 import { createFetcher, type Fetcher } from '@versiondrift/adapters';
 import { DEFAULT_FEED_URL, FEED_PUBLIC_KEY, sha256, verifyFile } from '@versiondrift/feed';
+import type { Feed } from '@versiondrift/alerts';
 import { FeedIndex, FeedProduct } from '@versiondrift/schema';
 
 export { DEFAULT_FEED_URL, FEED_PUBLIC_KEY };
-
-export interface Feed {
-  index: FeedIndex;
-  product(id: string): Promise<FeedProduct | undefined>;
-}
 
 export async function loadFeed(
   base: string,

@@ -1,5 +1,6 @@
-// One notify run (docs/09 S2-T9): statuses for every instance in the inventory, compared with what was sent last
-// time; a message only when something changed for the worse or a new release appeared. First run = one summary.
+// One alert run (docs/07 "Notifications"): statuses for every instance in the inventory, compared with what was sent
+// last time; a message only when something changed for the worse or a new release appeared. First run = one summary.
+// Used by `pnpm notify` (apps/notify) and by self-hosted instances.
 import {
   computeStatus,
   DEFAULT_SETTINGS,
@@ -9,14 +10,31 @@ import {
 } from '@versiondrift/core';
 import {
   inventoryEntries,
+  type FeedIndex,
   type FeedProduct,
   type InstanceSpec,
   type Inventory,
   type ItemType,
 } from '@versiondrift/schema';
-import type { Feed } from './feed.ts';
 import { STATUS_LABEL, TEXT, type Lang } from './i18n.ts';
 import { escapeHtml as esc } from './telegram.ts';
+
+/** The feed as alerts need it: the index and product files, already verified by whoever loaded them. */
+export interface Feed {
+  index: FeedIndex;
+  product(id: string): Promise<FeedProduct | undefined>;
+}
+
+/** What an instance-level alert is about; channels can subscribe to some of them. */
+export type EventKind = 'critical' | 'eol' | 'eolSoon' | 'update' | 'invalid';
+
+export interface AlertEvent {
+  /** summary: the first run's overview; digest: the weekly summary; change: something happened to one instance. */
+  type: 'summary' | 'digest' | 'change';
+  kinds: EventKind[];
+  /** Telegram-flavoured HTML (b, a); channels convert it. */
+  html: string;
+}
 
 export interface InstanceState {
   status: Status;
@@ -51,7 +69,9 @@ export interface NotifyOptions {
 }
 
 export interface NotifyResult {
+  /** The events' HTML, in order. */
   messages: string[];
+  events: AlertEvent[];
   state: NotifyState;
   checked: Checked[];
   problems: string[];
@@ -87,7 +107,7 @@ function line(lang: Lang, c: Checked): string {
   return `${STATUS_LABEL[lang][s.status].split(' ')[0]} ${head}`;
 }
 
-function eventMessage(lang: Lang, c: Checked, kinds: string[]): string {
+function eventMessage(lang: Lang, c: Checked, kinds: EventKind[]): string {
   const t = TEXT[lang];
   const s = c.status;
   const lines = [line(lang, c)];
@@ -115,8 +135,8 @@ function eventMessage(lang: Lang, c: Checked, kinds: string[]): string {
 }
 
 /** What changed for this instance since the last run. */
-function eventsFor(previous: InstanceState | undefined, s: ProductStatus): string[] {
-  const kinds: string[] = [];
+function eventsFor(previous: InstanceState | undefined, s: ProductStatus): EventKind[] {
+  const kinds: EventKind[] = [];
   const advisories = s.affecting.map((a) => a.id);
   if (
     s.status === 'critical' &&
@@ -201,16 +221,21 @@ export async function runNotify(
     });
   }
 
-  const messages: string[] = [];
+  const events: AlertEvent[] = [];
   const nowIso = options.now.toISOString();
   const firstRun = state.initializedAt === undefined;
   if (firstRun) {
     const head = TEXT[options.lang].firstRun(checked.length);
-    messages.push([summary(options.lang, checked, head), ...problems.map((p) => `⚠️ ${esc(p)}`)].join('\n'));
+    events.push({
+      type: 'summary',
+      kinds: [],
+      html: [summary(options.lang, checked, head), ...problems.map((p) => `⚠️ ${esc(p)}`)].join('\n'),
+    });
   } else {
     for (const c of checked) {
       const kinds = eventsFor(state.instances[c.key], c.status);
-      if (kinds.length > 0) messages.push(eventMessage(options.lang, c, kinds));
+      if (kinds.length > 0)
+        events.push({ type: 'change', kinds, html: eventMessage(options.lang, c, kinds) });
     }
   }
 
@@ -223,12 +248,14 @@ export async function runNotify(
   if (digestDue) {
     const t = TEXT[options.lang];
     const shipped = shippedThisWeek(options.lang, checked, options.now);
-    messages.push(
-      [
+    events.push({
+      type: 'digest',
+      kinds: [],
+      html: [
         summary(options.lang, checked, `📋 <b>${t.digest}</b>`),
         ...(shipped.length ? ['', t.shippedThisWeek, ...shipped] : []),
       ].join('\n'),
-    );
+    });
     lastDigestAt = nowIso;
   }
 
@@ -242,7 +269,8 @@ export async function runNotify(
     };
   }
   return {
-    messages,
+    messages: events.map((e) => e.html),
+    events,
     checked,
     problems,
     state: {

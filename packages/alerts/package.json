@@ -1,0 +1,25 @@
+{
+  "name": "@versiondrift/alerts",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Alerts about your stack: what changed since the last run, and the channels that deliver it (Telegram, ntfy, Gotify, webhook, e-mail).",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@versiondrift/core": "workspace:*",
+    "@versiondrift/schema": "workspace:*",
+    "nodemailer": "^10.0.10"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/nodemailer": "^8.0.2",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

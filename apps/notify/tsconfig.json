@@ -9,6 +9,7 @@
   "references": [
     { "path": "../../packages/schema" },
     { "path": "../../packages/feed" },
+    { "path": "../../packages/alerts" },
     { "path": "../../packages/core" },
     { "path": "../../packages/adapters" },
     { "path": "../collector" }

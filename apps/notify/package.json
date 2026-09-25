@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@versiondrift/adapters": "workspace:*",
+    "@versiondrift/alerts": "workspace:*",
     "@versiondrift/collector": "workspace:*",
     "@versiondrift/core": "workspace:*",
     "@versiondrift/feed": "workspace:*",

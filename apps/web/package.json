@@ -31,6 +31,7 @@
     "vitest": "catalog:"
   },
   "dependencies": {
+    "@versiondrift/alerts": "workspace:*",
     "@versiondrift/core": "workspace:*",
     "@versiondrift/db": "workspace:*",
     "@versiondrift/feed": "workspace:*",
