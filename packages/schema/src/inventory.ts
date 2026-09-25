@@ -26,7 +26,12 @@ export const Inventory = z.strictObject({
     z.strictObject({
       products: z.record(
         z.string().min(1),
-        z.union([quoted.min(1), InstanceSpec, z.array(InstanceSpec).min(1)]),
+        z.union([quoted.min(1), InstanceSpec, z.array(InstanceSpec).min(1)], {
+          error: (issue) =>
+            issue.code === 'invalid_union'
+              ? 'expected a version string (quote versions in YAML, e.g. "12.10"), { version: "…" } or a list of them'
+              : undefined,
+        }),
       ),
     }),
   ),

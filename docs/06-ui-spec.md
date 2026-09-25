@@ -74,6 +74,8 @@ localStorage key `vd.inventory.v1`:
   "settings": { "criticalCvss": 7, "lang": "ru", "theme": "dark" } }
 ```
 All access wrapped in try/catch; if storage is unavailable, keep in memory and show a banner.
+Implemented in `apps/web/src/lib/inventory` (`BrowserInventoryStore`, reactive `inventory` state). Settings kept there:
+`criticalCvss`, `hideOk`; language and theme are cookies (so the server renders them).
 
 **Share link**: `/b#s=<base64url(deflate(JSON items))>`; fragment never reaches the server.
 Human-readable variant accepted too: `/b#grafana@11.3.1,poste-io@2.4.5`.
