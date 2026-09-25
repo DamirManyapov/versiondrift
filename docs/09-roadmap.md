@@ -34,7 +34,7 @@ Goal: `https://feed.versiondrift.dev/v1/index.json` updates daily with real data
 - S1-T7 ✅ Verify & fix the 10 example modules; add 5 more from the author's stack (zabbix, postgresql, nginx, minio,
   proxmox-backup-server). Done with postgresql, nginx, minio, proxmox-backup-server, rabbitmq, plus outline and
   bigbluebutton from the author's stack (17 modules).
-- S1-T8 `module-pr.yml` bot comment with parsed releases.
+- S1-T8 ✅ `module-pr.yml` bot comment with parsed releases.
 
 **Done when:** feed is published by cron 3 days in a row; health ≥ 90 %; the author can open product JSONs and
 they are correct for Grafana, Debian, poste.io.

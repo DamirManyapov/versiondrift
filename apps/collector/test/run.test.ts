@@ -230,3 +230,48 @@ describe('isoWeek', () => {
     expect(isoWeek(new Date(`${date}T12:00:00Z`))).toMatchObject({ year, week });
   });
 });
+
+describe('module PR report', () => {
+  it('summarizes each changed module: latest releases, tracks, lifecycle, security, failures', async () => {
+    const { moduleReport, REPORT_MARKER } = await import('../src/pr-report.ts');
+    const env = await setup(['grafana', 'poste-io', 'broken']);
+    const result = await runCollector(options(env, { dryRun: true }));
+    const modules = (await import('@versiondrift/schema'))
+      .validateModules(
+        ['grafana', 'poste-io', 'broken'].map((id) => ({ file: `products/${id}.yaml`, text: MODULES[id]! })),
+      )
+      .flatMap((r) => (r.module ? [r.module] : []));
+    const report = moduleReport(result.outcomes, modules, new Set(['grafana']));
+    expect(report.startsWith(REPORT_MARKER)).toBe(true);
+    expect(report).toContain('### ✅ `grafana` — 10 releases\n');
+    expect(report).toContain(
+      '| [13.2.2](https://github.com/grafana/grafana/releases/tag/v13.2.2) | 2026-09-15 | 13 | 5: security 3, fix 2 |',
+    );
+    expect(report).toContain('- **Tracks:** 13, 12');
+    expect(report).toMatch(/- \*\*Lifecycle:\*\* 13\.2 \(EOL 2027-05-18\)/);
+    expect(report).toContain('### ✅ `poste-io` — ');
+    expect(report).toContain(' · new module');
+    expect(report).toContain('⚠️ none — the product page will say "security data not available"');
+    expect(report).toContain('### ❌ `broken` — no data · new module');
+    expect(report).toContain('**Collection failed:**');
+  });
+
+  it('updates its earlier comment instead of adding a new one', async () => {
+    const { upsertComment, REPORT_MARKER } = await import('../src/pr-report.ts');
+    const calls: string[] = [];
+    const fake = (existing: boolean): typeof fetch =>
+      ((url: string, init?: RequestInit) => {
+        calls.push(`${init?.method ?? 'GET'} ${url.replace('https://api.github.com/repos/o/r', '')}`);
+        const body = existing ? [{ id: 5, body: `${REPORT_MARKER}\nold` }] : [{ id: 4, body: 'LGTM' }];
+        return Promise.resolve(Response.json(init?.method ? {} : body));
+      }) as typeof fetch;
+    expect(await upsertComment('o/r', 12, 'new', 'token', fake(true))).toBe('updated');
+    expect(await upsertComment('o/r', 12, 'new', 'token', fake(false))).toBe('created');
+    expect(calls).toEqual([
+      'GET /issues/12/comments?per_page=100',
+      'PATCH /issues/comments/5',
+      'GET /issues/12/comments?per_page=100',
+      'POST /issues/12/comments',
+    ]);
+  });
+});

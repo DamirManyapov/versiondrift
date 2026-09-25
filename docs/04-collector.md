@@ -140,8 +140,11 @@ matching security item get a synthetic item `"Fixes CVE-…"` on the fixing rele
   `pnpm collector publish` (sign + upload via the R2 REST API: products first, unchanged ones skipped, then
   signature and index) → `state-push` → `pnpm collector issues` (opens "Module X is failing" with label
   `module-broken` after 3 consecutive failures, closes it on recovery) → the built feed as an artifact.
-- `module-pr.yml`: on PRs touching `products/**`: validate, run `collect --only <changed> --dry-run`, post a comment
-  with the parsed releases table (latest 5), tracks, detected security source, warnings.
+- `module-pr.yml`: on PRs touching `products/**` (`pull_request_target`: workflow and collector from `main`, only the
+  PR's `products/*.yaml` are taken, never its code): `modules:validate`, then `pnpm collector pr-report --only <changed>
+  --pr <n>` dry-runs the changed modules against the published feed and posts one comment (updated on every push):
+  latest 5 releases with dates, tracks and item types, lifecycle branches, security sources, warnings. The job fails
+  when a module is invalid or cannot be collected.
 - `ci.yml`: lint, typecheck, unit tests, `modules:validate`, schema drift check (`schema:gen` must not change files).
 
 ## Local development

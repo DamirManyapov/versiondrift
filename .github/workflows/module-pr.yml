@@ -1,0 +1,50 @@
+# Comments on PRs that add or change product modules with what the collector makes of them (docs/04).
+# pull_request_target runs this workflow and the collector from main; the PR contributes only products/*.yaml,
+# which is data. The PR's code is never checked out or executed here.
+name: Module PR
+
+on:
+  pull_request_target:
+    paths:
+      - 'products/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: module-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      PR: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/setup@v3
+        with:
+          cache: true
+          require-lockfile: true
+
+      - name: Take products/ from the PR (data only)
+        id: modules
+        run: |
+          git fetch --no-tags --depth=1 origin "pull/$PR/head:pr"
+          git checkout pr -- products/
+          changed=$(gh pr view "$PR" --json files --jq '.files[].path' \
+            | grep -E '^products/[a-z0-9][a-z0-9-]*\.yaml$' | xargs -r -n1 basename | sed 's/\.yaml$//' \
+            | while read -r id; do [ -f "products/$id.yaml" ] && echo "$id"; done | paste -sd, -)
+          echo "ids=$changed" >> "$GITHUB_OUTPUT"
+          echo "changed modules: ${changed:-none}"
+
+      - name: Validate modules
+        run: pnpm modules:validate
+
+      - name: Report
+        if: ${{ !cancelled() && steps.modules.outputs.ids != '' }}
+        run: pnpm collector pr-report --only "${{ steps.modules.outputs.ids }}" --pr "$PR"
