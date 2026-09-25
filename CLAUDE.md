@@ -82,6 +82,7 @@ pnpm collect --dry-run             # fetch + build, print the report, write noth
 pnpm collect --no-previous         # start from scratch instead of the published feed (FEED_URL overrides it)
 pnpm collect --only poste-io --record-fixtures packages/adapters/test/fixtures   # save raw responses
 pnpm collector publish|state-pull|state-push|issues|keygen   # CI steps of collect.yml (need CLOUDFLARE_* etc.)
+pnpm collector pr-report --only <ids>   # the module PR comment, printed locally
 pnpm web:dev                       # SvelteKit dev server using ./.feed or FEED_URL
 pnpm web:build:cf | web:build:node
 docker build -t versiondrift .     # self-hosted image

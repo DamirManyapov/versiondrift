@@ -7,6 +7,7 @@ import { createFetcher } from '@versiondrift/adapters';
 import { FeedIndex, Health, validateModules } from '@versiondrift/schema';
 import { Command } from 'commander';
 import { githubIssues, syncModuleIssues } from './issues.ts';
+import { moduleReport, upsertComment } from './pr-report.ts';
 import { generateSigningKey, parseSecret } from './minisign.ts';
 import { publishFeed, pullState, pushState } from './publish.ts';
 import { r2Bucket } from './r2.ts';
@@ -163,6 +164,74 @@ program
       runUrl,
     );
     log.info(actions.length ? actions.join('\n') : 'no issue changes');
+  });
+
+program
+  .command('pr-report')
+  .description('dry-run the given modules and write the module PR report (posted with --pr)')
+  .requiredOption('--only <ids>', 'comma-separated module ids', (v) =>
+    v
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  )
+  .option('--products <dir>', 'module directory', 'products')
+  .option(
+    '--pr <number>',
+    'post or update the report comment on this PR (needs GITHUB_TOKEN, GITHUB_REPOSITORY)',
+  )
+  .option('--out <file>', 'also write the report to this file')
+  .action(async (opts: { only: string[]; products: string; pr?: string; out?: string }) => {
+    const names = (await readdir(opts.products)).filter((n) => n.endsWith('.yaml') && !n.startsWith('_'));
+    const files = await Promise.all(
+      names.map(async (n) => ({
+        file: `products/${n}`,
+        text: await readFile(path.join(opts.products, n), 'utf8'),
+      })),
+    );
+    const modules = validateModules(files).flatMap((r) =>
+      r.module && !r.issues.some((i) => i.level === 'error') ? [r.module] : [],
+    );
+    const valid = opts.only.filter((id) => modules.some((m) => m.id === id));
+    const invalid = opts.only.filter((id) => !valid.includes(id));
+    let published = new Set<string>();
+    try {
+      const index = FeedIndex.parse(
+        await createFetcher().json(new URL('v1/index.json', DEFAULT_FEED).toString()),
+      );
+      published = new Set(Object.keys(index.products));
+    } catch {
+      log.info('no published index: every module counts as new');
+    }
+    const result = valid.length
+      ? await runCollector({
+          productsDir: path.resolve(opts.products),
+          only: valid,
+          out: path.resolve('.feed-pr'),
+          previous: DEFAULT_FEED,
+          dryRun: true,
+          ...(process.env.GITHUB_TOKEN && { githubToken: process.env.GITHUB_TOKEN }),
+          log,
+        })
+      : undefined;
+    let report = moduleReport(result?.outcomes ?? [], modules, published);
+    if (invalid.length) {
+      const list = invalid.map((id) => '`' + id + '`').join(', ');
+      report += `\n❌ Invalid module(s): ${list} — see the \`modules:validate\` step.\n`;
+    }
+    console.log(report);
+    if (opts.out) await writeFile(opts.out, report);
+    if (opts.pr) {
+      const outcome = await upsertComment(
+        env('GITHUB_REPOSITORY'),
+        Number(opts.pr),
+        report,
+        env('GITHUB_TOKEN'),
+      );
+      log.info(`report comment ${outcome}`);
+    }
+    const failed = invalid.length > 0 || (result?.outcomes.some((o) => !o.result.ok) ?? false);
+    process.exitCode = failed ? 1 : 0;
   });
 
 await program.parseAsync();
