@@ -11,5 +11,10 @@
     "types": ["node"]
   },
   "include": ["*.ts", "*.js", "packages/*/test", "apps/*/test"],
-  "references": [{ "path": "packages/schema" }, { "path": "packages/core" }, { "path": "packages/adapters" }]
+  "references": [
+    { "path": "packages/schema" },
+    { "path": "packages/core" },
+    { "path": "packages/adapters" },
+    { "path": "packages/classify" }
+  ]
 }

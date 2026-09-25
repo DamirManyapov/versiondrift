@@ -1,0 +1,24 @@
+{
+  "name": "@versiondrift/classify",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Turns release notes into typed change items (sections, keywords; LLM later).",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@versiondrift/schema": "workspace:*",
+    "cheerio": "^1.2.0",
+    "marked": "^18.0.14"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

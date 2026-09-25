@@ -1,0 +1,29 @@
+<ul>
+  <li>Roundcube 1.6.19</li>
+  <li>
+    maximum message size can now be set up to 2 GB; nginx and php-fpm limits follow that setting instead of
+    staying at 100 MB, so large attachments finally reach webmail
+  </li>
+  <li>
+    Let's encrypt: renewal is due once less than a third of the certificate lifetime is left, and the CA's own
+    renewal info (ARI) overrides that when available
+  </li>
+  <li>
+    Let's encrypt: fix renewals that took the slow path - valid authorizations are no longer re-challenged,
+    the order is polled instead of re-POSTed, badNonce is retried, and the certificate download has a timeout
+  </li>
+  <li>Let's encrypt: the issuing log is no longer deleted by the run that writes it</li>
+  <li>Let's encrypt: a failed renewal alerts after three attempts in a row, not the first</li>
+  <li>Let's encrypt: new certificates use P-256 keys and the private key is written with 0600</li>
+  <li>
+    remote monitoring: the health endpoint answers 200 even when a check is critical, so a monitoring system
+    reads the body instead of a transport error
+  </li>
+  <li>remote monitoring: the heartbeat is sent at a fixed offset from the start of the measurement</li>
+  <li>remote monitoring: every stage of a heartbeat run is traced</li>
+  <li>administration moved from Bootstrap 3 to Bootstrap 5</li>
+  <li>
+    console entrypoints drop to the mail user when started as root, so they stop leaving root-owned logs and
+    caches behind
+  </li>
+</ul>

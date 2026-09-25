@@ -102,7 +102,8 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
   the scheme's version order (equal keys = equal versions), so clients and SQL can `ORDER BY` it without parsing.
   Only comparable within one product. Changes to the encoding bump `formatVersion`.
 - `items[].type`: `security | breaking | deprecated | feature | fix | other`.
-- `items[].classifiedBy`: `section` (vendor heading), `keyword`, `llm`, `manual`. UI shows a subtle marker for `llm`.
+- `items[].classifiedBy`: `section` (vendor heading), `keyword`, `llm`, `manual`, `advisory` (synthetic "Fixes CVE-…"
+  item), `default` (nothing matched, type `other`). UI shows a subtle marker for `llm`.
 - `items[].text`: ≤ 300 chars, one bullet, in English as the vendor wrote it (trimmed). No full copies of notes.
 - `summary`: optional LLM one-paragraph summary of the release (Sprint 3+), `null` otherwise.
 - `advisories[].affected`: OSV semantics; `fixed` exclusive upper bound, `last_affected` inclusive alternative.

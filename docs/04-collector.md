@@ -86,6 +86,22 @@ Input: release notes (Markdown/HTML/plain) + module `classify` hints. Output: `i
 5. **Trim & dedupe** — max 300 chars per item, max 40 items per release (rest collapsed into "+N more" with the
    release URL).
 
+Details of v1 (`packages/classify`, no LLM):
+- Parsing: Markdown via `marked`, HTML via `cheerio` (`li` = bullet, `h1–h6` = heading, bold-only paragraph = heading),
+  text by lines (`- * • + 1.` bullets, `Heading:` lines). If an HTML body has no structure it is read as text with
+  `<br>` as line breaks; if a text has MikroTik-style `*) ` bullets, only those count. Prose paragraphs become items
+  only when the notes have no bullets at all (max 3).
+- Headings use the nearest heading that means something (version headings are transparent). Default terms, first
+  match wins: security > breaking (incl. Keep-a-Changelog "Removed") > deprecated > fix > feature ("Added",
+  "Enhancements"…) > other ("Changed", "Dependencies"…). Sections like "New Contributors" or "Checksums" are
+  dropped, as are boilerplate lines ("Download page", "Full Changelog").
+- An item that mentions a CVE or GHSA id is `security` whatever its section (`classifiedBy: keyword`), with the ids
+  in `refs`. Keyword rules only apply when the section gave no specific type; "fix" must be the item's verb, so
+  "a fixed offset" stays `other`.
+- GitHub reference noise is removed: `[#123](…)`, `[@user](…)`, "by @user in https://…/pull/1".
+- When more than 40 items remain, the least important types are dropped first (security and breaking are kept),
+  original order is preserved and the count is reported as omitted.
+
 The prompt lives in `packages/classify/prompts/release.md`, versioned; changing it invalidates the cache.
 
 ## Advisory → release linking
