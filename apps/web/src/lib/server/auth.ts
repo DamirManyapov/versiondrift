@@ -23,15 +23,20 @@ export const trustedHeader = () => (env.VD_TRUST_PROXY_HEADER || 'Remote-User').
 /** Everyone is this user when VD_AUTH=none (a trusted LAN, or auth done elsewhere without a header). */
 const ANONYMOUS: User = { id: 0, name: 'admin', email: null, role: 'admin' };
 
-let bootstrapped = false;
+let bootstrap: Promise<void> | undefined;
 
 /**
  * Password mode, first start: create "admin" with VD_ADMIN_PASSWORD, or with a random password printed once to
- * the log (the operator reads it with `docker logs`).
+ * the log (the operator reads it with `docker logs`). Every caller waits for the same run, so no request can
+ * see the users table before the admin exists.
  */
-export async function bootstrapAdmin(log: (line: string) => void = console.log): Promise<void> {
-  if (bootstrapped || authMode() !== 'password') return;
-  bootstrapped = true;
+export function bootstrapAdmin(log: (line: string) => void = console.log): Promise<void> {
+  bootstrap ??= createAdmin(log);
+  return bootstrap;
+}
+
+async function createAdmin(log: (line: string) => void): Promise<void> {
+  if (authMode() !== 'password') return;
   const { auth } = selfHostedStorage();
   if (auth.userCount() > 0) return;
   const given = env.VD_ADMIN_PASSWORD;

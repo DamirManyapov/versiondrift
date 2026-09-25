@@ -6,9 +6,12 @@ import { bootstrapAdmin, crossSite, currentUser, isOpenPath } from '$lib/server/
 import { startFeedSync } from '$lib/server/feed-sync';
 import { mode } from '$lib/server/storage';
 
-// Self-hosted: keep the local feed mirror fresh (not during `vite build`, which also loads this file).
-export const init: ServerInit = () => {
-  if (mode() === 'selfhosted' && !building) startFeedSync();
+// Self-hosted, before the first request: the admin user exists, and the feed mirror is kept fresh (not during
+// `vite build`, which also loads this file).
+export const init: ServerInit = async () => {
+  if (mode() !== 'selfhosted' || building) return;
+  await bootstrapAdmin();
+  startFeedSync();
 };
 
 // Language: the vd_lang cookie (set in the footer), else Accept-Language. Theme: the vd_theme cookie, else auto.
