@@ -8,6 +8,7 @@ declare global {
     }
     interface PageData {
       locale: Locale;
+      mode: 'public' | 'selfhosted';
     }
     /** Cloudflare (adapter-cloudflare) only; absent in the Node/Docker build. */
     interface Platform {

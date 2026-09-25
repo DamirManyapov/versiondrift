@@ -2,14 +2,14 @@ import { emptyInventory, sanitize, type InventoryData } from './model.ts';
 
 export const STORAGE_KEY = 'vd.inventory.v1';
 
-/** Where the inventory lives (docs/01): the browser here, D1 or SQLite for accounts and self-hosted. */
+/** Where the inventory lives (docs/01): the browser here, the server's SQLite in self-hosted mode (remote.ts). */
 export interface InventoryStore {
   /** False when changes will be lost on reload (storage blocked): the UI shows a banner. */
   readonly persistent: boolean;
   /** True once something was saved (so a first visit can show the demo board). */
   hasSaved(): boolean;
-  load(): InventoryData;
-  save(data: InventoryData): void;
+  load(): InventoryData | Promise<InventoryData>;
+  save(data: InventoryData): void | Promise<void>;
 }
 
 /** localStorage, every access guarded; falls back to memory when storage is unavailable or full. */

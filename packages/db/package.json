@@ -1,0 +1,26 @@
+{
+  "name": "@versiondrift/db",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Self-hosted storage: Drizzle schema, embedded SQLite migrations and the board store (docs/07).",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "drizzle-kit generate --dialect sqlite --schema src/schema.ts --out drizzle && node src/cli/embed-migrations.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "drizzle-orm": "^0.45.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "catalog:",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -17,6 +17,7 @@
     { "path": "packages/schema" },
     { "path": "packages/core" },
     { "path": "packages/adapters" },
-    { "path": "packages/classify" }
+    { "path": "packages/classify" },
+    { "path": "packages/db" }
   ]
 }

@@ -4,6 +4,7 @@ packages:
 
 # Dependencies allowed to run install scripts (pnpm blocks all others).
 allowBuilds:
+  better-sqlite3: false # ships N-API prebuilds for every platform (incl. musl, arm64); node-gyp would only rebuild them
   esbuild: true # verifies its platform binary
   workerd: false # ~100 MB local Workers runtime, only for wrangler dev; builds don't need it
 

@@ -54,6 +54,27 @@ Behind a reverse proxy set `ORIGIN=https://versiondrift.example.com` (adapter-no
 
 ## SQLite schema (Drizzle)
 
+Implemented so far (S5-T2, `packages/db`): `boards`, `instances` and `settings`; the rest of the draft below follows
+with the features that need it. Differences from the draft: there is no `board_products` table — a board is its
+ordered `instances` (`position`), and a product followed without a version is an instance with `version` null, so the
+web app's inventory items map to rows one to one; `track` is per instance (prod on 8.x, legacy on 7.x). Settings
+(critical CVSS threshold, "hide up to date") are instance-wide JSON values.
+
+Migrations: change `packages/db/src/schema.ts`, run `pnpm -F @versiondrift/db generate` (drizzle-kit writes
+`drizzle/NNNN_*.sql`, a script embeds them in `src/migrations.ts`, so they travel inside the bundled server code), and
+commit both; CI fails when the schema and the migrations disagree. On start the server applies pending migrations in
+transactions and records them in `vd_migrations`. The database is `${VD_DATA_DIR}/versiondrift.db` (WAL mode,
+foreign keys on). `better-sqlite3` ships prebuilt binaries for every platform, including musl on amd64/arm64, so the
+image needs no compiler.
+
+With `VD_MODE=selfhosted` the web app reads and writes boards through a small JSON API (404 on the public site):
+`GET/POST /api/boards`, `PATCH/DELETE /api/boards/:id`, `GET/PUT /api/boards/:id/inventory` (the browser's inventory
+format). The board page gets a board switcher and "New board"; Settings can rename and delete boards (the last one
+stays). Responses carry `X-Robots-Tag: noindex`. Until S5-T3 there is no authentication: keep the port private or put
+the instance behind an authenticating proxy.
+
+Draft for the rest:
+
 ```
 users(id, email, name, role[admin|viewer], password_hash?, oidc_sub?, created_at)
 boards(id, name, owner_id, created_at)                       -- multiple boards (e.g. "Prod", "Homelab")

@@ -122,3 +122,88 @@ describe('demo board', async () => {
     expect(again.demo).toBe(false);
   });
 });
+
+describe('self-hosted mode', async () => {
+  const { InventoryState } = await import('../src/lib/inventory/state.svelte.ts');
+  const { vi } = await import('vitest');
+
+  /** A tiny in-memory /api/boards… server. */
+  function server() {
+    const boards = [
+      { id: 1, name: 'Main' },
+      { id: 2, name: 'Lab' },
+    ];
+    const inventories: Record<number, unknown> = {
+      1: { v: 1, items: [{ p: 'grafana', ver: '12.4.5' }], settings: { criticalCvss: 7, hideOk: false } },
+      2: { v: 1, items: [{ p: 'proxmox-ve', ver: '9.0' }], settings: { criticalCvss: 7, hideOk: false } },
+    };
+    const puts: { id: number; body: unknown }[] = [];
+    const fetch = vi.fn((url: string, init?: RequestInit) => {
+      if (url === '/api/boards') return Promise.resolve(Response.json({ boards }));
+      const m = /^\/api\/boards\/(\d+)\/inventory$/.exec(url);
+      if (m) {
+        const id = Number(m[1]);
+        if (init?.method === 'PUT') {
+          puts.push({ id, body: JSON.parse(init.body as string) });
+          return Promise.resolve(new Response(null, { status: 204 }));
+        }
+        return Promise.resolve(Response.json(inventories[id]));
+      }
+      return Promise.resolve(new Response('nope', { status: 404 }));
+    });
+    return { fetch, puts };
+  }
+
+  it('loads the remembered board from the server, saves edits there, and switches boards', async () => {
+    const { fetch, puts } = server();
+    vi.stubGlobal('fetch', fetch);
+    vi.stubGlobal('localStorage', { getItem: () => '2', setItem: () => {} });
+    const state = new InventoryState();
+    state.configure(() => 'selfhosted');
+    state.init();
+    await vi.waitFor(() => expect(state.loaded).toBe(true));
+    expect(state.boardId).toBe(2);
+    expect(state.demo).toBe(false);
+    expect(state.data.items).toEqual([{ p: 'proxmox-ve', ver: '9.0' }]);
+
+    state.update(0, { ver: '9.1' });
+    await vi.waitFor(() => expect(puts).toHaveLength(1));
+    expect(puts[0]).toMatchObject({ id: 2, body: { items: [{ p: 'proxmox-ve', ver: '9.1' }] } });
+
+    await state.openBoard(1);
+    expect(state.data.items).toEqual([{ p: 'grafana', ver: '12.4.5' }]);
+    vi.unstubAllGlobals();
+  });
+
+  it('keeps edits made while the board is still loading', async () => {
+    const { fetch, puts } = server();
+    vi.stubGlobal('fetch', fetch);
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {} });
+    const state = new InventoryState();
+    state.configure(() => 'selfhosted');
+    state.init();
+    state.add('nginx', '1.30.1');
+    await vi.waitFor(() => expect(puts).toHaveLength(1));
+    expect(state.data.items).toEqual([
+      { p: 'grafana', ver: '12.4.5' },
+      { p: 'nginx', ver: '1.30.1' },
+    ]);
+    expect(puts[0]?.id).toBe(1);
+    vi.unstubAllGlobals();
+  });
+
+  it('reports a server that fails to save', async () => {
+    const { fetch } = server();
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {} });
+    vi.stubGlobal('fetch', (url: string, init?: RequestInit) =>
+      init?.method === 'PUT' ? Promise.resolve(new Response('disk full', { status: 500 })) : fetch(url, init),
+    );
+    const state = new InventoryState();
+    state.configure(() => 'selfhosted');
+    state.init();
+    await vi.waitFor(() => expect(state.loaded).toBe(true));
+    state.add('nginx', '1.30.1');
+    await vi.waitFor(() => expect(state.serverError).toBe('disk full'));
+    vi.unstubAllGlobals();
+  });
+});

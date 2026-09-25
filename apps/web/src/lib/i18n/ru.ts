@@ -183,7 +183,7 @@ export const ru: Messages = {
   settingsThreshold: 'Порог критичности',
   settingsThresholdHelp:
     'Уязвимость, затрагивающая вашу версию, делает продукт критичным начиная с этой оценки CVSS (или если она уже эксплуатируется).',
-  settingsInventory: 'Ваш inventory',
+  settingsInventory: 'Ваш список продуктов',
   settingsStorage:
     'Доска хранится только в этом браузере. Экспортируйте её для резервной копии или переноса — файл подходит и для self-hosted версии, и для уведомлений в Telegram.',
   exportYaml: 'Экспорт inventory.yaml',
@@ -331,4 +331,18 @@ export const ru: Messages = {
   modeNow: 'Уже работает',
   modePlanned: 'В планах',
   landingDemoHint: 'Ниже — пример доски. Выберите плитку, чтобы увидеть, что изменилось.',
+  // Доски self-hosted (S5-T2)
+  boardLabel: 'Доска',
+  boardsTitle: 'Доски',
+  newBoard: 'Новая доска',
+  boardName: 'Название доски',
+  create: 'Создать',
+  rename: 'Переименовать',
+  save: 'Сохранить',
+  deleteBoard: 'Удалить доску',
+  deleteBoardConfirm: 'Удалить «{name}» со всеми продуктами',
+  serverError: 'Сервер не смог загрузить или сохранить доску: {message}',
+  boardsHint: 'Доски этого сервера хранятся в его базе. Удаление доски удаляет её продукты.',
+  settingsStorageServer:
+    'Эта доска хранится на этом сервере. Экспортируйте её для резервной копии или переноса — файл подходит и для versiondrift.dev, и для уведомлений в Telegram.',
 };

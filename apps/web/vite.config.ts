@@ -36,6 +36,16 @@ function localFeed(): Plugin {
 
 export default defineConfig({
   plugins: [localFeed(), sveltekit()],
+  // better-sqlite3 finds its native binary next to its own files, so it can't be bundled; the Node image ships it
+  // in node_modules (it's a direct dependency for that reason).
+  ssr: { external: ['better-sqlite3'] },
+  resolve: {
+    // Workers have no SQLite: the Cloudflare build gets a stub instead of the self-hosted store (better-sqlite3).
+    alias:
+      process.env.VD_ADAPTER === 'cloudflare'
+        ? { '@versiondrift/db': path.join(import.meta.dirname, 'src/lib/server/db-unavailable.ts') }
+        : {},
+  },
   test: {
     include: ['test/**/*.test.ts'],
   },

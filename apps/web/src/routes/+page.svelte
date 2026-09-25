@@ -1,7 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { resolve } from '$app/paths';
+  import { page } from '$app/state';
   import Board from '$lib/components/Board.svelte';
+  import BoardSwitcher from '$lib/components/BoardSwitcher.svelte';
   import Landing from '$lib/components/Landing.svelte';
   import Meta from '$lib/components/Meta.svelte';
   import SharePanel from '$lib/components/SharePanel.svelte';
@@ -25,7 +27,13 @@
 <h1 class="visually-hidden">VersionDrift</h1>
 
 <!-- Server-rendered for everyone (search engines see it); hidden once a saved board is known. -->
-{#if !inventory.loaded || inventory.demo}<Landing />{/if}
+{#if page.data.mode === 'public' && (!inventory.loaded || inventory.demo)}<Landing />{/if}
+
+{#if inventory.mode === 'selfhosted' && inventory.boards.length > 0}<BoardSwitcher />{/if}
+
+{#if inventory.serverError}
+  <p class="banner" role="alert">{t('serverError', { message: inventory.serverError })}</p>
+{/if}
 
 {#if inventory.demo}
   <div class="demo" role="note">

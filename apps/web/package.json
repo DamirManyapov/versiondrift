@@ -32,7 +32,9 @@
   },
   "dependencies": {
     "@versiondrift/core": "workspace:*",
+    "@versiondrift/db": "workspace:*",
     "@versiondrift/schema": "workspace:*",
+    "better-sqlite3": "^13.0.3",
     "yaml": "^2.9.1"
   }
 }

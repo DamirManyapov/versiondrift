@@ -8,10 +8,13 @@
   import { formatUpdated } from '$lib/format';
   import { LOCALES, type Locale } from '$lib/i18n';
   import { i18n, setI18n } from '$lib/i18n/context';
+  import { inventory } from '$lib/inventory/state.svelte';
   import type { LayoutData } from './$types';
 
   let { data, children }: { data: LayoutData; children: Snippet } = $props();
   setI18n(() => data.locale);
+  // Before any page initializes: pages call inventory.init(), which picks the browser or the server store.
+  inventory.configure(() => data.mode);
   const { t } = $derived(i18n());
 
   onMount(() => void feed.load());

@@ -59,6 +59,7 @@ packages/
   core/                   # version schemes, comparison, status engine, affected-range matching
   adapters/               # source adapters: github, gitlab, rss, html, dockerhub, endoflife, osv, ghsa, debian, kev
   classify/               # change-item classification: structured → keywords → LLM (optional)
+  db/                     # self-hosted SQLite: Drizzle schema, embedded migrations, board store
 apps/
   collector/              # CLI: validate modules, collect, build feed, publish, health report
   web/                    # SvelteKit app (public + self-hosted)
@@ -76,6 +77,7 @@ pnpm -r test                       # all unit tests (`pnpm vitest` at the root =
 pnpm lint && pnpm typecheck        # lint = ESLint (type-aware) + prettier --check; typecheck = tsc -b
 pnpm format                        # prettier --write (skips docs/, design/, products/, schemas/, *.md)
 pnpm schema:gen                    # zod → schemas/*.json
+pnpm -F @versiondrift/db generate  # after changing packages/db/src/schema.ts: new migration, embedded
 pnpm modules:validate              # validate every products/*.yaml against the schema
 GITHUB_TOKEN=$(gh auth token) pnpm collect --only grafana,debian --out ./.feed   # local run, no publish
 pnpm collect --dry-run             # fetch + build, print the report, write nothing

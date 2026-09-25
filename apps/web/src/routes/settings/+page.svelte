@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import BoardsManager from '$lib/components/BoardsManager.svelte';
   import { i18n } from '$lib/i18n/context';
   import { fromYaml, InventoryImportError, toYaml, type InventoryItem } from '$lib/inventory/model';
   import { inventory } from '$lib/inventory/state.svelte';
@@ -49,6 +50,8 @@
 <div class="page">
   <h1>{t('settingsTitle')}</h1>
 
+  {#if inventory.mode === 'selfhosted'}<BoardsManager />{/if}
+
   <section>
     <h2><label for="cvss">{t('settingsThreshold')}</label></h2>
     <p class="muted">{t('settingsThresholdHelp')}</p>
@@ -68,7 +71,7 @@
 
   <section>
     <h2>{t('settingsInventory')}</h2>
-    <p class="muted">{t('settingsStorage')}</p>
+    <p class="muted">{inventory.mode === 'selfhosted' ? t('settingsStorageServer') : t('settingsStorage')}</p>
     <div class="row">
       <button class="primary" onclick={exportYaml} disabled={inventory.data.items.length === 0}
         >{t('exportYaml')}</button

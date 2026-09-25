@@ -264,4 +264,18 @@ export const en = {
   modeNow: 'Available now',
   modePlanned: 'Planned',
   landingDemoHint: 'Below is a sample board. Pick a tile to see what changed.',
+  // Self-hosted boards (S5-T2)
+  boardLabel: 'Board',
+  boardsTitle: 'Boards',
+  newBoard: 'New board',
+  boardName: 'Board name',
+  create: 'Create',
+  rename: 'Rename',
+  save: 'Save',
+  deleteBoard: 'Delete board',
+  deleteBoardConfirm: 'Delete “{name}” and everything on it',
+  serverError: 'The server could not load or save the board: {message}',
+  boardsHint: 'Boards of this instance, stored in its database. Deleting a board removes its products.',
+  settingsStorageServer:
+    'This board is stored on this server. Export it to back it up or move it — the file also works on versiondrift.dev and with the Telegram alerts.',
 };
