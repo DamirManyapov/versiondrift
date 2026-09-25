@@ -92,8 +92,11 @@ const GitlabSource = z.strictObject({
 
 const GiteaSource = z.strictObject({
   type: z.literal('gitea'),
-  host: nonEmpty,
+  host: nonEmpty.meta({ description: 'Gitea or Forgejo instance, e.g. codeberg.org or code.forgejo.org' }),
   repo: repoSlug,
+  versionRegex: regex(
+    "Extracts the version from the tag name; tags that don't match are ignored. First non-empty capture group wins.",
+  ).optional(),
 });
 
 const RssReleaseSource = z.strictObject({
@@ -134,6 +137,12 @@ const ManualReleasesSource = z.strictObject({
   file: nonEmpty.meta({ description: 'products/<id>.releases.yaml, maintained by hand.' }),
 });
 
+/** For products without public release notes (OS, appliances): the latest release of every endoflife.date cycle. */
+const EndoflifeReleasesSource = z.strictObject({
+  type: z.literal('endoflife'),
+  product: nonEmpty.meta({ description: 'endoflife.date product slug' }),
+});
+
 const unknownType =
   (expected: readonly string[]) =>
   (issue: { code?: string }): string | undefined =>
@@ -141,7 +150,16 @@ const unknownType =
       ? `unknown source type; expected one of: ${expected.join(', ')}`
       : undefined;
 
-const RELEASE_SOURCE_TYPES = ['github', 'gitlab', 'gitea', 'rss', 'html', 'dockerhub', 'manual'] as const;
+const RELEASE_SOURCE_TYPES = [
+  'github',
+  'gitlab',
+  'gitea',
+  'rss',
+  'html',
+  'dockerhub',
+  'manual',
+  'endoflife',
+] as const;
 export const ReleaseSource = z
   .discriminatedUnion(
     'type',
@@ -153,6 +171,7 @@ export const ReleaseSource = z
       HtmlSource,
       DockerhubSource,
       ManualReleasesSource,
+      EndoflifeReleasesSource,
     ],
     { error: unknownType(RELEASE_SOURCE_TYPES) },
   )

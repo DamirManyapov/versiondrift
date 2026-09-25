@@ -17,7 +17,7 @@ cp products/_template.yaml products/<id>.yaml
 
 ## 3. Pick the release source (in this order of preference)
 
-1. **GitHub / GitLab / Gitea releases** with notes in the body → `type: github` (best data).
+1. **GitHub / Gitea / Forgejo releases** with notes in the body → `type: github` or `type: gitea` (best data).
 2. Tags only → `type: github` with `useTags: true` + a changelog page as `releasesExtra`.
 3. Official **RSS/Atom** feed of releases → `type: rss`.
 4. A changelog **web page** → `type: html` with CSS selectors.

@@ -2,9 +2,10 @@ import type { EolSource, ReleaseSource } from '@versiondrift/schema';
 import { SourceError, type AdapterContext, type RawBranch, type RawRelease } from '../types.ts';
 import { dockerhubReleases } from './dockerhub.ts';
 import { rssReleases } from './feed.ts';
+import { giteaReleases } from './gitea.ts';
 import { githubReleases } from './github.ts';
 import { htmlReleases } from './html.ts';
-import { endoflifeBranches, manualBranches } from './lifecycle.ts';
+import { endoflifeBranches, endoflifeReleases, manualBranches } from './lifecycle.ts';
 import { manualReleases } from './manual.ts';
 
 export function fetchReleases(source: ReleaseSource, ctx: AdapterContext): Promise<RawRelease[]> {
@@ -19,8 +20,11 @@ export function fetchReleases(source: ReleaseSource, ctx: AdapterContext): Promi
       return dockerhubReleases(source, ctx);
     case 'manual':
       return manualReleases(source, ctx);
-    case 'gitlab':
+    case 'endoflife':
+      return endoflifeReleases(source, ctx);
     case 'gitea':
+      return giteaReleases(source, ctx);
+    case 'gitlab':
       return Promise.reject(new SourceError(`source type "${source.type}" is not implemented yet`));
   }
 }

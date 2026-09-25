@@ -76,7 +76,12 @@ export function rangesFromConfigurations(cve: NvdCve, cpe: string): AffectedRang
       }
     }
   }
-  return ranges;
+  // Editions share the product part (GitLab CE/EE), so the same range often appears more than once.
+  const seen = new Set<string>();
+  return ranges.filter((r) => {
+    const key = JSON.stringify(r);
+    return !seen.has(key) && Boolean(seen.add(key));
+  });
 }
 
 export async function nvdAdvisories(source: NvdSource, ctx: AdapterContext): Promise<RawAdvisory[]> {

@@ -1,7 +1,7 @@
 // Lifecycle (branches, EOL dates) from endoflife.date API v1, or from a hand-maintained YAML file.
 import type { EolSource } from '@versiondrift/schema';
 import { parse as parseYaml } from 'yaml';
-import { SourceError, type AdapterContext, type RawBranch } from '../types.ts';
+import { SourceError, type AdapterContext, type RawBranch, type RawRelease } from '../types.ts';
 import type { SourceType } from './common.ts';
 
 interface EolRelease {
@@ -57,5 +57,31 @@ export async function manualBranches(
       ...(eolDate && { eolDate }),
       lts: entry.lts === true,
     };
+  });
+}
+
+/**
+ * Releases from endoflife.date for products without public release notes (OS, appliances): the latest release of
+ * every cycle. History grows with every run as new point releases replace the previous ones.
+ */
+export async function endoflifeReleases(
+  source: { type: 'endoflife'; product: string },
+  ctx: AdapterContext,
+): Promise<RawRelease[]> {
+  const data = await ctx.fetcher.json<{
+    result?: { releases?: (EolRelease & { latest: { link?: string | null } | null })[] };
+  }>(`https://endoflife.date/api/v1/products/${encodeURIComponent(source.product)}`);
+  const releases = data.result?.releases;
+  if (!releases) throw new SourceError(`endoflife.date returned no releases for "${source.product}"`);
+  return releases.flatMap((r) => {
+    if (!r.latest) return [];
+    const date = r.latest.date ? `${r.latest.date}T00:00:00Z` : undefined;
+    return [
+      {
+        version: r.latest.name,
+        ...(date && { date }),
+        url: r.latest.link ?? `https://endoflife.date/${source.product}`,
+      },
+    ];
   });
 }

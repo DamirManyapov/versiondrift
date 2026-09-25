@@ -91,13 +91,13 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 
 | `type` | For | Config | Gives |
 |---|---|---|---|
-| `github` | GitHub releases (falls back to tags if `useTags: true`) | `repo`, `useTags?`, `notesFrom?: release\|changelogFile`, `changelogPath?`, `versionRegex?` (version from the tag name, e.g. `'^release-(\d+\.\d+\.\d+)
+| `github` | GitHub releases (falls back to tags if `useTags: true`) | `repo`, `useTags?`, `notesFrom?: release\|changelogFile`, `changelogPath?`, `versionRegex?` (version from the tag name, e.g. `'^release-(\d+\.\d+\.\d+)$'`; other tags are ignored) | releases + notes |
 | `gitlab` | GitLab releases | `host?` (default gitlab.com), `project` | releases + notes |
-| `gitea` | Gitea/Forgejo/Codeberg | `host`, `repo` | releases + notes |
+| `gitea` | Gitea/Forgejo/Codeberg | `host` (`codeberg.org`), `repo`, `versionRegex?` | releases + notes |
 | `rss` | RSS/Atom feeds | `url`, `versionFrom: title\|link`, `versionRegex` | releases (+ notes from entry body) |
 | `html` | changelog pages without a feed | `url`, `select: { item, title, body, date? }`, `versionRegex`, `dateFormat?` | releases + notes |
 | `dockerhub` | image tags | `repo` (`analogic/poste.io`), `tagRegex?`, `versionRegex?` | versions + push dates (no notes) |
-| `endoflife` | lifecycle | `product` (endoflife.date slug) | branches, EOL dates, LTS flags |
+| `endoflife` | lifecycle, or releases | `product` (endoflife.date slug) | branches, EOL dates, LTS flags; as `releases`: the latest release of every cycle (OS and appliances without usable notes; history grows run by run) |
 | `osv` | OSV.dev advisories | `ecosystem`, `package` | advisories with affected ranges |
 | `ghsa` | GitHub Security Advisories | either `repo` (repository advisories) or `ecosystem`+`package` | advisories with ranges |
 | `nvd` | NVD CVE API 2.0 | `cpe` | CVEs + CVSS + CPE ranges |
@@ -105,8 +105,9 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `kev` | CISA KEV catalog (global, not per module) | — | "known exploited" flag by CVE id |
 | `manual` | products with no machine-readable source | `file: products/<id>.releases.yaml` | releases maintained by hand |
 
-New source types = new adapter in `packages/adapters` + fixtures + docs row here. `gitlab` and `gitea` are specified
-but not implemented yet (a module using them fails collection with "not implemented").
+New source types = new adapter in `packages/adapters` + fixtures + docs row here. `gitlab` is specified but not
+implemented yet (a module using it fails collection with "not implemented"; gitlab.com's API needs a token even for
+public projects, so GitLab itself is collected from the `gitlabhq/gitlabhq` GitHub mirror).
 
 **Versions from text** (`rss`, `html`): `versionRegex` — the first non-empty capture group wins (so alternatives
 like `'Debian (\d+\.\d+) released|Updated Debian \d+: (\d+\.\d+) released'` work). Without it, the first
@@ -142,63 +143,21 @@ Rules 2, 3 and 5 need collected data and run in the collector (`pnpm collect --o
 
 ## Examples in this repo
 
-`products/` holds 17 modules verified against their live sources on 2026-09-26 (S1-T7), covering every source type
-in use: GitHub releases (grafana, elastic stack, nginx with `versionRegex`, minio with `versionScheme: regex`,
+`products/` holds 72 modules. The first 17 were verified against their live sources in S1-T7 and cover every
+source type in use: GitHub releases (grafana, elastic stack, nginx with `versionRegex`, minio with `versionScheme: regex`,
 rabbitmq, outline, bigbluebutton), GitHub tags (zabbix, percona-xtradb-cluster), RSS (debian, routeros, postgresql),
 HTML (poste-io, proxmox-ve and proxmox-backup-server from their roadmap wikis, elastic release-notes pages as an extra
-source), Docker Hub (poste-io extra) and endoflife.date. Copy `_template.yaml` for new ones.
+source), Docker Hub (poste-io extra) and endoflife.date. S4-T5 added 55 more from the launch list in
+`docs/11-launch-and-growth.md`: mostly GitHub releases or tags with `versionRegex` (mysql, mariadb, mongodb,
+percona-server, authentik, clickhouse), and endoflife.date as the release source for distributions and appliances
+(ubuntu, rhel, rocky-linux, almalinux, alpine-linux, xcp-ng, truenas, haproxy, postfix); Forgejo comes from Codeberg
+(`type: gitea`). Copy `_template.yaml` for new ones.
 
 Known gaps: debian, routeros and postgresql feeds list only recent releases, so their history grows day by day;
 zabbix and percona tags carry no notes (zabbix links to its release notes page).
-`; other tags are ignored) | releases + notes |
-| `gitlab` | GitLab releases | `host?` (default gitlab.com), `project` | releases + notes |
-| `gitea` | Gitea/Forgejo/Codeberg | `host`, `repo` | releases + notes |
-| `rss` | RSS/Atom feeds | `url`, `versionFrom: title\|link`, `versionRegex` | releases (+ notes from entry body) |
-| `html` | changelog pages without a feed | `url`, `select: { item, title, body, date? }`, `versionRegex`, `dateFormat?` | releases + notes |
-| `dockerhub` | image tags | `repo` (`analogic/poste.io`), `tagRegex?` | versions + push dates (no notes) |
-| `endoflife` | lifecycle | `product` (endoflife.date slug) | branches, EOL dates, LTS flags |
-| `osv` | OSV.dev advisories | `ecosystem`, `package` | advisories with affected ranges |
-| `ghsa` | GitHub Security Advisories | either `repo` (repository advisories) or `ecosystem`+`package` | advisories with ranges |
-| `nvd` | NVD CVE API 2.0 | `cpe` | CVEs + CVSS + CPE ranges |
-| `debian` | Debian Security Tracker | `packages: [..] \| fromInventory` | DSA/DLA per release |
-| `kev` | CISA KEV catalog (global, not per module) | — | "known exploited" flag by CVE id |
-| `manual` | products with no machine-readable source | `file: products/<id>.releases.yaml` | releases maintained by hand |
-
-New source types = new adapter in `packages/adapters` + fixtures + docs row here. `gitlab` and `gitea` are specified
-but not implemented yet (a module using them fails collection with "not implemented").
-
-**Versions from text** (`rss`, `html`): `versionRegex` — the first non-empty capture group wins (so alternatives
-like `'Debian (\d+\.\d+) released|Updated Debian \d+: (\d+\.\d+) released'` work). Without it, the first
-dotted number is used (`v2.0.0`, `12.15`, `8.0.36-28`). RSS/Atom entries that yield no version are skipped as
-other news.
-
-**`html` selectors:** `item` matches one element per release. `title`, `date` and `body` are CSS selectors looked up
-*inside* the item (or the item itself when it matches). Without `title` the item's text is the title. Without
-`body`, an item that is a heading (`h1`–`h6`) owns its following siblings up to the next item — the common
-`<h2>1.2.3</h2><ul>…</ul>` layout — otherwise the item's own content is the body. Without `date`, a date is searched
-in the title using `dateFormat` (tokens `YYYY MM M DD D MMM`, e.g. `YYYYMMDD`, `D MMM YYYY`) or as an ISO date.
-Sibling combinators like `h2 ~ *` don't work (selectors are relative to the item). An `item` selector that
-matches nothing is a collection failure, not "no releases".
-
-**`manual` files:** `products/<id>.releases.yaml` is a YAML list of `{ version: "1.2", date?, url?, notes? }`
-(quote versions: YAML reads `1.10` as `1.1`); a manual `eol` file lists `{ name, releaseDate?, eolDate?, eol?, lts?,
-codename? }`.
-
-## Validation rules (CI)
-
-`pnpm modules:validate` checks rules 1 and 4 plus: valid YAML without duplicate keys, every regex compiles,
-no alias equals another module's id. Errors are printed as `file:line:col` (and as PR annotations in GitHub
-Actions). `products/_template.yaml` (any file starting with `_`) is only checked against the schema.
-Rules 2, 3 and 5 need collected data and run in the collector (`pnpm collect --only <id>`).
-
-1. Schema-valid; `id` == file name.
-2. `pnpm collect --only <id>` returns ≥ 1 release, every release version parses under `versionScheme`.
-3. Tracks: every release matches at most one track.
-4. If `security` has no entries, the module gets a `noSecuritySource` warning shown on its page ("security data not available").
-5. HTML modules must include a recorded fixture of the page (bot records it in the PR) so selector breakage is detectable.
-
-## Examples in this repo
-
-`products/` contains working drafts for: debian, grafana, elasticsearch, kibana, logstash, poste-io, proxmox-ve,
-routeros, percona-xtradb-cluster, zabbix, plus `_template.yaml`. **Endpoints, repo names and selectors in these
-drafts must be verified in Sprint 1** — they are informed guesses, not tested.
+Products taken from tags (mysql, mariadb, mongodb, dovecot, gitlab via the `gitlabhq/gitlabhq` mirror, …) have no notes
+either; endoflife.date release sources only know the latest release of each cycle. Windows Server and VMware ESXi were
+left out on purpose: their version strings (build numbers, "8.0 Update 3k") don't identify the patch level reliably.
+pfSense (its public repo stopped at 2.5.2), WireGuard (the tools barely change; the module is in the kernel) and 1C:Enterprise
+(no public release feed) from the priority list have no usable source yet. Operating systems collected from
+endoflife.date have no security source: NVD's OS-level CPEs would mark every supported release as affected.

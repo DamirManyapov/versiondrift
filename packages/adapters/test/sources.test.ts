@@ -97,6 +97,32 @@ describe('github', () => {
   });
 });
 
+describe('gitea', () => {
+  it('reads Forgejo releases from Codeberg, dates converted to UTC', async () => {
+    const releases = await fetchReleases(
+      { type: 'gitea', host: 'codeberg.org', repo: 'forgejo/forgejo' },
+      ctx('gitea'),
+    );
+    expect(releases).toHaveLength(10);
+    expect(releases[0]).toMatchObject({
+      version: 'v16.0.5',
+      date: '2026-09-17T15:27:32Z',
+      url: 'https://codeberg.org/forgejo/forgejo/releases/tag/v16.0.5',
+      prerelease: false,
+    });
+    expect(releases[0]?.notes?.body).toContain('release-notes-published/16.0.5.md');
+  });
+
+  it('keeps only tags matching versionRegex', async () => {
+    const releases = await fetchReleases(
+      { type: 'gitea', host: 'codeberg.org', repo: 'forgejo/forgejo', versionRegex: '^v(15\\.\\d+\\.\\d+)$' },
+      ctx('gitea'),
+    );
+    expect(releases.length).toBeGreaterThan(0);
+    expect(releases.every((r) => r.version.startsWith('15.'))).toBe(true);
+  });
+});
+
 describe('rss', () => {
   it('reads RSS 1.0 (RDF) and keeps only entries that name a version', async () => {
     const releases = await fetchReleases(
@@ -206,6 +232,17 @@ describe('endoflife', () => {
     expect(trixie).toMatchObject({ codename: 'Trixie', eol: false, lts: false });
     expect(trixie?.eolDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(branches.find((b) => b.name === '10')).toMatchObject({ eol: true });
+  });
+
+  it('as a release source: the latest release of every cycle, dated at midnight UTC', async () => {
+    const releases = await fetchReleases({ type: 'endoflife', product: 'debian' }, ctx('endoflife'));
+    expect(releases[0]).toMatchObject({
+      version: '13.7',
+      date: '2026-09-12T00:00:00Z',
+      url: 'https://www.debian.org/News/2026/20260912',
+    });
+    expect(releases.map((r) => r.version)).toContain('12.15');
+    expect(new Set(releases.map((r) => r.version)).size).toBe(releases.length);
   });
 });
 

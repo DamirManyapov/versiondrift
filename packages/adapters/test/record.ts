@@ -91,6 +91,7 @@ const cases: Case[] = [
     name: 'dockerhub',
     release: { type: 'dockerhub', repo: 'analogic/poste.io', tagRegex: '^\\d+\\.\\d+\\.\\d+$' },
   },
+  { name: 'gitea', release: { type: 'gitea', host: 'codeberg.org', repo: 'forgejo/forgejo' } },
   { name: 'endoflife', lifecycle: { type: 'endoflife', product: 'grafana' } },
   { name: 'endoflife', lifecycle: { type: 'endoflife', product: 'debian' } },
   { name: 'ghsa', security: { type: 'ghsa', repo: 'grafana/grafana' } },

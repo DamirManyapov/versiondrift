@@ -317,11 +317,18 @@
             },
             "host": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "Gitea or Forgejo instance, e.g. codeberg.org or code.forgejo.org"
             },
             "repo": {
               "type": "string",
               "pattern": "^[\\w.-]+\\/[\\w.-]+$"
+            },
+            "versionRegex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version from the tag name; tags that don't match are ignored. First non-empty capture group wins."
             }
           },
           "required": [
@@ -464,6 +471,25 @@
           "required": [
             "type",
             "file"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "endoflife"
+            },
+            "product": {
+              "type": "string",
+              "minLength": 1,
+              "description": "endoflife.date product slug"
+            }
+          },
+          "required": [
+            "type",
+            "product"
           ],
           "additionalProperties": false
         }

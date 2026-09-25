@@ -132,4 +132,22 @@ describe('rangesFromConfigurations', async () => {
       { introduced: '6.48', last_affected: '6.48' },
     ]);
   });
+
+  it('drops ranges repeated by several editions of one product', () => {
+    const edition = (e: string) => ({
+      vulnerable: true,
+      criteria: `cpe:2.3:a:gitlab:gitlab:*:*:*:*:${e}:*:*:*`,
+      versionStartIncluding: '18.7.0',
+      versionEndExcluding: '18.11.12',
+    });
+    const cve = {
+      id: 'CVE-2026-0001',
+      published: '',
+      descriptions: [],
+      configurations: [{ nodes: [{ cpeMatch: [edition('community'), edition('enterprise')] }] }],
+    };
+    expect(rangesFromConfigurations(cve, 'cpe:2.3:a:gitlab:gitlab')).toEqual([
+      { introduced: '18.7.0', fixed: '18.11.12' },
+    ]);
+  });
 });
