@@ -234,4 +234,15 @@ export const en = {
   vulnsAffecting: 'Vulnerabilities affecting {version}',
   newerReleases: 'Newer releases',
   breadcrumb: 'Breadcrumb',
+  // RSS (S4-T4)
+  rssProductTitle: '{name} releases · VersionDrift',
+  rssProductDescription: 'New {name} releases with their security, breaking and other changes.',
+  rssBoardTitle: 'Your stack · VersionDrift',
+  rssBoardDescription: 'New releases of {products}.',
+  rssWeekTitle: 'Releases by week · VersionDrift',
+  rssWeekDescription: 'Every release across the VersionDrift catalog, one item per week.',
+  rssWeekItem: '{week}: {releases}, {security}',
+  rssFeed: 'RSS',
+  rssBoard: 'RSS feed of these products',
+  rssBoardNote: 'The RSS link names your products, not their versions.',
 };

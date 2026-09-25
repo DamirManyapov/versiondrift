@@ -297,4 +297,15 @@ export const ru: Messages = {
   vulnsAffecting: 'Уязвимости, затрагивающие {version}',
   newerReleases: 'Более новые выпуски',
   breadcrumb: 'Навигация',
+  // RSS (S4-T4)
+  rssProductTitle: 'Выпуски {name} · VersionDrift',
+  rssProductDescription: 'Новые выпуски {name}: изменения безопасности, несовместимые изменения и остальное.',
+  rssBoardTitle: 'Ваш стек · VersionDrift',
+  rssBoardDescription: 'Новые выпуски: {products}.',
+  rssWeekTitle: 'Выпуски по неделям · VersionDrift',
+  rssWeekDescription: 'Все выпуски каталога VersionDrift, по одной записи на неделю.',
+  rssWeekItem: '{week}: {releases}, {security}',
+  rssFeed: 'RSS',
+  rssBoard: 'RSS-лента этих продуктов',
+  rssBoardNote: 'В ссылке на RSS только названия продуктов, без версий.',
 };

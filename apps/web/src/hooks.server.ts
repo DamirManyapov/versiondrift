@@ -17,11 +17,13 @@ export const handle: Handle = async ({ event, resolve }) => {
       filterSerializedResponseHeaders: (name) => name === 'etag' || name === 'content-type',
     });
 
-  // Edge cache for the server-rendered product, compare and version pages on Cloudflare (docs/01): the feed
-  // changes once a day, so a rendered page is reused for as long as its Cache-Control allows. Language and theme
-  // are part of the key because the HTML depends on them.
+  // Edge cache for server-rendered product, compare and version pages, RSS and the sitemap on Cloudflare
+  // (docs/01): the feed changes once a day, so a response is reused for as long as its Cache-Control allows.
+  // Language and theme are part of the key because the output depends on them.
   const cache = event.platform?.caches?.default;
-  if (!cache || event.request.method !== 'GET' || !event.url.pathname.startsWith('/p/')) return render();
+  const { pathname } = event.url;
+  const cacheable = pathname.startsWith('/p/') || pathname.startsWith('/rss/') || pathname === '/sitemap.xml';
+  if (!cache || event.request.method !== 'GET' || !cacheable) return render();
   const key = new URL(event.url);
   key.searchParams.set('__vd', `${locale}.${theme}`);
   const hit = await cache.match(key);

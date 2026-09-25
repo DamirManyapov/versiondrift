@@ -53,6 +53,12 @@
   {#if hasLabels}
     <label class="toggle"><input type="checkbox" bind:checked={labels} /> {t('shareLabels')}</label>
   {/if}
+  <p class="muted">
+    <a href={resolve('/rss/b/[ids].xml', { ids: [...new Set(items.map((i) => i.p))].join(',') })}
+      >{t('rssBoard')}</a
+    >
+    · {t('rssBoardNote')}
+  </p>
 </section>
 
 <style>

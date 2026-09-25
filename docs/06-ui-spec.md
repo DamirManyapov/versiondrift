@@ -18,7 +18,7 @@ intended behaviour; its markup shows layout and tokens.
 | `/settings` | all | inventory import/export (YAML/JSON), thresholds, theme, language; self-hosted: detectors, notifications, users |
 | `/status` | all | feed health: last run, modules failing |
 | `/docs/*` | all | docs (module guide, API, self-hosting) |
-| `/rss/p/:id.xml`, `/rss/b/:hash.xml`, `/rss/week.xml` | all | RSS feeds |
+| `/rss/p/:id.xml`, `/rss/b/:ids.xml`, `/rss/week.xml` | all | RSS feeds (board feeds name products only: `/rss/b/grafana,nginx.xml`) |
 | `/login`, `/account` | public+accounts | Sprint 7 |
 
 ## Board (`/`)
@@ -150,6 +150,16 @@ the latest release when the product's notes have items. `Meta.svelte` sets title
 Per-page OG images are deferred: satori/resvg in Workers would blow the CPU budget of a request, so every page
 uses one static card (`static/og.png`, drawn from `design/og-image.html`). Generating images per product in the
 collector is the likely next step.
+
+## RSS (S4-T4)
+
+RSS 2.0, language from `Accept-Language` (feed readers send no cookies), items link to our version pages:
+- `/rss/p/<id>.xml`: the 30 newest stable releases, important items first in the description, vendor notes linked.
+- `/rss/b/<id,id,…>.xml`: releases of those products from the weekly digests (last 12 weeks). The URL carries product
+  ids only — never versions — so subscribing to a board feed tells the server nothing about what the user runs.
+  Linked from the "Share" panel.
+- `/rss/week.xml`: one item per ISO week listing every release in the catalog.
+Product and week pages advertise their feed with `<link rel="alternate">`; feeds use the same edge cache as pages.
 - Pages must add value beyond vendor notes: merged view, counts, CVE mapping, upgrade notes. No thin pages:
   a compare page with zero items returns 404.
 

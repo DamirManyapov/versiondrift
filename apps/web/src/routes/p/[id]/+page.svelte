@@ -50,6 +50,12 @@
   description={t('productPageDescription', { name: product.name, latest: latest?.version ?? '' })}
 />
 <svelte:head>
+  <link
+    rel="alternate"
+    type="application/rss+xml"
+    title={t('rssProductTitle', { name: product.name })}
+    href={resolve('/rss/p/[id].xml', { id: product.id })}
+  />
   <!-- eslint-disable-next-line svelte/no-at-html-tags -- JSON-LD, escaped by jsonLdScript() -->
   {@html structured}
 </svelte:head>
@@ -61,6 +67,7 @@
       <p class="muted">
         {data.entry.category} ·
         <a class="mono" href="{REPO_URL}/blob/main/products/{product.id}.yaml">products/{product.id}.yaml</a>
+        · <a href={resolve('/rss/p/[id].xml', { id: product.id })}>{t('rssFeed')}</a>
       </p>
     </div>
     {#if latest}

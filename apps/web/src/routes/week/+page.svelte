@@ -99,6 +99,14 @@
 </script>
 
 <Meta title="{t('weekTitle')} · {range} · VersionDrift" />
+<svelte:head>
+  <link
+    rel="alternate"
+    type="application/rss+xml"
+    title={t('rssWeekTitle')}
+    href={resolve('/rss/week.xml')}
+  />
+</svelte:head>
 
 <div class="week">
   <header>
