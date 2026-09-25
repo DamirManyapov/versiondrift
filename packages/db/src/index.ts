@@ -10,3 +10,4 @@ export {
   type Storage,
 } from './store.ts';
 export { MIGRATIONS } from './migrations.ts';
+export { AuthStore, hashPassword, verifyPassword, type Role, type User } from './auth.ts';

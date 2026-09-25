@@ -22,6 +22,7 @@ LABEL org.opencontainers.image.title="VersionDrift" \
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=8080 \
+    VD_MODE=selfhosted \
     VD_DATA_DIR=/data
 WORKDIR /app
 COPY --from=build /out/package.json ./package.json

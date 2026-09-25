@@ -45,3 +45,30 @@ export const settings = sqliteTable('settings', {
   key: text('key').primaryKey(),
   value: text('value', { mode: 'json' }).notNull(),
 });
+
+/** People who can sign in (docs/07 "Auth"). Password users have a scrypt hash; OIDC users an issuer subject. */
+export const users = sqliteTable('users', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull().unique(),
+  email: text('email'),
+  role: text('role', { enum: ['admin', 'viewer'] })
+    .notNull()
+    .default('admin'),
+  passwordHash: text('password_hash'),
+  oidcSub: text('oidc_sub').unique(),
+  createdAt: text('created_at').notNull().default(now),
+});
+
+/** Sign-in sessions; the cookie holds a random token, the table only its sha256. */
+export const sessions = sqliteTable(
+  'sessions',
+  {
+    tokenHash: text('token_hash').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: text('created_at').notNull().default(now),
+    expiresAt: text('expires_at').notNull(),
+  },
+  (t) => [index('sessions_user').on(t.userId)],
+);

@@ -278,4 +278,27 @@ export const en = {
   boardsHint: 'Boards of this instance, stored in its database. Deleting a board removes its products.',
   settingsStorageServer:
     'This board is stored on this server. Export it to back it up or move it — the file also works on versiondrift.dev and with the Telegram alerts.',
+  // Sign-in, self-hosted (S5-T3)
+  signInTitle: 'Sign in',
+  signInName: 'User name',
+  signInPassword: 'Password',
+  signInButton: 'Sign in',
+  signInInvalid: 'Wrong user name or password.',
+  signInTooMany: 'Too many attempts. Try again in 15 minutes.',
+  signInOidc: 'Sign in with single sign-on',
+  signInHeader:
+    'Sign-in is handled by your reverse proxy, which must send the “{header}” header. It did not.',
+  signOut: 'Sign out',
+  accountTitle: 'Account',
+  accountRole: 'Role: {role}',
+  changePassword: 'Change password',
+  currentPassword: 'Current password',
+  newPassword: 'New password',
+  repeatPassword: 'Repeat the new password',
+  passwordChanged: 'Password changed. Other devices were signed out.',
+  wrongPassword: 'The current password is wrong.',
+  passwordMismatch: 'The new passwords differ.',
+  passwordTooShort: 'Use at least 8 characters.',
+  accountExternal: 'This account comes from your identity provider or proxy; its password is managed there.',
+  authNone: 'Sign-in is off (VD_AUTH=none): anyone who can reach this server can change its boards.',
 };

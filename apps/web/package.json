@@ -35,6 +35,7 @@
     "@versiondrift/db": "workspace:*",
     "@versiondrift/schema": "workspace:*",
     "better-sqlite3": "^13.0.3",
+    "oauth4webapi": "^3.8.8",
     "yaml": "^2.9.1"
   }
 }

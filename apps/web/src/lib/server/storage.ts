@@ -12,13 +12,15 @@ export const mode = (): Mode => (env.VD_MODE === 'selfhosted' ? 'selfhosted' : '
 
 let storage: Storage | undefined;
 
-/** The store, opened (and migrated) on first use; 404 outside self-hosted mode so the API doesn't exist there. */
-export function selfHostedStore() {
+/** The database, opened (and migrated) on first use; 404 outside self-hosted mode so nothing exists there. */
+export function selfHostedStorage(): Storage {
   if (mode() !== 'selfhosted') error(404, 'Not found');
   if (!storage) {
     const dir = path.resolve(env.VD_DATA_DIR || './data');
     mkdirSync(dir, { recursive: true });
     storage = openStorage(path.join(dir, 'versiondrift.db'));
   }
-  return storage.store;
+  return storage;
 }
+
+export const selfHostedStore = () => selfHostedStorage().store;

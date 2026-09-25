@@ -1,6 +1,8 @@
 import { dev } from '$app/environment';
 import type { Handle, HandleFetch } from '@sveltejs/kit';
 import { isLocale, localeFromHeader } from '$lib/i18n';
+import { json } from '@sveltejs/kit';
+import { bootstrapAdmin, crossSite, currentUser, isOpenPath } from '$lib/server/auth';
 import { mode } from '$lib/server/storage';
 
 // Language: the vd_lang cookie (set in the footer), else Accept-Language. Theme: the vd_theme cookie, else auto.
@@ -11,6 +13,27 @@ export const handle: Handle = async ({ event, resolve }) => {
   const theme = themeCookie === 'dark' || themeCookie === 'light' ? themeCookie : 'auto';
   event.locals.locale = locale;
   event.locals.theme = theme;
+
+  if (crossSite(event.request, event.url))
+    return json({ message: 'Cross-site request refused' }, { status: 403 });
+
+  // Self-hosted: every page and API call needs a signed-in user, except sign-in itself and /healthz.
+  if (mode() === 'selfhosted') {
+    await bootstrapAdmin();
+    const user = currentUser(event);
+    if (user) event.locals.user = user;
+    const { pathname, search } = event.url;
+    const api = pathname.startsWith('/api/');
+    if (!user && !isOpenPath(pathname)) {
+      if (api || event.request.method !== 'GET') return json({ message: 'Sign in first' }, { status: 401 });
+      return new Response(null, {
+        status: 303,
+        headers: { location: `/login?next=${encodeURIComponent(pathname + search)}` },
+      });
+    }
+    if (user?.role === 'viewer' && api && event.request.method !== 'GET')
+      return json({ message: 'Viewers cannot change boards' }, { status: 403 });
+  }
   const render = async () => {
     const response = await resolve(event, {
       transformPageChunk: ({ html }) => html.replace('%lang%', locale).replace('%theme%', theme),

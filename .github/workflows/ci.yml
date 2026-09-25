@@ -69,18 +69,24 @@ jobs:
         run: |
           docker run -d --name vd -p 8080:8080 --read-only --tmpfs /tmp -v vd-data:/data versiondrift:ci
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8080/healthz && break; sleep 1; done
-          curl -fsS -o /dev/null -w 'GET / → %{http_code}\n' http://127.0.0.1:8080/
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/)" = 303  # → /login
           test "$(docker inspect -f '{{.Config.User}}' versiondrift:ci)" = node
           docker logs vd
-      - name: Self-hosted mode keeps boards in SQLite under /data
+      - name: Self-hosted mode signs in and keeps boards in SQLite under /data
         run: |
-          docker run -d --name vd-sh -p 8081:8080 --read-only --tmpfs /tmp -e VD_MODE=selfhosted -v vd-sh:/data versiondrift:ci
+          docker run -d --name vd-sh -p 8081:8080 --read-only --tmpfs /tmp \
+            -e VD_MODE=selfhosted -e VD_ADMIN_PASSWORD=ci-password-1 -v vd-sh:/data versiondrift:ci
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8081/healthz && break; sleep 1; done
-          curl -fsS http://127.0.0.1:8081/api/boards
-          curl -fsS -X PUT -H 'content-type: application/json' \
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8081/api/boards)" = 401
+          signin() {
+            curl -fsS -o /dev/null -c jar.txt -H 'origin: http://127.0.0.1:8081' -H 'accept: text/html' \
+              -d 'name=admin&password=ci-password-1' http://127.0.0.1:8081/login
+          }
+          signin
+          curl -fsS -b jar.txt -X PUT -H 'content-type: application/json' \
             -d '{"v":1,"items":[{"p":"grafana","ver":"12.4.5"}],"settings":{"criticalCvss":7,"hideOk":false}}' \
             http://127.0.0.1:8081/api/boards/1/inventory
           docker restart vd-sh
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8081/healthz && break; sleep 1; done
-          curl -fsS http://127.0.0.1:8081/api/boards/1/inventory | grep -q '"12.4.5"'
+          curl -fsS -b jar.txt http://127.0.0.1:8081/api/boards/1/inventory | grep -q '"12.4.5"'
           docker logs vd-sh

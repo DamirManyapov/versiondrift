@@ -13,8 +13,8 @@ services:
     ports: ["8080:8080"]
     volumes: ["./data:/data"]
     environment:
-      VD_AUTH: password            # none | password | oidc
-      VD_ADMIN_PASSWORD: change-me # first run only; stored as argon2id hash
+      VD_AUTH: password            # none | password | oidc | header
+      VD_ADMIN_PASSWORD: change-me-please # first run only (≥ 8 characters); stored as a scrypt hash
       VD_TZ: Asia/Bangkok
     restart: unless-stopped
 ```
@@ -30,10 +30,36 @@ dependencies; the runtime stage is `node:22-alpine` with only `build/` and those
 (uid 1000) with `/data` as the only writable path (`docker run --read-only` works), `HEALTHCHECK` on `/healthz`.
 CI builds the image and starts it on every push; `.github/workflows/release.yml` publishes
 `ghcr.io/<owner>/versiondrift` for `linux/amd64` and `linux/arm64` on a `v*` tag (`1.2.3`, `1.2`, `latest`) or by hand
-(branch and sha tags). Until S5-T2…T4 land, the image is the public site's UI reading the public feed from the browser.
+(branch and sha tags). The image runs with `VD_MODE=selfhosted` (boards in SQLite, sign-in); until S5-T4 the browser
+still reads the public feed directly.
 
-Behind a reverse proxy set `ORIGIN=https://versiondrift.example.com` (adapter-node needs it to accept form posts), or
-`PROTOCOL_HEADER=x-forwarded-proto` + `HOST_HEADER=x-forwarded-host`.
+Behind a reverse proxy that passes the original `Host` nothing needs configuring; if it rewrites `Host`, set
+`ORIGIN=https://versiondrift.example.com`.
+
+## Auth (S5-T3)
+
+`VD_AUTH` picks how people sign in; everything except `/login`, `/auth/*` and `/healthz` needs a signed-in user
+(pages redirect to `/login?next=…`, the API answers 401). Users with role `viewer` can look but not change boards
+(the API answers 403); everyone is `admin` for now.
+
+- `password` (default): on first start the user `admin` is created with `VD_ADMIN_PASSWORD`, or with a random password
+  printed once to the log (`docker logs`). Passwords are hashed with scrypt (N=2^15, r=8, p=1) from `node:crypto`;
+  the draft said argon2id, which needs a native module or Node ≥ 24. At most 10 failed sign-ins per address and name
+  in 15 minutes. "Account" in the header changes the password and signs out other devices.
+- `oidc`: authorization code flow with PKCE, state and nonce (`oauth4webapi`), `VD_OIDC_ISSUER`, `VD_OIDC_CLIENT_ID`,
+  optional `VD_OIDC_CLIENT_SECRET` (without it the client is public). Register the redirect URI
+  `<ORIGIN or VD_BASE_URL>/auth/oidc/callback`. Users are created on first sign-in, keyed by issuer + subject. The ID
+  token comes straight from the token endpoint over TLS, which OIDC Core allows in place of checking its signature.
+- `header`: a reverse proxy (Authelia, Authentik outpost, oauth2-proxy) authenticates and sends the user name in
+  `VD_TRUST_PROXY_HEADER` (default `Remote-User`). **Only use it when the instance is reachable through that proxy
+  alone** — anyone who can reach the port directly can send the header themselves.
+- `none`: no sign-in at all; for a trusted LAN or a proxy that authenticates without passing a name.
+
+Sessions: a random 256-bit token in the `vd_session` cookie (HttpOnly, SameSite=Lax, 30 days; `Secure` when
+`ORIGIN`/`VD_BASE_URL` is https or the proxy sends `X-Forwarded-Proto: https`), only its sha256 in the `sessions`
+table. CSRF: a state-changing request whose `Origin` host differs from the request's host, or that the browser marks
+`Sec-Fetch-Site: cross-site`, is refused with 403. SvelteKit's own origin check is off because adapter-node assumes
+https without `ORIGIN`, which would refuse every form post on a plain-http LAN instance.
 
 ## Configuration (env)
 
@@ -46,7 +72,9 @@ Behind a reverse proxy set `ORIGIN=https://versiondrift.example.com` (adapter-no
 | `VD_FEED_SYNC` | `0 3 * * *` | cron |
 | `VD_OFFLINE` | false | run own collector instead of pulling feed |
 | `VD_PRIVATE_MODULES_DIR` | /data/modules | extra modules (collected locally, merged into the view) |
-| `VD_AUTH` | password | `none` (trusted LAN / behind proxy auth), `password`, `oidc` |
+| `VD_AUTH` | password | `none` (trusted LAN), `password`, `oidc`, `header` (a proxy authenticates; see Auth) |
+| `VD_ADMIN_PASSWORD` | | first start in `password` mode: the `admin` user's password (≥ 8 characters); otherwise one is generated and printed to the log once |
+| `ORIGIN` | | the public URL, e.g. `https://vd.example.com`; needed behind a proxy that rewrites `Host`, and for OIDC |
 | `VD_OIDC_ISSUER`, `VD_OIDC_CLIENT_ID`, `VD_OIDC_CLIENT_SECRET` | | Authentik/Keycloak/etc. |
 | `VD_TRUST_PROXY_HEADER` | | e.g. `Remote-User` for forward-auth setups |
 | `VD_BASE_URL` | | for links in notifications |
@@ -70,8 +98,7 @@ image needs no compiler.
 With `VD_MODE=selfhosted` the web app reads and writes boards through a small JSON API (404 on the public site):
 `GET/POST /api/boards`, `PATCH/DELETE /api/boards/:id`, `GET/PUT /api/boards/:id/inventory` (the browser's inventory
 format). The board page gets a board switcher and "New board"; Settings can rename and delete boards (the last one
-stays). Responses carry `X-Robots-Tag: noindex`. Until S5-T3 there is no authentication: keep the port private or put
-the instance behind an authenticating proxy.
+stays). Responses carry `X-Robots-Tag: noindex`.
 
 Draft for the rest:
 

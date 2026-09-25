@@ -9,5 +9,15 @@ export const MIGRATIONS: readonly { tag: string; statements: readonly string[] }
       "CREATE INDEX `instances_board` ON `instances` (`board_id`,`position`);",
       "CREATE TABLE `settings` (\n\t`key` text PRIMARY KEY NOT NULL,\n\t`value` text NOT NULL\n);"
     ]
+  },
+  {
+    "tag": "0001_users_sessions",
+    "statements": [
+      "CREATE TABLE `sessions` (\n\t`token_hash` text PRIMARY KEY NOT NULL,\n\t`user_id` integer NOT NULL,\n\t`created_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')) NOT NULL,\n\t`expires_at` text NOT NULL,\n\tFOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade\n);",
+      "CREATE INDEX `sessions_user` ON `sessions` (`user_id`);",
+      "CREATE TABLE `users` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`name` text NOT NULL,\n\t`email` text,\n\t`role` text DEFAULT 'admin' NOT NULL,\n\t`password_hash` text,\n\t`oidc_sub` text,\n\t`created_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')) NOT NULL\n);",
+      "CREATE UNIQUE INDEX `users_name_unique` ON `users` (`name`);",
+      "CREATE UNIQUE INDEX `users_oidc_sub_unique` ON `users` (`oidc_sub`);"
+    ]
   }
 ];

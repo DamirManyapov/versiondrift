@@ -10,5 +10,9 @@ export default {
   preprocess: vitePreprocess(),
   kit: {
     adapter: target === 'node' ? adapterNode({ out: 'build' }) : adapterCloudflare(),
+    // SvelteKit compares the Origin header with the app's URL, which adapter-node assumes is https unless ORIGIN is
+    // set — so every form post on a plain-http self-hosted instance would fail. hooks.server.ts checks Origin
+    // against the request's host instead (docs/07 "Auth").
+    csrf: { trustedOrigins: ['*'] },
   },
 };

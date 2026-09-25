@@ -2,6 +2,7 @@
 import Database from 'better-sqlite3';
 import { asc, eq, sql } from 'drizzle-orm';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import { AuthStore } from './auth.ts';
 import { MIGRATIONS } from './migrations.ts';
 import * as schema from './schema.ts';
 
@@ -169,6 +170,7 @@ export class BoardStore {
 
 export interface Storage {
   store: BoardStore;
+  auth: AuthStore;
   db: Db;
   close(): void;
 }
@@ -181,5 +183,5 @@ export function openStorage(file: string): Storage {
   sqlite.pragma('busy_timeout = 5000');
   migrate(sqlite);
   const db = drizzle(sqlite, { schema });
-  return { store: new BoardStore(db), db, close: () => sqlite.close() };
+  return { store: new BoardStore(db), auth: new AuthStore(db), db, close: () => sqlite.close() };
 }

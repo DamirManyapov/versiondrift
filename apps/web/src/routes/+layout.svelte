@@ -92,6 +92,14 @@
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
       {t('addProduct')}
     </a>
+    {#if data.account && data.account.auth !== 'none'}
+      <a class="user" href={resolve('/account')}>{data.account.name}</a>
+      {#if data.account.auth === 'password' || data.account.auth === 'oidc'}
+        <form method="POST" action="/logout" data-sveltekit-reload>
+          <button class="ghost" type="submit">{t('signOut')}</button>
+        </form>
+      {/if}
+    {/if}
   </header>
 
   <main>
@@ -128,6 +136,10 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+  }
+  .user {
+    font-size: 13px;
+    color: var(--text-soft);
   }
   header {
     min-height: 72px;
