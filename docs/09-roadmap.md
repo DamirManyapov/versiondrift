@@ -88,7 +88,7 @@ Goal: red tiles are real.
 - S4-T3 ✅ Sitemap, JSON-LD, OG images (one static card; per-page images deferred, see docs/06).
 - S4-T4 ✅ RSS: per product, per board (product ids only, no versions), weekly.
 - S4-T5 ✅ Grow catalog to 60+ modules (priority list in `docs/11`): 72 modules; new `gitea` and `endoflife` release sources.
-- S4-T6 Landing section on `/` for first-time visitors (what it is, 3 modes, GitHub link).
+- S4-T6 ✅ Landing section on `/` for first-time visitors (what it is, 3 modes, GitHub link).
 - S4-T7 Launch checklist (`docs/11`).
 
 ## S5 — Self-hosted v0.1

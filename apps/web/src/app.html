@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark light" />
     <link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
+    <script>
+      // Visitors with a saved board skip the landing section before the first paint (S4-T6).
+      try {
+        if (localStorage.getItem('vd.inventory.v1')) document.documentElement.dataset.returning = '';
+      } catch {}
+    </script>
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">

@@ -84,6 +84,11 @@ mean requests to a third-party CDN.
 **Demo board:** on the very first visit (nothing saved yet) the board shows a sample stack in memory with a banner
 and "Start my own board"; the first edit makes it the user's board and saves it.
 
+**Landing section (S4-T6):** above the demo board, first-time visitors get what VersionDrift is (tagline, three
+points), "Build my board" (→ catalog), the GitHub link and the three modes (browser — available now; account and
+self-hosted — planned). It is server-rendered so search engines index it; a two-line script in `app.html` marks
+visitors with a saved board (`data-returning`) before the first paint, so they never see it flash.
+
 ## Inventory storage (anonymous mode)
 
 localStorage key `vd.inventory.v1`:

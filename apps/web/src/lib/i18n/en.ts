@@ -245,4 +245,23 @@ export const en = {
   rssFeed: 'RSS',
   rssBoard: 'RSS feed of these products',
   rssBoardNote: 'The RSS link names your products, not their versions.',
+  // Landing section for first-time visitors (S4-T6)
+  landingLead:
+    'One board for the software you run: your version next to the latest, what changed in between, and the vulnerabilities that affect you.',
+  landingPoint1: 'Your version → latest, with a colour status for every product.',
+  landingPoint2: 'Security, breaking and deprecated changes first; the CVEs that affect your exact version.',
+  landingPoint3: 'Collected daily from each vendor’s own releases, advisories and lifecycle data.',
+  landingBuild: 'Build my board',
+  landingGithub: 'Source on GitHub',
+  landingModesTitle: 'Three ways to use it',
+  modeAnonymousTitle: 'In your browser',
+  modeAnonymousText:
+    'No account, nothing sent anywhere: the board lives in this browser. Share it with a link.',
+  modeAccountTitle: 'With an account',
+  modeAccountText: 'Sync across devices, e-mail and Telegram alerts, a weekly digest.',
+  modeSelfHostedTitle: 'Self-hosted',
+  modeSelfHostedText: 'A Docker image for your network: finds versions itself, sends alerts, works offline.',
+  modeNow: 'Available now',
+  modePlanned: 'Planned',
+  landingDemoHint: 'Below is a sample board. Pick a tile to see what changed.',
 };
