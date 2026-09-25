@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: lint, typecheck, test, modules
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      # pnpm from package.json "packageManager", Node from .nvmrc, then `pnpm install --frozen-lockfile`.
+      - uses: pnpm/setup@v3
+        with:
+          cache: true
+          require-lockfile: true
+
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm -r test
+      # Errors show up as annotations on the PR diff.
+      - run: pnpm modules:validate
+
+      - name: Generated schemas are up to date
+        run: |
+          pnpm schema:gen
+          git diff --exit-code -- schemas/ || {
+            echo "::error::schemas/ is out of date: run pnpm schema:gen and commit the result"
+            exit 1
+          }

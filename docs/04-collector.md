@@ -79,7 +79,7 @@ matching security item get a synthetic item `"Fixes CVE-…"` on the fixing rele
 - `collect.yml`: cron `0 2 * * *` + `workflow_dispatch` (input: `only` ids). Timeout 30 min. Concurrency group `collect`.
 - `module-pr.yml`: on PRs touching `products/**`: validate, run `collect --only <changed> --dry-run`, post a comment
   with the parsed releases table (latest 5), tracks, detected security source, warnings.
-- `ci.yml`: lint, typecheck, unit tests, schema drift check (`schema:gen` must not change files).
+- `ci.yml`: lint, typecheck, unit tests, `modules:validate`, schema drift check (`schema:gen` must not change files).
 
 ## Local development
 
