@@ -9,3 +9,19 @@ export {
   type Version,
 } from './version.ts';
 export { trackOf } from './tracks.ts';
+export {
+  branchFor,
+  changelog,
+  computeStatus,
+  DEFAULT_SETTINGS,
+  isAffected,
+  specOf,
+  STATUS_ORDER,
+  worstStatus,
+  type Changelog,
+  type Installed,
+  type ProductStatus,
+  type Status,
+  type StatusFlag,
+  type StatusSettings,
+} from './status.ts';

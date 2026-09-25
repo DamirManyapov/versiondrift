@@ -55,24 +55,32 @@ product = feed product
 if installed.version is empty            → status "news" (show recent releases only)
 if product.stale && older than 7 days    → status "stale" (still show last data)
 
-track   = installed.track ?? module.defaultTrack ?? trackOf(installed.version) ?? "latest"
+track   = installed.track ?? trackOf(installed.version) ?? module.defaultTrack      // defaultTrack is "latest" unless set
 candidates = releases where (track == "latest" or release.track == track) and not prerelease
 latest  = max(candidates)
 newer   = candidates where compare(release, installed) > 0, sorted desc
 
 affecting = advisories where isAffected(installed.version, a.affected)
-branch  = branches[branchOf(installed.version)]
+branch  = the branch whose id is the longest prefix of installed.version       // "13.2.1" → "13.2", "12.7" → "12"
 
 status =
   "critical" if any a in affecting with (a.kev) or (a.cvss.score >= criticalCvss) or (a.severity == "critical")
-  "eol"      if branch?.eol
+  "eol"      if branch?.eol or branch.eolDate ≤ today
   "update"   if newer.length > 0
   "ok"       otherwise
 
 flags:
   eolSoon       branch.eolDate within eolWarnDays
   unknownVersion installed.version not found in releases (still compared by scheme)
-  otherTrackNewer a newer track exists (e.g. on 8.x, 9.x is out) → hint "new major available"
+  otherTrackNewer a newer track exists (e.g. on 8.x, 9.x is out) → hint "new major available" (+ newestOverall)
+  invalidVersion  installed.version does not parse under the scheme → status "news"
+  staleData       the product is stale (status "stale" overrides everything else)
+
+Implemented in `packages/core/src/status.ts` (`computeStatus`, `isAffected`, `changelog`, `worstStatus`).
+Deviations from the first draft, forced by real data: the track is inferred from the version *before* falling back
+to `defaultTrack` (the schema default "latest" would otherwise disable tracks), and branches are matched by prefix
+because lifecycle sources name them "13.2" for Grafana but "18" for PostgreSQL. Comparisons use the feed's
+`sortKey`s; pre-releases are never counted as updates.
 ```
 
 Priority `critical > eol > update > ok` (an EOL branch with an affecting CVE is `critical`, with the EOL flag shown).
