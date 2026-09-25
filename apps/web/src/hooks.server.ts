@@ -4,12 +4,13 @@ import { isLocale, localeFromHeader } from '$lib/i18n';
 import { json } from '@sveltejs/kit';
 import { bootstrapAdmin, crossSite, currentUser, isOpenPath } from '$lib/server/auth';
 import { startFeedSync } from '$lib/server/feed-sync';
-import { mode } from '$lib/server/storage';
+import { mode, selfHostedStore } from '$lib/server/storage';
 
-// Self-hosted, before the first request: the admin user exists, and the feed mirror is kept fresh (not during
+// Self-hosted, before the first request: the first board and the admin user exist, and the feed mirror is kept fresh (not during
 // `vite build`, which also loads this file).
 export const init: ServerInit = async () => {
   if (mode() !== 'selfhosted' || building) return;
+  selfHostedStore().defaultBoard();
   await bootstrapAdmin();
   startFeedSync();
 };

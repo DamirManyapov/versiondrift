@@ -83,6 +83,7 @@ jobs:
             -H 'accept: text/html' --data-urlencode 'name=admin' --data-urlencode 'password=ci-password-1' \
             http://127.0.0.1:8081/login)
           test "$status" = 303 || { echo "sign-in answered $status"; head -c 2000 signin.txt; false; }
+          curl -fsS -b jar.txt http://127.0.0.1:8081/api/boards | grep -q '"Main"'
           curl -fsS -b jar.txt -X PUT -H 'content-type: application/json' \
             -d '{"v":1,"items":[{"p":"grafana","ver":"12.4.5"}],"settings":{"criticalCvss":7,"hideOk":false}}' \
             http://127.0.0.1:8081/api/boards/1/inventory
