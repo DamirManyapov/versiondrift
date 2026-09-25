@@ -17,6 +17,37 @@ const ctx = (dir: string): AdapterContext => ({
   knownVersions: new Set(),
 });
 
+describe('ghsa: repository advisories without a CVE', () => {
+  it('uses the GHSA id when cve_id is empty', async () => {
+    const advisory = {
+      ghsa_id: 'GHSA-3h96-x359-qrwm',
+      cve_id: '',
+      summary: 'Multiple security issues in dovecot ',
+      severity: 'high',
+      published_at: '2020-08-22T19:47:23Z',
+      html_url: 'https://github.com/Mailu/Mailu/security/advisories/GHSA-3h96-x359-qrwm',
+      vulnerabilities: [
+        { vulnerable_version_range: '< 1.7', patched_versions: '', first_patched_version: '' },
+      ],
+    };
+    const context: AdapterContext = {
+      fetcher: createFetcher({
+        fetch: () => Promise.resolve(Response.json([advisory])),
+        sleep: () => Promise.resolve(),
+      }),
+      log: { info() {}, warn() {} },
+      knownVersions: new Set(),
+    };
+    const [result] = await fetchAdvisories({ type: 'ghsa', repo: 'Mailu/Mailu' }, context);
+    expect(result).toMatchObject({
+      id: 'GHSA-3h96-x359-qrwm',
+      aliases: [],
+      title: 'Multiple security issues in dovecot',
+      affected: [{ introduced: '0', fixed: '1.7' }],
+    });
+  });
+});
+
 describe('parseRangeExpression', () => {
   it.each([
     ['>= 1.0.0, < 1.2.3', undefined, [{ introduced: '1.0.0', fixed: '1.2.3' }]],

@@ -17,8 +17,8 @@ import { CLASSIFIER_VERSION, classifyNotes } from '@versiondrift/classify';
 import { parse, trackOf, type Version } from '@versiondrift/core';
 import {
   FEED_FORMAT_VERSION,
+  FeedProduct,
   type Branch,
-  type FeedProduct,
   type Module,
   type Release,
 } from '@versiondrift/schema';
@@ -288,6 +288,17 @@ export async function collectProduct(
     stale: false,
     moduleHash,
   };
+  // Clients parse product files strictly, so a source returning something odd must not reach the feed.
+  const check = FeedProduct.safeParse(product);
+  if (!check.success) {
+    const issue = check.error.issues[0];
+    return {
+      ok: false,
+      error: `invalid product data at ${issue?.path.join('.') ?? '?'}: ${issue?.message ?? 'schema mismatch'}`,
+      ...(previous && { product: staleCopy(previous)! }),
+      warnings,
+    };
+  }
   if (reclassify) warnings.push('module or classifier changed: items of current releases recomputed');
   return { ok: true, product, newReleases, warnings };
 }

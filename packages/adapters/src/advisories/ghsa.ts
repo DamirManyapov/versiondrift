@@ -42,13 +42,15 @@ export async function ghsaAdvisories(source: GhsaSource, ctx: AdapterContext): P
         v.vulnerable_version_range
           ? parseRangeExpression(
               v.vulnerable_version_range,
-              v.first_patched_version ?? v.patched_versions ?? undefined,
+              v.first_patched_version || v.patched_versions || undefined,
             )
           : [],
       );
+      // Repository advisories may carry "" instead of null when no CVE was assigned (Mailu GHSA-3h96-x359-qrwm).
+      const cve = a.cve_id?.trim() || undefined;
       out.push({
-        id: a.cve_id ?? a.ghsa_id,
-        aliases: a.cve_id ? [a.ghsa_id] : [],
+        id: cve ?? a.ghsa_id,
+        aliases: cve ? [a.ghsa_id] : [],
         title: a.summary.trim(),
         cvss:
           score !== null
