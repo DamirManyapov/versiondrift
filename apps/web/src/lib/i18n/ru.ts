@@ -178,4 +178,28 @@ export const ru: Messages = {
   statusNever: 'никогда',
   statusOkLabel: 'ок',
   statusFailedLabel: 'ошибка',
+  // Settings
+  settingsTitle: 'Настройки',
+  settingsThreshold: 'Порог критичности',
+  settingsThresholdHelp:
+    'Уязвимость, затрагивающая вашу версию, делает продукт критичным начиная с этой оценки CVSS (или если она уже эксплуатируется).',
+  settingsInventory: 'Ваш inventory',
+  settingsStorage:
+    'Доска хранится только в этом браузере. Экспортируйте её для резервной копии или переноса — файл подходит и для self-hosted версии, и для уведомлений в Telegram.',
+  exportYaml: 'Экспорт inventory.yaml',
+  importYaml: 'Импорт inventory.yaml',
+  importReplace: 'Заменить доску',
+  importAdd: 'Добавить к доске',
+  importedItems: {
+    one: 'Импортирована {n} запись.',
+    few: 'Импортировано {n} записи.',
+    many: 'Импортировано {n} записей.',
+    other: 'Импортировано {n} записи.',
+  },
+  importFailed: 'Не удалось импортировать: {message}',
+  clearBoard: 'Очистить доску',
+  clearedBoard: 'Доска очищена.',
+  settingsAppearance: 'Язык и тема',
+  copyMarkdown: 'Скопировать как Markdown',
+  copied: 'Скопировано в буфер обмена.',
 };

@@ -74,9 +74,9 @@ Goal: red tiles are real.
 
 - S3-T1 ✅ Adapters `osv`, `ghsa`, `nvd`, `debian`, `kev`; advisory merge by aliases; severity mapping.
 - S3-T2 ✅ `isAffected` with OSV ranges; advisory ↔ release linking; synthetic "Fixes CVE" items.
-- S3-T3 Status `critical`, Vulnerabilities tab, CVSS tiles, KEV badge, settings threshold.
+- S3-T3 ✅ Status `critical`, Vulnerabilities tab, CVSS tiles, KEV badge, settings threshold.
 - S3-T4 Optional LLM classification + release summaries (budgeted, cached, labelled).
-- S3-T5 "Important only" toggle; "Copy as Markdown".
+- S3-T5 ✅ "Important only" toggle; "Copy as Markdown".
 - S3-T6 Light theme; accessibility pass (keyboard, contrast, screen reader labels).
 
 **Done when:** a known historical CVE for Grafana/Elasticsearch marks an old version red and shows the fixing release.

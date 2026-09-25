@@ -64,6 +64,29 @@
     );
   }
 
+  function asMarkdown(): string {
+    if (!s) return '';
+    const lines = [`## ${row.name} ${s.installed ?? ''} → ${s.latest ?? ''}`, ''];
+    for (const r of s.newer) {
+      lines.push(`### ${r.version}${r.date ? ` (${r.date.slice(0, 10)})` : ''}${r.url ? ` — ${r.url}` : ''}`);
+      for (const item of r.items) lines.push(`- **${item.type}** ${item.text}`);
+      lines.push('');
+    }
+    if (s.affecting.length > 0) {
+      lines.push('### Advisories affecting ' + (s.installed ?? ''));
+      for (const a of s.affecting)
+        lines.push(
+          `- ${a.id}${a.cvss ? ` (CVSS ${a.cvss.score})` : ''}${a.kev ? ' KEV' : ''}: ${a.title} — ${a.url}`,
+        );
+    }
+    return lines.join('\n').trim() + '\n';
+  }
+
+  async function copyMarkdown() {
+    await navigator.clipboard.writeText(asMarkdown());
+    ontoast(t('copied'));
+  }
+
   function setTrack(value: string) {
     if (instance) inventory.update(instance.index, { track: value });
   }
@@ -208,6 +231,7 @@
       >
       <span class="grow"></span>
       {#if tab === 'changes' && s.newer.length > 0}
+        <button class="copy" onclick={copyMarkdown}>{t('copyMarkdown')}</button>
         <label class="toggle">
           <input type="checkbox" bind:checked={importantOnly} />
           {t('importantOnly')}
@@ -510,6 +534,11 @@
   [role='tab'][aria-selected='true'] {
     color: var(--text);
     border-bottom-color: var(--text);
+  }
+  .copy {
+    font-size: 13px;
+    color: var(--link);
+    padding: 8px 4px;
   }
   .toggle {
     display: flex;

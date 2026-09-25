@@ -59,7 +59,8 @@ Implemented (S2-T4) in `apps/web/src/routes/+page.svelte` + `src/lib/board` + `s
 (worst instance decides, `(+N)` for more instances; the detail panel switches instances), summary strip and category/
 search/hide-OK filters, arrow-key grid navigation, version picker as a searchable `<input list>` over the known
 releases, track selector, "I've updated" with an 8 s undo toast, Changes / Vulnerabilities / Module tabs. Below
-1100 px the detail panel opens as a full-screen overlay. "Copy as Markdown" comes with S3-T5.
+1100 px the detail panel opens as a full-screen overlay. "Copy as Markdown" (S3-T5) copies the changes since the installed version and the affecting advisories.
+`/settings` (S3-T3): critical CVSS threshold, `inventory.yaml` export / import (replace or add), clear board.
 
 ## This week (`/week`)
 

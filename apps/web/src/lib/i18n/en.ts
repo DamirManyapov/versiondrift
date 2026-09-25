@@ -153,4 +153,23 @@ export const en = {
   statusNever: 'never',
   statusOkLabel: 'ok',
   statusFailedLabel: 'failed',
+  // Settings
+  settingsTitle: 'Settings',
+  settingsThreshold: 'Critical threshold',
+  settingsThresholdHelp:
+    'An advisory affecting your version makes a product critical from this CVSS score (or when it is known to be exploited).',
+  settingsInventory: 'Your inventory',
+  settingsStorage:
+    'Your board lives only in this browser. Export it to back it up or move it — the file also works with the self-hosted version and the Telegram alerts.',
+  exportYaml: 'Export inventory.yaml',
+  importYaml: 'Import inventory.yaml',
+  importReplace: 'Replace my board',
+  importAdd: 'Add to my board',
+  importedItems: { one: 'Imported {n} entry.', other: 'Imported {n} entries.' },
+  importFailed: 'Could not import: {message}',
+  clearBoard: 'Clear my board',
+  clearedBoard: 'Board cleared.',
+  settingsAppearance: 'Language and theme',
+  copyMarkdown: 'Copy as Markdown',
+  copied: 'Copied to the clipboard.',
 };
