@@ -7,7 +7,7 @@
 ```
 1. load modules          products/*.yaml → validate (zod) → skip invalid, report
 2. load previous feed    GET feed.versiondrift.dev/v1/index.json + needed product files
-3. load state            R2 state/http-cache, state/llm-cache
+3. load state            R2 versiondrift-state: http-cache/, llm-cache/
 4. collect (parallel, concurrency 8, per-host rate limits)
      releases   → adapter.fetchReleases(since = last known version date − 30d)
      lifecycle  → adapter.fetchLifecycle
