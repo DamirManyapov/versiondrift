@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schemas/module.schema.json
-# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+# Verified against the live sources on 2026-09-26 (S1-T7).
 id: grafana
 name: Grafana
 aliases: [grafana-oss]
@@ -10,13 +10,11 @@ logo: simpleicons:grafana
 description: Dashboards, visualization and alerting.
 versionScheme: semver
 tagFilter:
-  include: '^v?\d+\.\d+\.\d+$'
-  exclude: '(beta|rc|preview|security)'
+  include: '^v?\d+\.\d+\.\d+$'   # drops "+security-01" builds and pre-releases
 tracks:
+  - { id: "13", match: '^13\.' }
   - { id: "12", match: '^12\.' }
   - { id: "11", match: '^11\.' }
-  - { id: "10", match: '^10\.' }
-defaultTrack: latest
 sources:
   releases: { type: github, repo: grafana/grafana }
   security:
@@ -33,4 +31,4 @@ classify:
 detect:
   - http: { path: /api/health, jsonPath: $.version, defaultPort: 3000 }
   - docker: { image: grafana/grafana }
-maintainers: []
+maintainers: ["@DamirManyapov"]

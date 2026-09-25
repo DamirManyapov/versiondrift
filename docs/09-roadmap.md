@@ -31,8 +31,9 @@ Goal: `https://feed.versiondrift.dev/v1/index.json` updates daily with real data
 - S1-T4 ✅ Classification v1: section mapping + keyword rules (no LLM).
 - S1-T5 ✅ Collector CLI: `collect`, `build` (index/product/catalog/health/week), merge with previous, guardrails.
 - S1-T6 ✅ Publish to R2 (REST API instead of wrangler); minisign signing; `collect.yml` cron.
-- S1-T7 Verify & fix the 10 example modules; add 5 more from the author's stack (zabbix, postgresql, nginx, minio,
-  proxmox-backup-server).
+- S1-T7 ✅ Verify & fix the 10 example modules; add 5 more from the author's stack (zabbix, postgresql, nginx, minio,
+  proxmox-backup-server). Done with postgresql, nginx, minio, proxmox-backup-server, rabbitmq, plus outline and
+  bigbluebutton from the author's stack (17 modules).
 - S1-T8 `module-pr.yml` bot comment with parsed releases.
 
 **Done when:** feed is published by cron 3 days in a row; health ≥ 90 %; the author can open product JSONs and

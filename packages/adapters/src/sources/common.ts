@@ -13,6 +13,15 @@ export function extractVersion(text: string, versionRegex?: string): string | un
   return m.slice(1).find((g) => g !== undefined && g !== '') ?? (m.length === 1 ? m[0] : undefined);
 }
 
+/** Replaces tag names with the version a source's versionRegex extracts; tags without a match are dropped. */
+export function withVersionRegex(releases: RawRelease[], versionRegex: string | undefined): RawRelease[] {
+  if (!versionRegex) return releases;
+  return releases.flatMap((r) => {
+    const version = extractVersion(r.version, versionRegex);
+    return version === undefined ? [] : [{ ...r, version }];
+  });
+}
+
 /** True once a page reaches versions the previous feed already has, or releases older than `since`. */
 export function reachedKnown(page: RawRelease[], known: ReadonlySet<string>, since?: Date): boolean {
   if (page.some((r) => known.has(r.version))) return true;

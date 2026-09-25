@@ -113,6 +113,11 @@
         "include"
       ]
     },
+    "releaseNotesUrl": {
+      "description": "Per-release notes page, e.g. https://www.zabbix.com/rn/rn{version}; used as the release link.",
+      "type": "string",
+      "pattern": "^https?:\\/\\/\\S*\\{version\\}"
+    },
     "tracks": {
       "description": "Parallel supported release lines users can pin (ES 8/9, Debian 12/13).",
       "type": "array",
@@ -266,6 +271,12 @@
               "description": "Path of the changelog file for notesFrom: changelogFile.",
               "type": "string",
               "minLength": 1
+            },
+            "versionRegex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version from the tag name; tags that don't match are ignored. First non-empty capture group wins."
             }
           },
           "required": [
@@ -423,6 +434,12 @@
               "minLength": 1,
               "format": "regex",
               "description": "Only tags matching this count as releases."
+            },
+            "versionRegex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version from the tag; the first non-empty capture group wins."
             }
           },
           "required": [

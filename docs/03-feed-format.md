@@ -11,7 +11,7 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 | `v1/index.json.minisig` | | signature |
 | `v1/catalog.json` | small | ids, names, categories, logos, search keywords — for the catalog UI |
 | `v1/products/<id>.json` | < 200 KB each | releases, items, advisories, branches |
-| `v1/products/<id>/archive-<year>.json` | | releases older than the retention window |
+| `v1/products/<id>/archive-<year>.json` | | releases older than the retention window (not implemented yet: product files keep every release; the largest are ~400 KB raw, ~60 KB gzipped) |
 | `v1/health.json` | | per-module collection status (for the status page and module maintainers) |
 | `v1/week/<isoYear>-W<isoWeek>.json` | | precomputed weekly digest across all products (for RSS / SEO / "This week") |
 

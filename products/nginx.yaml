@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Verified against the live sources on 2026-09-26 (S1-T7).
+id: nginx
+name: nginx
+vendor: F5
+category: web
+homepage: https://nginx.org
+logo: simpleicons:nginx
+description: Web server, reverse proxy and load balancer.
+versionScheme: semver
+tracks:                          # odd minor = mainline, even minor = stable
+  - { id: mainline, match: '^\d+\.\d*[13579]\.' }
+  - { id: stable, match: '^\d+\.\d*[02468]\.' }
+sources:
+  releases: { type: github, repo: nginx/nginx, versionRegex: '^release-(\d+\.\d+\.\d+)$' }   # GitHub releases since 1.27
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:f5:nginx" }
+  eol: { type: endoflife, product: nginx }
+detect:
+  - http: { path: /, header: server, regex: 'nginx/(\S+)' }
+  - docker: { image: nginx }
+  - command: { run: "nginx -v", regex: 'nginx/(\S+)' }
+maintainers: ["@DamirManyapov"]

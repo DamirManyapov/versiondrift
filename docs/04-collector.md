@@ -114,6 +114,11 @@ Details of v1 (`packages/classify`, no LLM):
 - An item that mentions a CVE or GHSA id is `security` whatever its section (`classifiedBy: keyword`), with the ids
   in `refs`. Keyword rules only apply when the section gave no specific type; "fix" must be the item's verb, so
   "a fixed offset" stays `other`.
+- Conventional Commits prefixes decide first (`fix:` → fix, `feat:` → feature, `feat!:`/`BREAKING CHANGE` → breaking,
+  `docs:`/`chore:`… → other). "Removed …" as the item's verb is breaking; "remove" inside a sentence is not.
+- Link-only lines ("Downloads: https://…") and version boilerplate ("18.6 is the latest release…") are dropped. A prose
+  paragraph that names a CVE is kept even when the notes have bullets.
+- `releasesExtra` notes replace primary notes that yield no items (Elastic's GitHub releases only link to the notes).
 - GitHub reference noise is removed: `[#123](…)`, `[@user](…)`, "by @user in https://…/pull/1".
 - When more than 40 items remain, the least important types are dropped first (security and breaking are kept),
   original order is preserved and the count is reported as omitted.

@@ -271,3 +271,72 @@ describe('parseDate', () => {
     expect(parseDate('20260231', 'YYYYMMDD')).toBeUndefined();
   });
 });
+
+describe('html: wrappers and body dates', () => {
+  it('treats an element that only wraps a heading as a heading, and finds the date in the body', () => {
+    const page = `<article>
+      <div class="heading-wrapper" id="r-9-5-4"><h2><a href="#r-9-5-4">9.5.4</a></h2></div>
+      <div class="heading-wrapper"><h3>Fixes</h3></div><ul><li>fixed a crash</li></ul>
+      <div class="heading-wrapper" id="r-9-5-3"><h2>9.5.3</h2></div><p>Released 05. August 2026</p><ul><li>other</li></ul>
+      <h2><span class="mw-headline" id="Proxmox_VE_9.2">Proxmox VE 9.2</span></h2><p>Released 21. May 2026</p>
+    </article>`;
+    const wrapped = parseHtmlReleases(page, {
+      type: 'html',
+      url: 'https://x.test/notes',
+      select: { item: 'div.heading-wrapper:has(> h2)' },
+      dateFormat: 'DD. MMM YYYY',
+    });
+    expect(wrapped.map((r) => r.version)).toEqual(['9.5.4', '9.5.3']);
+    expect(wrapped[0]).toMatchObject({ url: 'https://x.test/notes#r-9-5-4' });
+    expect(wrapped[0]?.notes?.body).toContain('fixed a crash');
+    expect(wrapped[0]?.notes?.body).not.toContain('9.5.3');
+    expect(wrapped[1]).toMatchObject({ date: '2026-08-05T00:00:00Z' });
+
+    const [pve] = parseHtmlReleases(page, {
+      type: 'html',
+      url: 'https://x.test/wiki',
+      select: { item: 'h2:has(.mw-headline)' },
+      versionRegex: '^Proxmox VE (\\d+\\.\\d+)$',
+      dateFormat: 'DD. MMM YYYY',
+    });
+    expect(pve).toMatchObject({
+      version: '9.2',
+      date: '2026-05-21T00:00:00Z',
+      url: 'https://x.test/wiki#Proxmox_VE_9.2',
+    });
+  });
+
+  it('applies versionRegex to GitHub tags and skips tags that do not match', async () => {
+    const fetch: FetchFn = () =>
+      Promise.resolve(
+        Response.json([
+          {
+            tag_name: 'release-1.31.6',
+            published_at: '2026-09-15T00:00:00Z',
+            html_url: '',
+            prerelease: false,
+            draft: false,
+            body: null,
+            name: null,
+            created_at: '',
+          },
+          {
+            tag_name: 'nightly',
+            published_at: '2026-09-14T00:00:00Z',
+            html_url: '',
+            prerelease: false,
+            draft: false,
+            body: null,
+            name: null,
+            created_at: '',
+          },
+        ]),
+      );
+    const fetcher = createFetcher({ fetch, sleep: () => Promise.resolve() });
+    const releases = await fetchReleases(
+      { type: 'github', repo: 'nginx/nginx', versionRegex: '^release-(\\d+\\.\\d+\\.\\d+)$' },
+      { fetcher, log: console, knownVersions: new Set() },
+    );
+    expect(releases.map((r) => r.version)).toEqual(['1.31.6']);
+  });
+});

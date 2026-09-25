@@ -105,7 +105,7 @@ function toRelease(module: Module, c: Candidate, firstSeenAt: string): { release
       track: trackOf(module, c.version.raw),
       date: c.raw.date ?? null,
       firstSeenAt,
-      url: c.raw.url ?? null,
+      url: module.releaseNotesUrl?.replaceAll('{version}', c.version.raw) ?? c.raw.url ?? null,
       prerelease: c.prerelease,
       items,
       ...(omitted > 0 && { moreItems: omitted }),
@@ -158,7 +158,9 @@ export async function collectProduct(
   }
   const candidates = normalize(module, primary, warnings, module.sources.releases.type);
 
-  // Extra sources only enrich releases the primary source knows (notes, dates, links).
+  // Extra sources only enrich releases the primary source knows (notes, dates, links). Primary notes that
+  // yield no items (e.g. "Downloads: … Release notes: …" links) count as missing.
+  const hasContent = (notes: RawRelease['notes']) => classifyNotes(notes, module.classify).items.length > 0;
   for (const extra of module.sources.releasesExtra ?? []) {
     try {
       const enrich = normalize(module, await fetchReleases(extra, adapterCtx), [], extra.type);
@@ -167,7 +169,7 @@ export async function collectProduct(
         if (!e) continue;
         c.raw = {
           ...c.raw,
-          ...(!c.raw.notes && e.raw.notes && { notes: e.raw.notes }),
+          ...(e.raw.notes && !hasContent(c.raw.notes) && { notes: e.raw.notes }),
           ...(!c.raw.date && e.raw.date && { date: e.raw.date }),
           ...(!c.raw.url && e.raw.url && { url: e.raw.url }),
         };

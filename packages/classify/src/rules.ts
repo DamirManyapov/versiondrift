@@ -62,7 +62,9 @@ const KEYWORD_RULES: [ItemType, RegExp][] = [
   ],
   [
     'breaking',
-    /\b(?:breaking(?: change)?|no longer support\w*|removed?|removal of|drop(?:ped|s)? support|incompatib\w*)\b/i,
+    // "Removed X" as the item's verb or removing support is breaking; "remove unnecessary checks" in the
+    // middle of a sentence is not ("fix: remove …" is caught earlier by the Conventional Commits prefix).
+    /(?:^|[:–—]\s+)remov(?:e|ed|es)\b|\b(?:breaking(?: changes?)?|no longer support\w*|(?:removed?|drop(?:ped|s)?) support|removal of|incompatib\w*|(?:has|have|is|are|was|were) (?:been )?removed)\b/i,
   ],
   ['deprecated', /\bdeprecat\w*/i],
   // "fix" only as the verb of the item ("Fix …", "Alerting: fix …", "fixed the …"), not "a fixed offset";
@@ -105,14 +107,27 @@ export function sectionMeaning(heading: string, hints: ClassifyHints | undefined
   return undefined;
 }
 
+/** Conventional Commits prefixes ("fix(api): …", "feat!: …") say what the change is. */
+const CONVENTIONAL =
+  /^(fix|feat|perf|docs|chore|refactor|test|tests|ci|build|style|revert)(\([^)]*\))?(!)?:\s/i;
+
 export function keywordType(text: string, hints: ClassifyHints | undefined): ItemType | undefined {
   const lower = text.toLowerCase();
+  const conventional = CONVENTIONAL.exec(text);
+  if (conventional) {
+    if (conventional[3] || /BREAKING CHANGE/.test(text)) return 'breaking';
+    const kind = conventional[1]!.toLowerCase();
+    if (kind === 'fix') return /\b(?:security|CVE-|vulnerab)/i.test(text) ? 'security' : 'fix';
+    if (kind === 'feat') return 'feature';
+    if (kind === 'perf') return 'feature';
+    return 'other';
+  }
   for (const [type, words] of Object.entries(hints?.keywords ?? {}) as [HintType, string[]][]) {
     if (words.some((word) => lower.includes(word.toLowerCase()))) return type;
   }
   return KEYWORD_RULES.find(([, re]) => re.test(text))?.[0];
 }
 
-/** Lines that are links or boilerplate, not changes. */
+/** Lines that are links or boilerplate, not changes ("Downloads: https://… Release notes: https://…" included). */
 export const NOISE_ITEM =
-  /^(?:download(?: page)?|what'?s new(?: highlights)?|full changelog|release notes|changelog|new contributors|see (?:the )?(?:full )?(?:changelog|release notes))\b/i;
+  /^(?:download(?: page)?|what'?s new(?: highlights)?|full changelog|release notes|changelog|new contributors|see (?:the )?(?:full )?(?:changelog|release notes))\b|^(?:[\w' ]{0,40}:?\s*https?:\/\/\S+\s*)+$|^\S+ is the latest (?:release|version)\b/i;

@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schemas/module.schema.json
-# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+# Verified against the live sources on 2026-09-26 (S1-T7).
 id: percona-xtradb-cluster
 name: Percona XtraDB Cluster
 aliases: [pxc, percona-cluster]
@@ -7,22 +7,21 @@ vendor: Percona
 category: database
 homepage: https://www.percona.com/mysql/software/percona-xtradb-cluster
 description: MySQL-compatible synchronous multi-master cluster (Galera).
-versionScheme: loose            # e.g. 8.0.36-28, 5.7.44-31.65
-tagFilter:
-  include: '^Percona-XtraDB-Cluster-\d'
+versionScheme: loose             # 8.0.36-28.1 = MySQL 8.0.36, Percona build 28, PXC build 1
 tracks:
-  - { id: "8.4", match: '^8\.4\.' }
+  - { id: "9", match: '^9\.', label: Innovation }
+  - { id: "8.4", match: '^8\.4\.', label: LTS }
   - { id: "8.0", match: '^8\.0\.' }
   - { id: "5.7", match: '^5\.7\.' }
 sources:
-  releases: { type: github, repo: percona/percona-xtradb-cluster, useTags: true }
-  releasesExtra:
-    - type: html
-      url: https://docs.percona.com/percona-xtradb-cluster/8.4/release-notes/release-notes_index.html
-      select: { item: "article li a" }
+  releases:
+    type: github
+    repo: percona/percona-xtradb-cluster
+    useTags: true
+    versionRegex: '^Percona-XtraDB-Cluster-(\d+\.\d+\.\d+-\d+(?:\.\d+)?)$'
   security:
     - { type: nvd, cpe: "cpe:2.3:a:percona:xtradb_cluster" }
-  eol: { type: endoflife, product: percona-xtradb-cluster }
+  # endoflife.date has no Percona XtraDB Cluster page (2026-09)
 detect:
   - sql: { engine: mysql, query: "SELECT VERSION()" }
-maintainers: []
+maintainers: ["@DamirManyapov"]

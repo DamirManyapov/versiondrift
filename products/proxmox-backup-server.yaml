@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Verified against the live sources on 2026-09-26 (S1-T7).
+id: proxmox-backup-server
+name: Proxmox Backup Server
+aliases: [pbs]
+vendor: Proxmox Server Solutions
+category: backup
+homepage: https://www.proxmox.com/en/proxmox-backup-server
+logo: simpleicons:proxmox
+description: Enterprise backup for VMs, containers and hosts.
+versionScheme: loose
+tracks:
+  - { id: "4", match: '^4\.' }
+  - { id: "3", match: '^3\.' }
+sources:
+  releases:                      # roadmap wiki: one "<h2>Proxmox Backup Server X.Y</h2>" per release, "Released 05. August 2026" below
+    type: html
+    url: https://pbs.proxmox.com/wiki/index.php/Roadmap
+    select: { item: h2 }
+    versionRegex: '^Proxmox Backup Server (\d+\.\d+(?:\.\d+)?)$'
+    dateFormat: 'DD. MMM YYYY'
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:proxmox:backup_server" }
+  eol: { type: endoflife, product: proxmox-backup-server }
+detect:
+  - command: { run: proxmox-backup-manager versions, regex: 'proxmox-backup-server (\S+)' }
+  - http: { path: /api2/json/version, jsonPath: $.data.version, defaultPort: 8007, scheme: https }
+maintainers: ["@DamirManyapov"]

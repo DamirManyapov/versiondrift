@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schemas/module.schema.json
-# DRAFT — repo names, URLs, selectors and CPEs are unverified; verify in S1-T7.
+# Verified against the live sources on 2026-09-26 (S1-T7).
 id: kibana
 name: Kibana
 aliases: [elk, elastic-stack]
@@ -15,11 +15,11 @@ tracks:
   - { id: "8", match: '^8\.' }
   - { id: "7", match: '^7\.' }
 sources:
-  releases: { type: github, repo: elastic/kibana }
-  releasesExtra:
+  releases: { type: github, repo: elastic/kibana }   # release bodies only link to the notes
+  releasesExtra:                                  # notes for 9.x; 8.x notes are one page per release
     - type: html
       url: https://www.elastic.co/docs/release-notes/kibana
-      select: { item: "h2", title: "h2", body: "h2 ~ *" }
+      select: { item: "div.heading-wrapper:has(> h2)" }
   security:
     - { type: rss, url: "https://discuss.elastic.co/c/announcements/security-announcements/31.rss" }
     - { type: nvd, cpe: "cpe:2.3:a:elastic:kibana" }
@@ -27,4 +27,4 @@ sources:
 detect:
   - http: { path: /api/status, jsonPath: $.version.number, defaultPort: 5601 }
   - docker: { image: docker.elastic.co/kibana/kibana }
-maintainers: []
+maintainers: ["@DamirManyapov"]

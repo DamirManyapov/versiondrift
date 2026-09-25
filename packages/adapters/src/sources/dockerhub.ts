@@ -1,7 +1,7 @@
 // Docker Hub tags: versions and push dates only (no notes); usually an extra source next to one with notes.
 import type { ReleaseSource } from '@versiondrift/schema';
 import type { AdapterContext, RawRelease } from '../types.ts';
-import { reachedKnown, toIso, type SourceType } from './common.ts';
+import { reachedKnown, toIso, withVersionRegex, type SourceType } from './common.ts';
 
 type DockerhubSource = SourceType<ReleaseSource, 'dockerhub'>;
 
@@ -23,7 +23,7 @@ export async function dockerhubReleases(source: DockerhubSource, ctx: AdapterCon
     `https://hub.docker.com/v2/repositories/${repo}/tags?page_size=100&ordering=last_updated`;
   for (let i = 0; url && i < MAX_PAGES; i++) {
     const data: TagsPage = await ctx.fetcher.json<TagsPage>(url);
-    const batch = data.results
+    const tagged = data.results
       .filter((tag) => !filter || filter.test(tag.name))
       .map((tag): RawRelease => {
         const date = toIso(tag.tag_last_pushed ?? tag.last_updated);
@@ -33,6 +33,7 @@ export async function dockerhubReleases(source: DockerhubSource, ctx: AdapterCon
           ...(date && { date }),
         };
       });
+    const batch = withVersionRegex(tagged, source.versionRegex);
     out.push(...batch);
     if (reachedKnown(batch, ctx.knownVersions, ctx.since)) break;
     url = data.next;
