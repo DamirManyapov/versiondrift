@@ -6,3 +6,5 @@ products/
 # Generated.
 schemas/
 pnpm-lock.yaml
+# Recorded data must stay byte-for-byte as recorded.
+**/test/fixtures/
