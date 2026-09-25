@@ -1,5 +1,7 @@
 // Stands in for @versiondrift/db in the Cloudflare build (vite.config.ts): the public site has no SQLite.
-import type { openStorage as OpenStorage } from '@versiondrift/db';
+import type { AlertEventName, openStorage as OpenStorage } from '@versiondrift/db';
+
+export const ALERT_EVENTS: AlertEventName[] = ['critical', 'eol', 'update', 'digest'];
 
 export class StoreError extends Error {
   override name = 'StoreError';

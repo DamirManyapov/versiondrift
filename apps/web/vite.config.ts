@@ -41,9 +41,14 @@ export default defineConfig({
   ssr: { external: ['better-sqlite3'] },
   resolve: {
     // Workers have no SQLite: the Cloudflare build gets a stub instead of the self-hosted store (better-sqlite3).
+    // The same for the other self-hosted-only packages that Workers can't load (mail, scheduling).
     alias:
       process.env.VD_ADAPTER === 'cloudflare'
-        ? { '@versiondrift/db': path.join(import.meta.dirname, 'src/lib/server/db-unavailable.ts') }
+        ? {
+            '@versiondrift/db': path.join(import.meta.dirname, 'src/lib/server/db-unavailable.ts'),
+            nodemailer: path.join(import.meta.dirname, 'src/lib/server/node-only.ts'),
+            croner: path.join(import.meta.dirname, 'src/lib/server/node-only.ts'),
+          }
         : {},
   },
   test: {

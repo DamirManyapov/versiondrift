@@ -33,6 +33,10 @@ jobs:
       # Errors show up as annotations on the PR diff.
       - run: pnpm modules:validate
 
+      # The public site's Workers build must not pick up self-hosted-only code (see vite.config.ts aliases).
+      - name: Cloudflare build
+        run: pnpm web:build:cf
+
       - name: Database migrations match the schema
         run: |
           pnpm -F @versiondrift/db generate
