@@ -1,0 +1,89 @@
+# VersionDrift self-hosted (docs/07-self-hosted.md). One replica: the data lives in SQLite on the volume.
+
+image:
+  repository: ghcr.io/damirmanyapov/versiondrift
+  # Defaults to the chart's appVersion.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+# Public URL, e.g. https://vd.example.com — needed for OIDC and when the ingress rewrites Host (sets ORIGIN).
+origin: ""
+# Time zone for the feed sync schedule.
+timezone: UTC
+
+auth:
+  # none | password | oidc | header
+  mode: password
+  # First start in password mode; empty = a random password printed to the pod log once.
+  adminPassword: ""
+  oidc:
+    issuer: ""
+    clientId: ""
+    clientSecret: ""
+  # header mode: the header your authenticating proxy sets. Only when the service is reachable through it alone.
+  trustProxyHeader: Remote-User
+
+# Seals notification credentials. Empty = the app generates a key file on the volume (back up the volume).
+secretKey: ""
+# Use an existing Secret instead (keys: admin-password, secret-key, oidc-client-secret; any may be missing).
+existingSecret: ""
+
+feed:
+  # Upstream feed (the directory holding v1/).
+  url: https://feed.versiondrift.dev/
+  # Cron for the sync; it also runs at start.
+  schedule: "0 3 * * *"
+
+# Optional GitOps inventory (docs/07): mounted read-only and imported at start and on change.
+inventory: ""
+# inventory: |
+#   boards:
+#     prod:
+#       products:
+#         grafana: "12.1.1"
+
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  existingClaim: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: vd.example.com
+      paths: ["/"]
+  tls: []
+  #  - secretName: vd-tls
+  #    hosts: [vd.example.com]
+
+resources:
+  requests: { cpu: 50m, memory: 128Mi }
+  limits: { memory: 512Mi }
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile: { type: RuntimeDefault }
+
+securityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities: { drop: [ALL] }
+
+extraEnv: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}

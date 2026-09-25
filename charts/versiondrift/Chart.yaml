@@ -1,0 +1,12 @@
+apiVersion: v2
+name: versiondrift
+description: See how far your software stack has drifted from upstream — self-hosted.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://versiondrift.dev
+sources:
+  - https://github.com/DamirManyapov/versiondrift
+keywords: [versions, updates, cve, end-of-life, changelog]
+annotations:
+  artifacthub.io/license: AGPL-3.0-only

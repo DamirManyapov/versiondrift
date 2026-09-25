@@ -13,3 +13,5 @@ packages/db/drizzle/
 packages/db/src/migrations.ts
 # Hashed test data: formatting would break the index sha256s
 apps/web/e2e/feed/
+# Helm templates are Go templates, not YAML
+charts/

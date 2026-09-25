@@ -1,0 +1,94 @@
+{{- $secret := include "versiondrift.secretName" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "versiondrift.fullname" . }}
+  labels: {{- include "versiondrift.labels" . | nindent 4 }}
+spec:
+  # SQLite on one volume: exactly one pod, and the old one stops before the new one starts.
+  replicas: 1
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: {{- include "versiondrift.selector" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "versiondrift.selector" . | nindent 8 }}
+      annotations:
+        {{- with .Values.podAnnotations }}{{ toYaml . | nindent 8 }}{{ end }}
+        checksum/inventory: {{ .Values.inventory | sha256sum | trunc 16 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: versiondrift
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - { name: VD_AUTH, value: {{ .Values.auth.mode | quote }} }
+            - { name: VD_TZ, value: {{ .Values.timezone | quote }} }
+            - { name: VD_FEED_URL, value: {{ .Values.feed.url | quote }} }
+            - { name: VD_FEED_SYNC, value: {{ .Values.feed.schedule | quote }} }
+            {{- with .Values.origin }}
+            - { name: ORIGIN, value: {{ . | quote }} }
+            {{- end }}
+            {{- if eq .Values.auth.mode "oidc" }}
+            - { name: VD_OIDC_ISSUER, value: {{ required "auth.oidc.issuer is required for oidc" .Values.auth.oidc.issuer | quote }} }
+            - { name: VD_OIDC_CLIENT_ID, value: {{ required "auth.oidc.clientId is required for oidc" .Values.auth.oidc.clientId | quote }} }
+            - name: VD_OIDC_CLIENT_SECRET
+              valueFrom: { secretKeyRef: { name: {{ $secret }}, key: oidc-client-secret, optional: true } }
+            {{- end }}
+            {{- if eq .Values.auth.mode "header" }}
+            - { name: VD_TRUST_PROXY_HEADER, value: {{ .Values.auth.trustProxyHeader | quote }} }
+            {{- end }}
+            - name: VD_ADMIN_PASSWORD
+              valueFrom: { secretKeyRef: { name: {{ $secret }}, key: admin-password, optional: true } }
+            - name: VD_SECRET_KEY
+              valueFrom: { secretKeyRef: { name: {{ $secret }}, key: secret-key, optional: true } }
+            {{- if .Values.inventory }}
+            - { name: VD_INVENTORY_FILE, value: /config/inventory.yaml }
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - { name: data, mountPath: /data }
+            - { name: tmp, mountPath: /tmp }
+            {{- if .Values.inventory }}
+            - { name: inventory, mountPath: /config, readOnly: true }
+            {{- end }}
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 30
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "versiondrift.fullname" .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.inventory }}
+        - name: inventory
+          configMap: { name: {{ include "versiondrift.fullname" . }}-inventory }
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,10 @@
+VersionDrift is starting; the first feed sync takes about 20 seconds.
+{{- if .Values.ingress.enabled }}
+Open: {{ if .Values.ingress.tls }}https{{ else }}http{{ end }}://{{ (index .Values.ingress.hosts 0).host }}/
+{{- else }}
+Open: kubectl port-forward svc/{{ include "versiondrift.fullname" . }} 8080:{{ .Values.service.port }}  →  http://localhost:8080/
+{{- end }}
+{{- if and (eq .Values.auth.mode "password") (not .Values.auth.adminPassword) (not .Values.existingSecret) }}
+Sign in as "admin" with the password printed once in the log:
+  kubectl logs deploy/{{ include "versiondrift.fullname" . }} | grep 'created user'
+{{- end }}

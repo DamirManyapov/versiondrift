@@ -107,7 +107,7 @@ Goal: red tiles are real.
 - S6-T2 Zabbix integration; Proxmox VE integration; Ansible facts import.
 - S6-T3 Instances UI: "2 of 5 affected", per-host list, last detected.
 - S6-T4 Private modules directory; Debian security by detected packages.
-- S6-T5 Helm chart, Proxmox helper script.
+- S6-T5 Helm chart ✅ (`charts/versiondrift`, linted and rendered in CI), Proxmox helper script.
 
 ## S7 — Accounts on the public site
 

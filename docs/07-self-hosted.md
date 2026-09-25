@@ -85,6 +85,16 @@ boards:
       poste-io: "2.5.17"
 ```
 
+**Kubernetes.** `charts/versiondrift` (S6-T5): one replica with the `Recreate` strategy (SQLite on a volume), a PVC
+for `/data`, a Secret for `auth.adminPassword`, `secretKey` and the OIDC client secret (or `existingSecret`), an
+optional Ingress, and `inventory` as a ConfigMap mounted read-only and imported like `/data/inventory.yaml`. The pod
+runs as uid 1000 with a read-only root file system and `/healthz` probes.
+
+```bash
+helm install vd ./charts/versiondrift --set origin=https://vd.example.com --set auth.adminPassword=change-me-please \
+  --set ingress.enabled=true --set 'ingress.hosts[0].host=vd.example.com'
+```
+
 **Backups and upgrades.** Back up `./data/versiondrift.db` (plus `-wal`/`-shm` if the container runs; or stop it)
 and `./data/secret.key` — without the key, notification credentials must be entered again. `./data/feed` is
 re-synced on start. Upgrading is `docker compose pull && docker compose up -d`; database migrations run on start.
