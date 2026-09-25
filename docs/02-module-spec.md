@@ -77,7 +77,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `category` | ✓ | `os, virtualization, containers, orchestration, monitoring, logging, database, mail, network, web, security, storage, backup, messaging, collaboration, ci-cd, identity, other` |
 | `versionScheme` | ✓ | see `docs/05-status-engine.md` |
 | `versionRegex` | | required when `versionScheme: regex`; capture groups become numeric segments |
-| `branchGroups` | | `versionScheme: regex` only: how many leading capture groups form the branch |
+| `branchGroups` | | `versionScheme: regex` only: how many leading capture groups form the branch (default 2) |
 | `sources.releases` | ✓ | exactly one primary source |
 | `tagFilter` | | regexes applied to raw version strings before parsing |
 | `tracks` | | needed when a product has parallel supported lines (ES 8/9, Debian 12/13, PostgreSQL majors). Ids are strings — quote numbers (`id: "12"`), unique, `latest` is reserved |

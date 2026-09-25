@@ -4,7 +4,7 @@ Assumption: one developer part-time with Claude Code, **sprints of 2 weeks** (â‰
 Each sprint ends with something usable. Tasks are sized to be handed to Claude Code one at a time
 ("Implement S1-T3 from docs/09-roadmap.md").
 
-Current sprint: **S0**
+Current sprint: **S1**
 
 ---
 
@@ -26,7 +26,7 @@ Goal: an empty but well-wired monorepo.
 
 Goal: `https://feed.versiondrift.dev/v1/index.json` updates daily with real data.
 
-- S1-T1 `packages/core`: version schemes `semver`, `loose`, `debian` (+ property tests), `trackOf`, `branchOf`.
+- S1-T1 âœ… `packages/core`: version schemes `semver`, `loose`, `debian` (+ property tests), `trackOf`, `branchOf`.
 - S1-T2 Adapter framework: `Fetcher` with ETag cache, per-host rate limiter, fixtures recorder.
 - S1-T3 Adapters: `github`, `rss`, `html`, `dockerhub`, `endoflife`.
 - S1-T4 Classification v1: section mapping + keyword rules (no LLM).

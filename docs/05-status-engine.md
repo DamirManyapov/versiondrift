@@ -10,13 +10,29 @@ Pure TypeScript, no Node-only APIs. Used by the browser, Workers, the self-hoste
 | `loose` | `7.19.4`, `2.5.2`, `5.7.44` | split on `.`/`-`, numeric segments compared numerically, text segments lexically, missing = 0 | first 2 segments |
 | `calver` | `2026.09`, `24.04.1` | as loose, but branch = first 2 segments | first 2 segments |
 | `debian` | `12.7`, `1:2.3.4-1+deb12u1` | Debian ordering (epoch, upstream, revision; `~` sorts before anything) | major (`12`) |
-| `regex` | anything | `versionRegex` capture groups → numeric tuple | configurable `branchGroups` |
+| `regex` | anything | `versionRegex` capture groups → numeric tuple (a group that didn't match = 0) | first `branchGroups` captures (default 2) |
+
+Details (implemented in `packages/core/src/schemes/`):
+
+- A leading `v` and surrounding whitespace are stripped first (`normalizeVersion`). Numbers are compared as digit
+  strings, so any length works up to 26 digits; longer runs don't parse.
+- `semver`: exactly `X.Y.Z`, no leading zeros, pre-release precedence per semver.org (`1.0.0-alpha < 1.0.0-alpha.1 <
+  1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0`), build metadata ignored. Only a single numeric suffix (`-28`) is a 4th segment;
+  `-28.1` stays a pre-release.
+- `loose` / `calver`: must start with a digit; atoms are split on non-alphanumerics and digit/letter boundaries, text is
+  case-insensitive and sorts **before** numbers and before "missing", so a text suffix reads as a pre-release
+  (`7.20rc1 < 7.20 == 7.20.0 < 7.20.1`).
+- `debian`: a port of dpkg's `verrevcmp`; case-sensitive, upstream must start with a digit.
+- Branches keep the vendor's spelling of the numbers (`24.04`, not `24.4`) and are padded to two parts for
+  `loose`/`calver` (`12` → `12.0`); the Debian branch includes a non-zero epoch (`1:2`).
+- `sortKey` is an order-preserving string encoding of the parsed version (see `docs/03-feed-format.md`); property
+  tests check it against `compare` for every scheme.
 
 API:
 
 ```ts
-parse(scheme, raw): Version | null
-compare(scheme, a, b): -1 | 0 | 1
+parse(scheme, raw): Version | null        // scheme: a scheme name, or the module (needed for "regex")
+compare(scheme, a, b): -1 | 0 | 1          // throws InvalidVersionError for unparseable strings
 sortKey(scheme, raw): string          // lexicographically sortable, stored in feed
 branchOf(scheme, raw): string
 trackOf(module, raw): string | null   // first matching track regex
