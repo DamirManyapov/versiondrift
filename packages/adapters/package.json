@@ -1,0 +1,23 @@
+{
+  "name": "@versiondrift/adapters",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Source adapters: fetch releases, lifecycle and advisories from vendor sources.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@versiondrift/core": "workspace:*",
+    "@versiondrift/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

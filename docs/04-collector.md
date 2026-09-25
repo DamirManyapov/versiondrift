@@ -25,6 +25,22 @@
 Failure policy: a module whose collection fails keeps its previous data with `stale: true` and
 `lastSuccessAt`. After 3 consecutive failures an issue is opened, mentioning `maintainers`.
 
+## Fetcher (`packages/adapters/src/http`)
+
+Adapters never call `fetch` directly; they get a `Fetcher` in their context:
+
+- User-Agent `VersionDriftBot/1.0 (+https://versiondrift.dev/bot)`; per-host auth headers (GitHub token) that are never
+  logged or recorded.
+- Per-host pacing: requests to one host are serialized with a minimum gap between starts (default 500 ms,
+  `api.github.com` 100 ms); different hosts run in parallel.
+- Retries (3) with exponential backoff for network errors, 429 and 5xx; `Retry-After` and GitHub's
+  `x-ratelimit-reset` are honoured when the wait is ≤ 60 s, otherwise the request fails (no hour-long sleeps).
+- Timeout 30 s per attempt.
+- Conditional GET: with an `HttpCache` (`FileHttpCache` = one JSON file per request), `If-None-Match` /
+  `If-Modified-Since` are sent and a 304 returns the stored body (`fromCache: true`).
+- Fixtures: `recordingFetch` saves every response as `<host_path_query>-<hash>.json` (status, a few headers, body —
+  never request headers); `fixtureFetch` replays them and fails on any request without a fixture.
+
 ## Adapters: notes
 
 - **github**: REST `GET /repos/{repo}/releases?per_page=100` (paginate until known version); `useTags` →

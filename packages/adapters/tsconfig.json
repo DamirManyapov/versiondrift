@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  // Adapters run in Node only (collector, self-hosted offline mode).
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node"]
+  },
+  "include": ["src"],
+  "references": [{ "path": "../schema" }, { "path": "../core" }]
+}
