@@ -368,4 +368,10 @@ export const en = {
   'cat_ci-cd': 'Dev & CI/CD',
   cat_identity: 'Identity',
   cat_other: 'Other',
+  // Status page, self-hosted feed mirror
+  mirrorTitle: 'Local feed copy',
+  mirrorSynced: 'Synced {at}: {n} products from the feed built {generated}.',
+  mirrorNever: 'Not synced yet — the first sync runs at start and takes about 20 seconds.',
+  mirrorVerified: 'signature checked',
+  mirrorError: 'The last sync failed, the previous copy is in use: {message}',
 };

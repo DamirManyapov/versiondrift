@@ -27,6 +27,25 @@
     <span style="width: {data.health.ok * 100}%"></span>
   </div>
 
+  {#if data.mirror}
+    <section class="mirror">
+      <h2>{t('mirrorTitle')}</h2>
+      <p>
+        {data.mirror.syncedAt
+          ? t('mirrorSynced', {
+              at: formatUpdated(data.mirror.syncedAt, locale, t),
+              generated: data.mirror.generatedAt ? formatUpdated(data.mirror.generatedAt, locale, t) : '—',
+              n: data.mirror.products,
+            })
+          : t('mirrorNever')}
+        {#if data.mirror.verified}· {t('mirrorVerified')}{/if}
+      </p>
+      {#if data.mirror.lastError}
+        <p class="fail">{t('mirrorError', { message: data.mirror.lastError })}</p>
+      {/if}
+    </section>
+  {/if}
+
   {#if failing.length > 0}
     <h2>{t('statusFailing')}</h2>
     {#each failing as [id, m] (id)}
