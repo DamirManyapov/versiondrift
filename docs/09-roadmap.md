@@ -48,7 +48,7 @@ Goal: the author uses `versiondrift.dev` for his own stack.
 - S2-T3 ✅ Status engine in `core` (`computeStatus`, `changelog`) — without advisories yet (critical comes in S3).
 - S2-T4 ✅ Board: summary strip, filters, tiles, sorting, detail panel (Changes + Module tabs), version picker,
   "I've updated", track selector.
-- S2-T5 Catalog modal/page; demo board on first visit.
+- S2-T5 ✅ Catalog modal/page; demo board on first visit.
 - S2-T6 `/week` view from `week/*.json` + board filter.
 - S2-T7 `/p/:id` product page (basic).
 - S2-T8 Deploy with `adapter-cloudflare` to Pages; `/status` page from `health.json`.

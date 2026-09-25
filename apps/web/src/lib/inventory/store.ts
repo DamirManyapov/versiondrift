@@ -6,6 +6,8 @@ export const STORAGE_KEY = 'vd.inventory.v1';
 export interface InventoryStore {
   /** False when changes will be lost on reload (storage blocked): the UI shows a banner. */
   readonly persistent: boolean;
+  /** True once something was saved (so a first visit can show the demo board). */
+  hasSaved(): boolean;
   load(): InventoryData;
   save(data: InventoryData): void;
 }
@@ -26,6 +28,15 @@ export class BrowserInventoryStore implements InventoryStore {
     }
     this.storage = usable;
     this.persistent = usable !== undefined;
+  }
+
+  hasSaved(): boolean {
+    if (this.memory) return true;
+    try {
+      return this.storage?.getItem(STORAGE_KEY) != null;
+    } catch {
+      return false;
+    }
   }
 
   load(): InventoryData {

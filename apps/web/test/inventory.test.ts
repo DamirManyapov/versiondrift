@@ -104,3 +104,21 @@ describe('BrowserInventoryStore', () => {
     expect(new BrowserInventoryStore(null).persistent).toBe(false);
   });
 });
+
+describe('demo board', async () => {
+  const { InventoryState } = await import('../src/lib/inventory/state.svelte.ts');
+  it('is shown on a first visit and becomes the user board on the first edit', () => {
+    const s = new MemoryStorage();
+    const state = new InventoryState();
+    state.init(new BrowserInventoryStore(storage(s)));
+    expect(state.demo).toBe(true);
+    expect(state.data.items.length).toBeGreaterThan(3);
+    expect(s.map.size).toBe(0);
+    state.update(0, { ver: '1.0.0' });
+    expect(state.demo).toBe(false);
+    expect(JSON.parse(s.map.get(STORAGE_KEY)!).items.length).toBeGreaterThan(3);
+    const again = new InventoryState();
+    again.init(new BrowserInventoryStore(storage(s)));
+    expect(again.demo).toBe(false);
+  });
+});

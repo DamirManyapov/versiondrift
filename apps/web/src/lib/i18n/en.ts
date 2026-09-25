@@ -99,4 +99,18 @@ export const en = {
   typeFeature: 'feature',
   typeFix: 'fix',
   typeOther: 'other',
+  // Demo board and catalog
+  demoBanner:
+    'Try it: this is a sample stack. Change a version or add your products — your board stays in this browser.',
+  demoStart: 'Start my own board',
+  catalogTitle: 'Catalog',
+  catalogIntro: {
+    one: '{n} product with release, lifecycle and security sources.',
+    other: '{n} products with release, lifecycle and security sources.',
+  },
+  catalogSearch: 'Search by name, vendor or alias',
+  add: 'Add',
+  added: 'Added',
+  missingProduct: 'Missing a product? Add a module →',
+  noMatches: 'No products match.',
 };

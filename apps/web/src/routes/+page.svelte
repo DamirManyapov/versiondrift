@@ -72,6 +72,13 @@
 
 <h1 class="visually-hidden">VersionDrift</h1>
 
+{#if inventory.demo}
+  <div class="demo" role="note">
+    <span>{t('demoBanner')}</span>
+    <button class="cta" onclick={() => inventory.startOwn()}>{t('demoStart')}</button>
+  </div>
+{/if}
+
 {#if !inventory.persistent}
   <p class="banner" role="alert">{t('storageBanner')}</p>
 {/if}
@@ -286,6 +293,20 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 16px;
+  }
+  .demo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px dashed var(--border-strong);
+  }
+  .demo span {
+    flex: 1 1 320px;
   }
   .banner {
     padding: 12px 16px;

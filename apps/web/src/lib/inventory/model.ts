@@ -25,6 +25,19 @@ export interface InventoryData {
 }
 
 export const DEFAULT_SETTINGS: InventorySettings = { criticalCvss: 7, hideOk: false };
+
+/** Shown on the first visit (docs/06: "Try it: this is a sample stack"); not saved until the user edits it. */
+export const DEMO_ITEMS: InventoryItem[] = [
+  { p: 'grafana', ver: '12.4.5' },
+  { p: 'zabbix', ver: '7.0.20' },
+  { p: 'proxmox-ve', ver: '8.4' },
+  { p: 'debian', ver: '12.15' },
+  { p: 'postgresql', ver: '16.15' },
+  { p: 'nginx', ver: '1.30.1' },
+  { p: 'poste-io', ver: '2.5.15' },
+  { p: 'elasticsearch', ver: '8.19.20' },
+  { p: 'routeros', ver: '7.24.4' },
+];
 export const emptyInventory = (): InventoryData => ({ v: 1, items: [], settings: { ...DEFAULT_SETTINGS } });
 
 /** Repairs anything read from storage: unknown shapes become an empty inventory, bad items are dropped. */

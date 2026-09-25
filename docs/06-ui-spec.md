@@ -72,6 +72,13 @@ items. Week navigation ‹ ›. Empty state: "Quiet week."
 Search (fuzzy over name, aliases, vendor, keywords), category filter, rows: logo, name, category, source types,
 "Add" / "Added". Link: "Missing a product? Add a module →" (docs/10).
 
+Implemented (S2-T5) as the `/catalog` page (the header "+ Product" links there; a modal can come later): every
+word of the query must match name, id, vendor, aliases or description. Logos are initials for now — simpleicons would
+mean requests to a third-party CDN.
+
+**Demo board:** on the very first visit (nothing saved yet) the board shows a sample stack in memory with a banner
+and "Start my own board"; the first edit makes it the user's board and saves it.
+
 ## Inventory storage (anonymous mode)
 
 localStorage key `vd.inventory.v1`:
