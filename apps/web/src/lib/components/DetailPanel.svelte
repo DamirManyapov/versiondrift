@@ -13,10 +13,13 @@
 
   let {
     row,
+    readonly = false,
     onclose,
     ontoast,
   }: {
     row: Row;
+    /** A shared board: shows everything, edits nothing. */
+    readonly?: boolean;
     onclose?: (() => void) | undefined;
     ontoast: (message: string, undo?: () => void) => void;
   } = $props();
@@ -165,7 +168,7 @@
         </div>
       {/if}
       <span class="grow"></span>
-      {#if s.newer.length > 0 && s.installed}
+      {#if s.newer.length > 0 && s.installed && !readonly}
         <button class="done" onclick={markUpdated}>
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
             ><path d="M5 12.5l4.5 4.5L19 7.5" /></svg
@@ -178,7 +181,11 @@
     {#if product.tracks.length > 0}
       <label class="field">
         <span class="muted">{t('following')}</span>
-        <select value={instance?.item.track ?? s.track} onchange={(e) => setTrack(e.currentTarget.value)}>
+        <select
+          value={instance?.item.track ?? s.track}
+          disabled={readonly}
+          onchange={(e) => setTrack(e.currentTarget.value)}
+        >
           <option value="latest">{t('trackLatest')}</option>
           {#each product.tracks as track (track.id)}
             <option value={track.id}>{track.id}{track.label ? ` (${track.label})` : ''}</option>
@@ -222,23 +229,23 @@
       </div>
     {/if}
 
-    <label class="field">
-      <span class="muted">{t('myVersion')}</span>
-      <input
-        class="mono"
-        list="versions-{row.id}"
-        value={versionInput}
-        placeholder={t('versionPlaceholder', { example: s.latest ?? '1.0.0' })}
-        oninput={(e) => (draft = e.currentTarget.value)}
-        onchange={commitVersion}
-        onkeydown={(e) => e.key === 'Enter' && commitVersion()}
-        aria-invalid={versionError !== '' && !s.flags.includes('unknownVersion')}
-      />
-      <datalist id="versions-{row.id}">
-        {#each releasesForPicker as r (r.sortKey)}<option value={r.version}></option>{/each}
-      </datalist>
-      {#if versionError}<span class="hint">{versionError}</span>{/if}
-    </label>
+    {#if !readonly}<label class="field">
+        <span class="muted">{t('myVersion')}</span>
+        <input
+          class="mono"
+          list="versions-{row.id}"
+          value={versionInput}
+          placeholder={t('versionPlaceholder', { example: s.latest ?? '1.0.0' })}
+          oninput={(e) => (draft = e.currentTarget.value)}
+          onchange={commitVersion}
+          onkeydown={(e) => e.key === 'Enter' && commitVersion()}
+          aria-invalid={versionError !== '' && !s.flags.includes('unknownVersion')}
+        />
+        <datalist id="versions-{row.id}">
+          {#each releasesForPicker as r (r.sortKey)}<option value={r.version}></option>{/each}
+        </datalist>
+        {#if versionError}<span class="hint">{versionError}</span>{/if}
+      </label>{/if}
 
     <div class="tabs">
       <div role="tablist" tabindex="-1" onkeydown={onTabKey}>
@@ -368,9 +375,11 @@
     </article>
   {/snippet}
 
-  <button class="remove" onclick={() => instance && inventory.remove(instance.index)}
-    >{t('removeFromBoard')}</button
-  >
+  {#if !readonly}
+    <button class="remove" onclick={() => instance && inventory.remove(instance.index)}
+      >{t('removeFromBoard')}</button
+    >
+  {/if}
 </section>
 
 <style>

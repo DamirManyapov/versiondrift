@@ -97,6 +97,12 @@ Implemented in `apps/web/src/lib/inventory` (`BrowserInventoryStore`, reactive `
 
 **Share link**: `/b#s=<base64url(deflate(JSON items))>`; fragment never reaches the server.
 Human-readable variant accepted too: `/b#grafana@11.3.1,poste-io@2.4.5`.
+Implemented in S4-T1 (`apps/web/src/lib/inventory/share.ts`): "Share" in the board's filter row opens a panel with the
+link; the readable form is used when it is the shorter one (no tracks or labels). Labels are left out unless the user
+ticks "Include labels", since they often name hosts. `/b` shows the board read-only (no version field, no "I updated",
+no remove) with "Save to my board"; when the visitor already has a board of their own they choose "Add to my board"
+(merge, skipping same product + version + label) or "Replace my board". Decoding is capped (256 KB of JSON, 500 items)
+and damaged links show an error instead of an empty board; `/b` is `noindex`.
 Import/export: YAML file identical to the self-hosted `inventory.yaml` format.
 
 ## Accessibility (S3-T6)

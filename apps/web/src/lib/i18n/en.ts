@@ -172,4 +172,25 @@ export const en = {
   settingsAppearance: 'Language and theme',
   copyMarkdown: 'Copy as Markdown',
   copied: 'Copied to the clipboard.',
+  // Share links (S4-T1)
+  shareBoard: 'Share',
+  shareTitle: 'Share this board',
+  shareNote:
+    'The link carries your products and versions after the “#”, which browsers never send to a server. Anyone with the link sees a read-only copy.',
+  shareLink: 'Share link',
+  shareCopy: 'Copy link',
+  shareCopied: 'Link copied.',
+  shareLabels: 'Include labels (they may name your hosts)',
+  sharedTitle: 'Shared board',
+  sharedBanner: {
+    one: 'A shared board with {n} product, read-only. Nothing is saved until you add it to your board.',
+    other: 'A shared board with {n} products, read-only. Nothing is saved until you add it to your board.',
+  },
+  sharedSave: 'Save to my board',
+  sharedReplace: 'Replace my board',
+  sharedMerge: 'Add to my board',
+  sharedChoose: 'Your board already has products:',
+  sharedInvalid: 'This share link is broken or incomplete.',
+  sharedBack: 'Go to my board',
+  cancel: 'Cancel',
 };

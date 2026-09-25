@@ -83,7 +83,7 @@ Goal: red tiles are real.
 
 ## S4 — Share & grow (public launch v0.1)
 
-- S4-T1 Share links (`/b#s=…`), read-only shared board, "save to my board".
+- S4-T1 ✅ Share links (`/b#s=…`), read-only shared board, "save to my board".
 - S4-T2 Compare pages `/p/:id/:a...:b` and version pages `/p/:id/v/:v` (SSR in Workers, edge cache), canonical URLs.
 - S4-T3 Sitemap, JSON-LD, OG images.
 - S4-T4 RSS: per product, per board (hash of inventory), weekly.
