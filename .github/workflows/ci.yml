@@ -53,6 +53,27 @@ jobs:
             exit 1
           }
 
+  e2e:
+    name: end-to-end (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v3
+        with:
+          cache: true
+          require-lockfile: true
+      - run: pnpm web:build:node
+      - run: pnpm -F @versiondrift/web exec playwright install --with-deps chromium
+      # Public site and a self-hosted instance over the fixed feed in apps/web/e2e/feed.
+      - run: pnpm -F @versiondrift/web e2e
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-traces
+          path: apps/web/test-results/
+          retention-days: 7
+
   docker:
     name: self-hosted image builds
     runs-on: ubuntu-latest

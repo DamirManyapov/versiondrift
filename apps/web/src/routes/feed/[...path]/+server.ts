@@ -26,6 +26,9 @@ export const GET: RequestHandler = async ({ params, request }) => {
     etag,
     'content-type': file.endsWith('.json') ? 'application/json' : 'text/plain',
     'cache-control': 'no-cache',
+    // Public data, like feed.versiondrift.dev: other apps (and the e2e public site) may read it.
+    'access-control-allow-origin': '*',
+    'access-control-expose-headers': 'ETag',
   };
   if (request.headers.get('if-none-match') === etag) return new Response(null, { status: 304, headers });
   return new Response(new Uint8Array(body), { headers });

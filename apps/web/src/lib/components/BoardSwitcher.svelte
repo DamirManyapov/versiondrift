@@ -22,15 +22,16 @@
 </script>
 
 <div class="boards">
-  <label class="pick">
-    <span class="muted">{t('boardLabel')}</span>
+  <div class="pick">
+    <label class="muted" for="board-pick">{t('boardLabel')}</label>
     <select
+      id="board-pick"
       value={inventory.boardId}
       onchange={(e) => void inventory.openBoard(Number(e.currentTarget.value))}
     >
       {#each inventory.boards as board (board.id)}<option value={board.id}>{board.name}</option>{/each}
     </select>
-  </label>
+  </div>
   {#if creating}
     <form onsubmit={create}>
       <input

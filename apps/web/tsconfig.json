@@ -18,6 +18,8 @@
     "svelte.config.js",
     "src/**/*.ts",
     "src/**/*.svelte",
-    "test/**/*.ts"
+    "test/**/*.ts",
+    "e2e/**/*.ts",
+    "playwright.config.ts"
   ]
 }

@@ -90,6 +90,7 @@ pnpm collector pr-report --only <ids>   # the module PR comment, printed locally
 pnpm notify run --inventory inventory.yaml --dry-run   # Telegram alerts for your stack (docs/07)
 pnpm web:dev                       # SvelteKit dev server; uses ./.feed when present, else the public feed
 pnpm web:build:cf | web:build:node
+pnpm web:build:node && pnpm -F @versiondrift/web e2e   # Playwright: public + self-hosted over apps/web/e2e/feed
 docker build -t versiondrift .     # self-hosted image
 ```
 
