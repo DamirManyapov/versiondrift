@@ -61,8 +61,11 @@ Pipeline in `docs/04-collector.md`.
 ### `apps/collector`
 CLI (`commander`): `validate`, `collect`, `build`, `publish`, `health`. State between runs:
 - **previous feed** downloaded from R2 (source of truth, used for incremental collection and "keep last good"),
-- **HTTP cache** (ETag/Last-Modified) stored in R2 under `state/http-cache/` to stay within API limits,
-- **LLM cache** keyed by `sha256(productId + version + notesText)` in `state/llm-cache/`.
+- **HTTP cache** (ETag/Last-Modified) in the private R2 bucket `versiondrift-state` under `http-cache/`, to stay
+  within API limits,
+- **LLM cache** keyed by `sha256(productId + version + notesText)` in `versiondrift-state` under `llm-cache/`.
+
+State lives in its own bucket because everything in `versiondrift-feed` is public.
 
 ### `apps/web` (SvelteKit)
 - Routes and screens: `docs/06-ui-spec.md`.
@@ -85,16 +88,29 @@ self-hosted container; writes `instances` into SQLite.
 
 | Piece | Where | Cost |
 |---|---|---|
-| Repo, CI, collector runs | GitHub (public repo, Actions free for public repos) | 0 |
+| Repo, CI, collector runs | GitHub (private until the public launch in S4: 2 000 free Actions minutes/month; then public, unlimited) | 0 |
 | Feed | Cloudflare R2 bucket `versiondrift-feed`, public via custom domain `feed.versiondrift.dev` | free tier (10 GB, no egress fees) |
+| Collector state | Cloudflare R2 bucket `versiondrift-state`, private | free tier |
 | Public site | Cloudflare Pages/Workers (`versiondrift.dev`) | free tier initially |
 | Accounts DB | Cloudflare D1 | free tier initially |
 | E-mail | Resend / Postmark / Amazon SES (pick at Sprint 7) | low |
 | Self-hosted image | GHCR `ghcr.io/<org>/versiondrift` (multi-arch amd64/arm64) | 0 |
 | Docs site | the SvelteKit app's `/docs` or Starlight on Pages | 0 |
 
-Secrets (GitHub Actions): `GITHUB_TOKEN` (built-in, for GitHub API), `CF_API_TOKEN`, `CF_ACCOUNT_ID`,
-`NVD_API_KEY` (optional), `LLM_API_KEY` (optional), `MINISIGN_SECRET_KEY`.
+Secrets (GitHub Actions): `GITHUB_TOKEN` (built-in, for GitHub API), `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
+(the names wrangler reads; a CI-only token limited to R2 — plus Pages from S2-T8), `NVD_API_KEY` (optional),
+`LLM_API_KEY` (optional), `MINISIGN_SECRET_KEY`.
+
+### Provisioned resources (S0-T5)
+
+- Zone `versiondrift.dev` on Cloudflare (Free plan). DNS: `versiondrift.dev` CNAME `versiondrift.pages.dev` and
+  `feed.versiondrift.dev` → R2 custom domain, both proxied. No `www` yet.
+- R2 `versiondrift-feed`: public only through `feed.versiondrift.dev` (the `r2.dev` URL is disabled), min TLS 1.2,
+  CORS `GET, HEAD` from any origin with `ETag` / `Last-Modified` exposed. `Cache-Control` is set per object at
+  upload (`docs/03-feed-format.md`).
+- R2 `versiondrift-state`: no public access.
+- Pages project `versiondrift` (direct upload, production branch `main`), custom domain `versiondrift.dev`.
+  Until S2-T8 it serves a one-page placeholder.
 
 ## Feed integrity
 
