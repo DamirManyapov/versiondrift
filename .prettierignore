@@ -1,0 +1,8 @@
+# Prose and hand-written data keep their authors' formatting.
+*.md
+docs/
+design/
+products/
+# Generated.
+schemas/
+pnpm-lock.yaml

@@ -1,0 +1,30 @@
+{
+  // Shared compiler options. Every package extends this and sets its own rootDir/outDir/types.
+  "compilerOptions": {
+    "target": "ES2023",
+    // No DOM here: packages/core must run in browsers, Workers and Node alike.
+    // Packages opt into platform types themselves ("types": ["node"] or "lib": [..., "DOM"]).
+    "lib": ["ES2023"],
+    "types": [],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    // No enums / namespaces / parameter properties, so Node can run sources via type stripping.
+    "erasableSyntaxOnly": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  }
+}
