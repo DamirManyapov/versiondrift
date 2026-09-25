@@ -116,7 +116,7 @@ describe('demo board', async () => {
     expect(s.map.size).toBe(0);
     state.update(0, { ver: '1.0.0' });
     expect(state.demo).toBe(false);
-    expect(JSON.parse(s.map.get(STORAGE_KEY)!).items.length).toBeGreaterThan(3);
+    expect((JSON.parse(s.map.get(STORAGE_KEY)!) as { items: unknown[] }).items.length).toBeGreaterThan(3);
     const again = new InventoryState();
     again.init(new BrowserInventoryStore(storage(s)));
     expect(again.demo).toBe(false);
