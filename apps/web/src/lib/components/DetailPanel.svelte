@@ -1,5 +1,6 @@
 <script lang="ts">
   import { parse } from '@versiondrift/core';
+  import { resolve } from '$app/paths';
   import type { ItemType, Release } from '@versiondrift/schema';
   import type { Row } from '$lib/board/rows';
   import { REPO_URL } from '$lib/config';
@@ -75,7 +76,7 @@
 <section class="panel" aria-labelledby="detail-title">
   <header class="top">
     <div class="grow">
-      <h2 id="detail-title">{row.name}</h2>
+      <h2 id="detail-title"><a class="plain" href={resolve('/p/[id]', { id: row.id })}>{row.name}</a></h2>
       <div class="muted">
         {row.category} · {t('moduleFile')}
         <a class="mono" href="{REPO_URL}/blob/main/products/{row.id}.yaml" target="_blank" rel="noreferrer"
@@ -332,6 +333,13 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
+  }
+  .plain {
+    color: inherit;
+    text-decoration: none;
+  }
+  .plain:hover {
+    text-decoration: underline;
   }
   h2 {
     margin: 0;

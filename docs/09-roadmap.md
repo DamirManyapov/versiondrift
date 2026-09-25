@@ -50,7 +50,7 @@ Goal: the author uses `versiondrift.dev` for his own stack.
   "I've updated", track selector.
 - S2-T5 ✅ Catalog modal/page; demo board on first visit.
 - S2-T6 ✅ `/week` view from `week/*.json` + board filter.
-- S2-T7 `/p/:id` product page (basic).
+- S2-T7 ✅ `/p/:id` product page (basic).
 - S2-T8 Deploy with `adapter-cloudflare` to Pages; `/status` page from `health.json`.
 - S2-T9 ✅ `notify` CLI — Telegram alerts long before self-hosted: reads the published feed + an `inventory.yaml`
   (same format as `docs/07-self-hosted.md`), runs `computeStatus`, sends a Telegram message when a product's status

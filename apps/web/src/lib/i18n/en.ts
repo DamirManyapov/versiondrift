@@ -127,4 +127,16 @@ export const en = {
   relInstalled: 'already installed',
   relOtherTrack: 'other track',
   relNotOnBoard: '',
+  // Product page
+  productPageTitle: '{name}: versions, end of life and changes',
+  productPageDescription:
+    '{name} {latest} is the latest release. Release history, lifecycle and security fixes, tracked daily.',
+  addToBoard: 'Add to my board',
+  onYourBoard: 'On your board',
+  latestPerTrack: 'Latest per track',
+  track: 'Track',
+  released: 'Released',
+  allReleases: 'Recent releases',
+  advisories: 'Security advisories',
+  noAdvisories: 'No advisories in the feed yet.',
 };

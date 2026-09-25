@@ -114,6 +114,12 @@ Import/export: YAML file identical to the self-hosted `inventory.yaml` format.
 A light theme is required before public launch (tokens redefined under `[data-theme=light]` and
 `prefers-color-scheme`). Contrast ≥ 4.5:1 for text; status is always also conveyed by text.
 
+## Product page (`/p/:id`, S2-T7)
+
+Server-rendered (universal load through `FeedClient`, 404 for unknown ids): latest release, latest per track,
+lifecycle table, 15 recent releases with type counts and their security/breaking items, advisories, sources, "Add to
+my board". In dev, server-side loads read the local feed through a `handleFetch` hook that is compiled out of builds.
+
 ## SEO (compare & version pages)
 
 - `<title>`: "Grafana 11.3.1 → 12.1.2: 3 breaking changes, 2 security fixes | VersionDrift"

@@ -142,4 +142,16 @@ export const ru: Messages = {
   relInstalled: 'уже установлено',
   relOtherTrack: 'другой трек',
   relNotOnBoard: '',
+  // Product page
+  productPageTitle: '{name}: версии, конец поддержки и изменения',
+  productPageDescription:
+    '{name} {latest} — последний релиз. История релизов, жизненный цикл и исправления безопасности, обновляется ежедневно.',
+  addToBoard: 'Добавить на доску',
+  onYourBoard: 'На вашей доске',
+  latestPerTrack: 'Последние версии по трекам',
+  track: 'Трек',
+  released: 'Выпущен',
+  allReleases: 'Последние релизы',
+  advisories: 'Уязвимости',
+  noAdvisories: 'В фиде пока нет данных об уязвимостях.',
 };
