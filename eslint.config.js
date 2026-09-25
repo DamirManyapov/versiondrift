@@ -35,6 +35,10 @@ export default defineConfig(
       globals: globals.browser,
       parserOptions: { parser: tseslint.parser, svelteConfig },
     },
+    rules: {
+      // Most hrefs are external URLs from the feed; internal links use resolve() by convention.
+      'svelte/no-navigation-without-resolve': ['error', { ignoreLinks: true }],
+    },
   },
   {
     files: ['**/*.config.js', '**/*.config.ts'],

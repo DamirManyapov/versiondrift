@@ -16,6 +16,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@sveltejs/adapter-cloudflare": "^7.2.9",
     "@sveltejs/adapter-node": "^5.5.7",
     "@sveltejs/kit": "^2.70.3",

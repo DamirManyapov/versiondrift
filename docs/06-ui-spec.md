@@ -55,6 +55,12 @@ Tablet: detail panel becomes a slide-over. Phone: single column, tile tap → fu
    - Vulnerabilities: advisories affecting installed version, score tile, KEV badge, "fixed in", link.
    - Module: YAML with "Edit on GitHub" link.
 
+Implemented (S2-T4) in `apps/web/src/routes/+page.svelte` + `src/lib/board` + `src/lib/components`: one tile per product
+(worst instance decides, `(+N)` for more instances; the detail panel switches instances), summary strip and category/
+search/hide-OK filters, arrow-key grid navigation, version picker as a searchable `<input list>` over the known
+releases, track selector, "I've updated" with an 8 s undo toast, Changes / Vulnerabilities / Module tabs. Below
+1100 px the detail panel opens as a full-screen overlay. "Copy as Markdown" comes with S3-T5.
+
 ## This week (`/week`)
 
 Header: "Sep 21–27: 7 releases, 6 newer than yours, 4 with security fixes". Rows grouped by day:
