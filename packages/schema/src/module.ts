@@ -157,6 +157,23 @@ const PointerSource = z.strictObject({
     .meta({ description: 'The text has a Unix time after the version: use it as the release date.' }),
 });
 
+/** Versions of one package in an APT repository's Packages index (what is actually installable). */
+const AptSource = z.strictObject({
+  type: z.literal('apt'),
+  url: httpUrl.meta({
+    description: 'The Packages index, e.g. …/dists/trixie/pve-no-subscription/binary-amd64/Packages',
+  }),
+  package: nonEmpty.meta({ description: 'Package name, e.g. pve-manager' }),
+  versionRegex: regex('Extracts the version (e.g. drops the Debian revision "-1").').optional(),
+});
+
+/** A Debian changelog (debian/changelog): notes and dates per version. */
+const DebianChangelogSource = z.strictObject({
+  type: z.literal('debian-changelog'),
+  url: httpUrl,
+  versionRegex: regex('Extracts the version from the entry header.').optional(),
+});
+
 /** releasesExtra only: release notes per version from a URL template, fetched for releases being classified. */
 const NotesSource = z.strictObject({
   type: z.literal('notes'),
@@ -185,6 +202,8 @@ const RELEASE_SOURCE_TYPES = [
   'endoflife',
   'pointer',
   'notes',
+  'apt',
+  'debian-changelog',
 ] as const;
 export const ReleaseSource = z
   .discriminatedUnion(
@@ -200,6 +219,8 @@ export const ReleaseSource = z
       EndoflifeReleasesSource,
       PointerSource,
       NotesSource,
+      AptSource,
+      DebianChangelogSource,
     ],
     { error: unknownType(RELEASE_SOURCE_TYPES) },
   )
@@ -328,6 +349,10 @@ export const Track = z
           "version's major.minor branch, re-read on every collection.",
       }),
     label: nonEmpty.optional().meta({ description: 'Shown next to the id, e.g. LTS or bookworm.' }),
+    group: nonEmpty.optional().meta({
+      description:
+        'A product line the track belongs to ("RouterOS 7"): users pick the line, then the track (update channel) within it.',
+    }),
     prereleases: z
       .boolean()
       .optional()

@@ -20,10 +20,27 @@ import {
 const MAX_ITEMS = 10;
 const FIXTURES = path.join(import.meta.dirname, 'fixtures');
 
+/** APT Packages indexes and debian/changelogs are megabytes: keep a few stanzas / entries. */
+function trimText(url: string, text: string): string | undefined {
+  if (url.endsWith('/Packages')) {
+    const stanzas = text.split(/\n\s*\n/);
+    const wanted = stanzas.filter((s) => /^Package: proxmox-backup-server$/m.test(s)).slice(-MAX_ITEMS);
+    return [...stanzas.slice(0, 3), ...wanted].join('\n\n') + '\n';
+  }
+  if (url.includes('debian/changelog')) {
+    const entries = text.split(/(?<=\n -- [^\n]+\n)/);
+    return entries.slice(0, MAX_ITEMS).join('');
+  }
+  return undefined;
+}
+
 function trimmed(inner: FetchFn): FetchFn {
   return async (url, init) => {
     const response = await inner(url, init);
-    if (!(response.headers.get('content-type') ?? '').includes('json')) return response;
+    if (!(response.headers.get('content-type') ?? '').includes('json')) {
+      const text = await response.text();
+      return new Response(trimText(String(url), text) ?? text, response);
+    }
     const data: unknown = await response.json();
     const trim = (list: unknown[]) => list.slice(0, MAX_ITEMS);
     if (Array.isArray(data)) return Response.json(trim(data), response);
@@ -95,6 +112,23 @@ const cases: Case[] = [
   },
   { name: 'gitea', release: { type: 'gitea', host: 'codeberg.org', repo: 'forgejo/forgejo' } },
   { name: 'endoflife', lifecycle: { type: 'endoflife', product: 'grafana' } },
+  {
+    name: 'debian',
+    release: {
+      type: 'apt',
+      url: 'http://download.proxmox.com/debian/pbs/dists/trixie/pbs-no-subscription/binary-amd64/Packages',
+      package: 'proxmox-backup-server',
+      versionRegex: '^(\\d+\\.\\d+\\.\\d+)-\\d+$',
+    },
+  },
+  {
+    name: 'debian',
+    release: {
+      type: 'debian-changelog',
+      url: 'https://git.proxmox.com/?p=proxmox-backup.git;a=blob_plain;f=debian/changelog;hb=HEAD',
+      versionRegex: '^(\\d+\\.\\d+\\.\\d+)-\\d+$',
+    },
+  },
   {
     name: 'pointer',
     release: {

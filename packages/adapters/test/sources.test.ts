@@ -6,6 +6,7 @@ import {
   extractVersion,
   fetchLifecycle,
   fetchNotes,
+  parseDebianChangelog,
   fetchReleases,
   fixtureFetch,
   parseDate,
@@ -121,6 +122,66 @@ describe('gitea', () => {
     );
     expect(releases.length).toBeGreaterThan(0);
     expect(releases.every((r) => r.version.startsWith('15.'))).toBe(true);
+  });
+});
+
+describe('Debian packaging (Proxmox)', () => {
+  const PACKAGES =
+    'http://download.proxmox.com/debian/pbs/dists/trixie/pbs-no-subscription/binary-amd64/Packages';
+  const CHANGELOG = 'https://git.proxmox.com/?p=proxmox-backup.git;a=blob_plain;f=debian/changelog;hb=HEAD';
+  const REVISION = '^(\\d+\\.\\d+\\.\\d+)-\\d+$';
+
+  it('lists the versions of one package in an APT index, Debian revision dropped', async () => {
+    const releases = await fetchReleases(
+      { type: 'apt', url: PACKAGES, package: 'proxmox-backup-server', versionRegex: REVISION },
+      ctx('debian'),
+    );
+    expect(releases.length).toBeGreaterThan(3);
+    expect(releases.map((r) => r.version)).toContain('4.2.6');
+    expect(releases.every((r) => /^\d+\.\d+\.\d+$/.test(r.version))).toBe(true);
+    await expect(
+      fetchReleases({ type: 'apt', url: PACKAGES, package: 'no-such-package' }, ctx('debian')),
+    ).rejects.toThrow(/no package "no-such-package"/);
+  });
+
+  it('reads notes and dates from debian/changelog', async () => {
+    const releases = await fetchReleases(
+      { type: 'debian-changelog', url: CHANGELOG, versionRegex: REVISION },
+      ctx('debian'),
+    );
+    const release = releases.find((r) => r.version === '4.2.6');
+    expect(release?.date).toMatch(ISO_UTC);
+    expect(release?.notes?.format).toBe('markdown');
+    expect(release?.notes?.body).toMatch(/^\* /);
+  });
+
+  it('parses entries without their signature lines', () => {
+    const text = [
+      'pve-manager (9.2.20) trixie; urgency=medium',
+      '',
+      '  * ui: fix the thing.',
+      '',
+      ' -- Proxmox Support Team <support@proxmox.com>  Thu, 11 Sep 2026 14:10:20 +0200',
+      '',
+      'pve-manager (9.2.19) trixie; urgency=medium',
+      '',
+      '  * api: another fix,',
+      '    over two lines.',
+      '',
+      ' -- Proxmox Support Team <support@proxmox.com>  Tue, 09 Sep 2026 09:00:00 +0200',
+    ].join('\n');
+    expect(parseDebianChangelog(text)).toEqual([
+      {
+        version: '9.2.20',
+        date: '2026-09-11T12:10:20Z',
+        notes: { format: 'markdown', body: '* ui: fix the thing.' },
+      },
+      {
+        version: '9.2.19',
+        date: '2026-09-09T07:00:00Z',
+        notes: { format: 'markdown', body: '* api: another fix,\n  over two lines.' },
+      },
+    ]);
   });
 });
 

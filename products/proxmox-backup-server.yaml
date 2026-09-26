@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schemas/module.schema.json
-# Verified against the live sources on 2026-09-26 (S1-T7).
+# Verified against the live sources on 2026-09-26 (S1-T7); package versions from the APT repository added the same day.
 id: proxmox-backup-server
 name: Proxmox Backup Server
 aliases: [pbs]
@@ -9,20 +9,33 @@ homepage: https://www.proxmox.com/en/proxmox-backup-server
 logo: simpleicons:proxmox
 description: Enterprise backup for VMs, containers and hosts.
 versionScheme: loose
+# The version the web UI shows is the proxmox-backup-server package (4.2.6), not the 4.2 of the ISO.
 tracks:
   - { id: "4", match: '^4\.' }
   - { id: "3", match: '^3\.' }
 sources:
-  releases:                      # roadmap wiki: one "<h2>Proxmox Backup Server X.Y</h2>" per release, "Released 05. August 2026" below
-    type: html
-    url: https://pbs.proxmox.com/wiki/index.php/Roadmap
-    select: { item: h2 }
-    versionRegex: '^Proxmox Backup Server (\d+\.\d+(?:\.\d+)?)$'
-    dateFormat: 'DD. MMM YYYY'
+  releases:
+    - type: apt                  # plain http: APT signs, not TLS
+      url: http://download.proxmox.com/debian/pbs/dists/trixie/pbs-no-subscription/binary-amd64/Packages
+      package: proxmox-backup-server
+      versionRegex: '^(\d+\.\d+\.\d+)-\d+$'   # "4.2.6-1" → 4.2.6; pre-releases (~) left out
+    - type: apt
+      url: http://download.proxmox.com/debian/pbs/dists/bookworm/pbs-no-subscription/binary-amd64/Packages
+      package: proxmox-backup-server
+      versionRegex: '^(\d+\.\d+\.\d+)-\d+$'
+    - type: html                 # roadmap wiki: the X.Y releases' highlights
+      url: https://pbs.proxmox.com/wiki/index.php/Roadmap
+      select: { item: h2 }
+      versionRegex: '^Proxmox Backup Server (\d+\.\d+(?:\.\d+)?)$'
+      dateFormat: 'DD. MMM YYYY'
+  releasesExtra:
+    - type: debian-changelog
+      url: https://git.proxmox.com/?p=proxmox-backup.git;a=blob_plain;f=debian/changelog;hb=HEAD
+      versionRegex: '^(\d+\.\d+\.\d+)-\d+$'
   security:
     - { type: nvd, cpe: "cpe:2.3:a:proxmox:backup_server" }
   eol: { type: endoflife, product: proxmox-backup-server }
 detect:
-  - command: { run: proxmox-backup-manager versions, regex: 'proxmox-backup-server (\S+)' }
+  - command: { run: proxmox-backup-manager versions, regex: 'proxmox-backup-server (\d+\.\d+\.\d+)' }
   - http: { path: /api2/json/version, jsonPath: $.data.version, defaultPort: 8007, scheme: https }
 maintainers: ["@DamirManyapov"]

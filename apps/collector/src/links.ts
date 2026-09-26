@@ -37,6 +37,8 @@ function linkFor(source: ReleaseSource | SecuritySource | EolSource): string | u
     case 'debian':
       return 'https://security-tracker.debian.org/tracker/';
     case 'pointer':
+    case 'apt':
+    case 'debian-changelog':
       return source.url;
     case 'notes':
       return undefined; // a template, not a page

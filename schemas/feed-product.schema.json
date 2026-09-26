@@ -49,6 +49,9 @@
           "label": {
             "type": "string"
           },
+          "group": {
+            "type": "string"
+          },
           "current": {
             "type": "string"
           },

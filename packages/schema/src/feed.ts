@@ -106,6 +106,7 @@ export const FeedProduct = z.strictObject({
       id: z.string(),
       match: z.string(),
       label: z.string().optional(),
+      group: z.string().optional(),
       current: z.string().optional(),
       prereleases: z.boolean().optional(),
     }),

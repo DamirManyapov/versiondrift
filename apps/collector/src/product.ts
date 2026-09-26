@@ -154,6 +154,7 @@ async function resolveTracks(
     const common = {
       id: track.id,
       ...(track.label && { label: track.label }),
+      ...(track.group && { group: track.group }),
       ...(track.prereleases && { prereleases: true }),
     };
     if (track.match !== undefined) {

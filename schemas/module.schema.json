@@ -267,6 +267,11 @@
           "type": "string",
           "minLength": 1
         },
+        "group": {
+          "description": "A product line the track belongs to (\"RouterOS 7\"): users pick the line, then the track (update channel) within it.",
+          "type": "string",
+          "minLength": 1
+        },
         "prereleases": {
           "description": "Pre-releases count in this track (a testing channel with release candidates).",
           "type": "boolean"
@@ -575,6 +580,61 @@
                 "markdown",
                 "html"
               ]
+            }
+          },
+          "required": [
+            "type",
+            "url"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "apt"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "The Packages index, e.g. …/dists/trixie/pve-no-subscription/binary-amd64/Packages"
+            },
+            "package": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Package name, e.g. pve-manager"
+            },
+            "versionRegex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version (e.g. drops the Debian revision \"-1\")."
+            }
+          },
+          "required": [
+            "type",
+            "url",
+            "package"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "debian-changelog"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "versionRegex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version from the entry header."
             }
           },
           "required": [

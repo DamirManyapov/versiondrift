@@ -80,7 +80,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `branchGroups` | | `versionScheme: regex` only: how many leading capture groups form the branch (default 2) |
 | `sources.releases` | ✓ | exactly one primary source |
 | `tagFilter` | | regexes applied to raw version strings before parsing |
-| `tracks` | | needed when a product has parallel supported lines (ES 8/9, Debian 12/13, PostgreSQL majors). Ids are strings — quote numbers (`id: "12"`), unique, `latest` is reserved. Each has `match` (a version regex) **or** `current: { url, versionRegex? }` — an update channel's "newest version" URL; the track is that version's major.minor branch, re-read every run. `prereleases: true` lets release candidates count (a testing channel). Tracks may overlap; the first matching one is what a version is assumed to follow (docs/05) |
+| `tracks` | | needed when a product has parallel supported lines (ES 8/9, Debian 12/13, PostgreSQL majors). Ids are strings — quote numbers (`id: "12"`), unique, `latest` is reserved. Each has `match` (a version regex) **or** `current: { url, versionRegex? }` — an update channel's "newest version" URL; the track is that version's major.minor branch, re-read every run. `prereleases: true` lets release candidates count (a testing channel). `group` puts tracks into a product line ("RouterOS 7"): users then pick the line, then the channel within it. Tracks may overlap; the first matching one is what a version is assumed to follow (docs/05) |
 | `defaultTrack` | | `latest` (default) or one of the track ids |
 | `releaseNotesUrl` | | per-release notes page with a `{version}` placeholder (`https://www.zabbix.com/rn/rn{version}`); used as the release link |
 | `classify` | | hints; without them the generic pipeline is used |
@@ -106,6 +106,8 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `manual` | products with no machine-readable source | `file: products/<id>.releases.yaml` | releases maintained by hand |
 | `pointer` | an update server's "newest version" file | `url`, `versionRegex?`, `epoch?` (a Unix time after the version dates the release) | the current version, one a day |
 | `notes` | releasesExtra only: notes per version | `url` with `{version}`, `format?` (`text` default) | notes (and the first line's date) for releases being classified |
+| `apt` | versions of a package in an APT repository | `url` (the `Packages` index), `package`, `versionRegex?` (e.g. drop the Debian revision `-1`) | versions (no dates or notes) |
+| `debian-changelog` | a package's `debian/changelog` | `url`, `versionRegex?` | notes (Markdown bullets) and the signature line's date per version |
 
 `sources.releases` may be a list: each source adds the versions it knows, the first to name a version wins and later
 ones fill in missing notes, dates and links (RouterOS: stable RSS + the long-term history page + channel pointers +
@@ -160,8 +162,13 @@ percona-server, authentik, clickhouse), and endoflife.date as the release source
 (ubuntu, rhel, rocky-linux, almalinux, alpine-linux, xcp-ng, truenas, haproxy, postfix); Forgejo comes from Codeberg
 (`type: gitea`). Copy `_template.yaml` for new ones.
 
-RouterOS models MikroTik's update channels as tracks (long-term by pointer, stable, testing with release candidates,
-v6); the development channel's betas are filtered out. Stable releases below each branch's head (7.24.0–7.24.3) are
+Proxmox VE and Backup Server take their versions from the APT repositories (the `pve-manager` /
+`proxmox-backup-server` package, which is what the web UI and `pveversion` show: 9.2.20, not the ISO's 9.2), with notes
+and dates from the packages' `debian/changelog`; the roadmap wiki still adds the X.Y release highlights.
+
+RouterOS models MikroTik's update channels as tracks grouped by line: RouterOS 7 (long-term by pointer, stable, testing
+with release candidates) and RouterOS 6 (long-term by pointer, stable); the development channel's betas are filtered
+out. Stable releases below each branch's head (7.24.0–7.24.3) are
 not listed anywhere machine-readable, so they appear as they ship.
 
 Known gaps: debian and postgresql feeds list only recent releases, so their history grows day by day;

@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schemas/module.schema.json
-# Verified against the live sources on 2026-09-26 (S1-T7).
+# Verified against the live sources on 2026-09-26 (S1-T7); package versions from the APT repository added the same day.
 id: proxmox-ve
 name: Proxmox VE
 aliases: [pve, proxmox]
@@ -9,16 +9,28 @@ homepage: https://www.proxmox.com/en/proxmox-virtual-environment
 logo: simpleicons:proxmox
 description: Virtualization platform for KVM and LXC.
 versionScheme: loose
+# The version Proxmox shows (pveversion, the web UI) is the pve-manager package: 9.2.20, not the 9.2 of the ISO.
 tracks:
   - { id: "9", match: '^9\.' }
   - { id: "8", match: '^8\.' }
 sources:
-  releases:                      # roadmap wiki: one "<h2>Proxmox VE X.Y</h2>" per release, "Released 05. August 2026" below
-    type: html
-    url: https://pve.proxmox.com/wiki/Roadmap
-    select: { item: h2 }
-    versionRegex: '^Proxmox VE (\d+\.\d+(?:\.\d+)?)$'
-    dateFormat: 'DD. MMM YYYY'
+  releases:
+    - type: apt                  # every pve-manager in the no-subscription repositories (plain http: APT signs, not TLS)
+      url: http://download.proxmox.com/debian/pve/dists/trixie/pve-no-subscription/binary-amd64/Packages
+      package: pve-manager
+      versionRegex: '^(\d+\.\d+\.\d+)$'   # drops pre-releases like 9.0.0~8
+    - type: apt
+      url: http://download.proxmox.com/debian/pve/dists/bookworm/pve-no-subscription/binary-amd64/Packages
+      package: pve-manager
+      versionRegex: '^(\d+\.\d+\.\d+)$'
+    - type: html                 # roadmap wiki: the X.Y releases' highlights ("<h2>Proxmox VE X.Y</h2>")
+      url: https://pve.proxmox.com/wiki/Roadmap
+      select: { item: h2 }
+      versionRegex: '^Proxmox VE (\d+\.\d+(?:\.\d+)?)$'
+      dateFormat: 'DD. MMM YYYY'
+  releasesExtra:
+    - type: debian-changelog     # notes and dates for each package version
+      url: https://git.proxmox.com/?p=pve-manager.git;a=blob_plain;f=debian/changelog;hb=HEAD
   security:
     - { type: nvd, cpe: "cpe:2.3:a:proxmox:virtual_environment" }
   eol: { type: endoflife, product: proxmox-ve }
