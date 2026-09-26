@@ -109,6 +109,11 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 - `branches`: only from a lifecycle source (`eol` in the module), ids as that source names them (`13.2`, `12`);
   releases belong to a branch by prefix (`13.2.1` → `13.2`, `12.7` → `12`). `latest` is computed from the feed's
   releases. No lifecycle source → `branches: []` (EOL unknown, never "not EOL").
+- `tracks` (since 1.3 each may carry `current` and `prereleases`): `match` is always a regex. For a module track defined
+  by an update channel's URL, `match` is the branch that URL named at collection time and `current` the version it named
+  (RouterOS long-term: `^7\\.23(\\.|$)`, `7.23.7`); `prereleases: true` means release candidates count in the track.
+  Tracks may overlap; a release is in every track whose rule it meets (docs/05), `releases[].track` is only the first.
+  `index.json` `tracks` lists the latest release per track by the same rule.
 - `moduleHash` (since 1.1): hash of the module definition and classifier version that produced the items. Published
   items never change unless it does; then items of the releases the source still offers are recomputed.
 - `versionRegex` / `branchGroups` are included for `versionScheme: regex` so clients parse versions like the collector.

@@ -135,8 +135,19 @@
       "type": "object",
       "properties": {
         "releases": {
-          "description": "Exactly one primary release source.",
-          "$ref": "#/$defs/releaseSource"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/releaseSource"
+            },
+            {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/releaseSource"
+              }
+            }
+          ],
+          "description": "Where releases come from: one source, or several merged (the first to name a version wins; later ones fill in missing notes, dates and links)."
         },
         "releasesExtra": {
           "description": "Extra sources that enrich release notes.",
@@ -231,15 +242,38 @@
           "format": "regex",
           "description": "Versions matching this belong to the track."
         },
+        "current": {
+          "description": "Instead of match: a URL naming the track's current version (an update channel); the track is that version's major.minor branch, re-read on every collection.",
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "versionRegex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version; the first capture group wins."
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false
+        },
         "label": {
           "description": "Shown next to the id, e.g. LTS or bookworm.",
           "type": "string",
           "minLength": 1
+        },
+        "prereleases": {
+          "description": "Pre-releases count in this track (a testing channel with release candidates).",
+          "type": "boolean"
         }
       },
       "required": [
-        "id",
-        "match"
+        "id"
       ],
       "additionalProperties": false
     },
@@ -490,6 +524,62 @@
           "required": [
             "type",
             "product"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "pointer"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "versionRegex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version from the text; the first capture group wins."
+            },
+            "epoch": {
+              "description": "The text has a Unix time after the version: use it as the release date.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "url"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "notes"
+            },
+            "url": {
+              "type": "string",
+              "pattern": "^https?:\\/\\/.*\\{version\\}",
+              "description": "e.g. https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG"
+            },
+            "format": {
+              "description": "Default: text",
+              "type": "string",
+              "enum": [
+                "text",
+                "markdown",
+                "html"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "url"
           ],
           "additionalProperties": false
         }

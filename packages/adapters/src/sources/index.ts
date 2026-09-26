@@ -7,6 +7,7 @@ import { githubReleases } from './github.ts';
 import { htmlReleases } from './html.ts';
 import { endoflifeBranches, endoflifeReleases, manualBranches } from './lifecycle.ts';
 import { manualReleases } from './manual.ts';
+import { pointerReleases } from './pointer.ts';
 
 export function fetchReleases(source: ReleaseSource, ctx: AdapterContext): Promise<RawRelease[]> {
   switch (source.type) {
@@ -24,6 +25,11 @@ export function fetchReleases(source: ReleaseSource, ctx: AdapterContext): Promi
       return endoflifeReleases(source, ctx);
     case 'gitea':
       return giteaReleases(source, ctx);
+    case 'pointer':
+      return pointerReleases(source, ctx);
+    case 'notes':
+      // Needs the versions to fetch: the collector calls fetchNotes for the releases it classifies.
+      return Promise.reject(new SourceError('notes only enriches releases (releasesExtra)'));
     case 'gitlab':
       return Promise.reject(new SourceError(`source type "${source.type}" is not implemented yet`));
   }

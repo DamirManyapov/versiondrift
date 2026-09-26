@@ -80,7 +80,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `branchGroups` | | `versionScheme: regex` only: how many leading capture groups form the branch (default 2) |
 | `sources.releases` | ✓ | exactly one primary source |
 | `tagFilter` | | regexes applied to raw version strings before parsing |
-| `tracks` | | needed when a product has parallel supported lines (ES 8/9, Debian 12/13, PostgreSQL majors). Ids are strings — quote numbers (`id: "12"`), unique, `latest` is reserved |
+| `tracks` | | needed when a product has parallel supported lines (ES 8/9, Debian 12/13, PostgreSQL majors). Ids are strings — quote numbers (`id: "12"`), unique, `latest` is reserved. Each has `match` (a version regex) **or** `current: { url, versionRegex? }` — an update channel's "newest version" URL; the track is that version's major.minor branch, re-read every run. `prereleases: true` lets release candidates count (a testing channel). Tracks may overlap; the first matching one is what a version is assumed to follow (docs/05) |
 | `defaultTrack` | | `latest` (default) or one of the track ids |
 | `releaseNotesUrl` | | per-release notes page with a `{version}` placeholder (`https://www.zabbix.com/rn/rn{version}`); used as the release link |
 | `classify` | | hints; without them the generic pipeline is used |
@@ -104,6 +104,13 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `debian` | Debian Security Tracker | `packages: [..] \| fromInventory` | DSA/DLA per release |
 | `kev` | CISA KEV catalog (global, not per module) | — | "known exploited" flag by CVE id |
 | `manual` | products with no machine-readable source | `file: products/<id>.releases.yaml` | releases maintained by hand |
+| `pointer` | an update server's "newest version" file | `url`, `versionRegex?`, `epoch?` (a Unix time after the version dates the release) | the current version, one a day |
+| `notes` | releasesExtra only: notes per version | `url` with `{version}`, `format?` (`text` default) | notes (and the first line's date) for releases being classified |
+
+`sources.releases` may be a list: each source adds the versions it knows, the first to name a version wins and later
+ones fill in missing notes, dates and links (RouterOS: stable RSS + the long-term history page + channel pointers +
+endoflife.date's branch heads). The run fails only if none answers. `notes` fetches at most 200 files a run, only for
+releases being classified (new ones, or all after a module change).
 
 New source types = new adapter in `packages/adapters` + fixtures + docs row here. `gitlab` is specified but not
 implemented yet (a module using it fails collection with "not implemented"; gitlab.com's API needs a token even for
@@ -153,7 +160,11 @@ percona-server, authentik, clickhouse), and endoflife.date as the release source
 (ubuntu, rhel, rocky-linux, almalinux, alpine-linux, xcp-ng, truenas, haproxy, postfix); Forgejo comes from Codeberg
 (`type: gitea`). Copy `_template.yaml` for new ones.
 
-Known gaps: debian, routeros and postgresql feeds list only recent releases, so their history grows day by day;
+RouterOS models MikroTik's update channels as tracks (long-term by pointer, stable, testing with release candidates,
+v6); the development channel's betas are filtered out. Stable releases below each branch's head (7.24.0–7.24.3) are
+not listed anywhere machine-readable, so they appear as they ship.
+
+Known gaps: debian and postgresql feeds list only recent releases, so their history grows day by day;
 zabbix and percona tags carry no notes (zabbix links to its release notes page).
 Products taken from tags (mysql, mariadb, mongodb, dovecot, gitlab via the `gitlabhq/gitlabhq` mirror, …) have no notes
 either; endoflife.date release sources only know the latest release of each cycle. Windows Server and VMware ESXi were

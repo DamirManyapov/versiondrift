@@ -4,7 +4,9 @@
 import {
   fetchAdvisories,
   fetchLifecycle,
+  fetchNotes,
   fetchReleases,
+  readPointer,
   type AdapterContext,
   type Fetcher,
   type Logger,
@@ -18,6 +20,7 @@ import { parse, trackOf, type Version } from '@versiondrift/core';
 import {
   FEED_FORMAT_VERSION,
   FeedProduct,
+  releaseSourcesOf,
   type Branch,
   type Module,
   type Release,
@@ -133,6 +136,51 @@ function staleCopy(previous: FeedProduct | undefined): FeedProduct | undefined {
   return previous && { ...previous, stale: true };
 }
 
+/** Per-version notes fetched in one run at most (a first run of a long history catches up over a few days). */
+const NOTES_PER_RUN = 200;
+
+/**
+ * The module's tracks as the feed carries them: pointer tracks (`current`) become the regex of the branch their URL
+ * names now ("7.23.7" → ^7\.23(\.|$)). If the URL fails, the previous feed's rule stays.
+ */
+async function resolveTracks(
+  module: Module,
+  previous: FeedProduct | undefined,
+  ctx: AdapterContext,
+  warnings: string[],
+): Promise<FeedProduct['tracks']> {
+  const out: FeedProduct['tracks'] = [];
+  for (const track of module.tracks ?? []) {
+    const common = {
+      id: track.id,
+      ...(track.label && { label: track.label }),
+      ...(track.prereleases && { prereleases: true }),
+    };
+    if (track.match !== undefined) {
+      out.push({ ...common, match: track.match });
+      continue;
+    }
+    try {
+      const { version } = await readPointer(track.current!.url, track.current!.versionRegex, ctx);
+      const branch = /^v?(\d+)\.(\d+)/.exec(version);
+      if (!branch) throw new Error(`"${version}" has no major.minor`);
+      out.push({ ...common, match: `^${branch[1]}\\.${branch[2]}(\\.|$)`, current: version });
+    } catch (error) {
+      const kept = previous?.tracks.find((t) => t.id === track.id);
+      warnings.push(
+        `track ${track.id}: ${(error as Error).message}${kept ? ' (kept the previous branch)' : ''}`,
+      );
+      // A track that matches nothing still exists, so pinned instances and defaultTrack stay valid.
+      out.push(
+        kept
+          ? { ...common, match: kept.match, ...(kept.current && { current: kept.current }) }
+          : { ...common, match: '(?!)' },
+      );
+    }
+  }
+  return out;
+}
+
 export async function collectProduct(
   module: Module,
   previous: FeedProduct | undefined,
@@ -151,23 +199,53 @@ export async function collectProduct(
     ...(ctx.readRepoFile && { readRepoFile: ctx.readRepoFile }),
   };
 
-  let primary: RawRelease[];
-  try {
-    primary = await fetchReleases(module.sources.releases, adapterCtx);
-  } catch (error) {
+  // Tracks first: a pointer track's regex (the channel's current branch) decides which track releases are in.
+  const tracks = await resolveTracks(module, previous, adapterCtx, warnings);
+  const tracked: Module = { ...module, tracks: tracks as Module['tracks'] };
+
+  // Primary notes that yield no items (e.g. "Downloads: … Release notes: …" links, an empty <pre>) count as missing.
+  const hasContent = (notes: RawRelease['notes']) => classifyNotes(notes, module.classify).items.length > 0;
+
+  // Primary sources: each may add versions; the first to name a version wins, later ones fill gaps. The run fails
+  // only when none of them answers.
+  const sources = releaseSourcesOf(module);
+  const primary: RawRelease[] = [];
+  const candidates = new Map<string, Candidate>();
+  const failures: string[] = [];
+  for (const source of sources) {
+    let raws: RawRelease[];
+    try {
+      raws = await fetchReleases(source, adapterCtx);
+    } catch (error) {
+      failures.push(`${source.type}: ${(error as Error).message}`);
+      continue;
+    }
+    primary.push(...raws);
+    for (const [key, c] of normalize(tracked, raws, warnings, source.type)) {
+      const have = candidates.get(key);
+      if (!have) candidates.set(key, c);
+      else
+        have.raw = {
+          ...have.raw,
+          ...(!hasContent(have.raw.notes) && hasContent(c.raw.notes) && { notes: c.raw.notes }),
+          ...(!have.raw.date && c.raw.date && { date: c.raw.date }),
+          ...(!have.raw.url && c.raw.url && { url: c.raw.url }),
+        };
+    }
+  }
+  if (failures.length === sources.length) {
     return {
       ok: false,
-      error: (error as Error).message,
+      error: failures.join('; '),
       ...(previous && { product: staleCopy(previous)! }),
       warnings,
     };
   }
-  const candidates = normalize(module, primary, warnings, module.sources.releases.type);
+  warnings.push(...failures.map((f) => `${f} (other release sources answered)`));
 
-  // Extra sources only enrich releases the primary source knows (notes, dates, links). Primary notes that
-  // yield no items (e.g. "Downloads: … Release notes: …" links) count as missing.
-  const hasContent = (notes: RawRelease['notes']) => classifyNotes(notes, module.classify).items.length > 0;
+  // Extra sources only enrich releases the primary sources know (notes, dates, links).
   for (const extra of module.sources.releasesExtra ?? []) {
+    if (extra.type === 'notes') continue; // per version, below: only for the releases being classified
     try {
       const enrich = normalize(module, await fetchReleases(extra, adapterCtx), [], extra.type);
       for (const [key, c] of candidates) {
@@ -225,8 +303,29 @@ export async function collectProduct(
   const reclassify = previous !== undefined && previous.moduleHash !== moduleHash;
   const merged = new Map<string, Release>();
   for (const release of previous?.releases ?? []) {
-    const refreshed = refresh(module, release);
+    const refreshed = refresh(tracked, release);
     if (refreshed && !merged.has(refreshed.sortKey)) merged.set(refreshed.sortKey, refreshed);
+  }
+
+  // Per-version notes files: only for releases about to be classified (new ones, or all after a module change).
+  for (const extra of module.sources.releasesExtra ?? []) {
+    if (extra.type !== 'notes') continue;
+    let fetched = 0;
+    for (const [key, c] of candidates) {
+      if ((merged.has(key) && !reclassify) || hasContent(c.raw.notes)) continue;
+      if (fetched >= NOTES_PER_RUN) {
+        warnings.push(`notes: more than ${NOTES_PER_RUN} releases need notes; the rest follow in later runs`);
+        break;
+      }
+      fetched++;
+      try {
+        const found = await fetchNotes(extra, c.raw.version, adapterCtx);
+        if (found)
+          c.raw = { ...c.raw, notes: found.notes, ...(!c.raw.date && found.date && { date: found.date }) };
+      } catch (error) {
+        warnings.push(`notes (extra) for ${c.raw.version}: ${(error as Error).message}`);
+      }
+    }
   }
   const newReleases: string[] = [];
   for (const [key, c] of candidates) {
@@ -239,7 +338,7 @@ export async function collectProduct(
         url: known.url ?? c.raw.url ?? null,
       };
       if (reclassify) {
-        const fresh = toRelease(module, c, now).release;
+        const fresh = toRelease(tracked, c, now).release;
         next.items = fresh.items;
         next.url = fresh.url;
         if (fresh.moreItems === undefined) delete next.moreItems;
@@ -248,7 +347,7 @@ export async function collectProduct(
       merged.set(key, next);
       continue;
     }
-    merged.set(key, toRelease(module, c, now).release);
+    merged.set(key, toRelease(tracked, c, now).release);
     newReleases.push(c.version.raw);
   }
 
@@ -260,7 +359,7 @@ export async function collectProduct(
   if (releases.length === 0) {
     return {
       ok: false,
-      error: `no releases found (${primary.length} raw entries from ${module.sources.releases.type}, none usable)`,
+      error: `no releases found (${primary.length} raw entries from ${sources.map((s) => s.type).join(', ')}, none usable)`,
       ...(previous && { product: staleCopy(previous)! }),
       warnings,
     };
@@ -277,7 +376,7 @@ export async function collectProduct(
       module.versionRegex !== undefined && { versionRegex: module.versionRegex }),
     ...(module.versionScheme === 'regex' &&
       module.branchGroups !== undefined && { branchGroups: module.branchGroups }),
-    tracks: module.tracks ?? [],
+    tracks,
     defaultTrack: module.defaultTrack,
     sources: sourceLinks(module),
     branches: buildBranches(lifecycle, releases),

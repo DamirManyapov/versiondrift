@@ -8,7 +8,7 @@ export {
   type SchemeSpec,
   type Version,
 } from './version.ts';
-export { trackOf } from './tracks.ts';
+export { inTrack, isTrack, trackOf, type TrackRule } from './tracks.ts';
 export {
   branchFor,
   changelog,

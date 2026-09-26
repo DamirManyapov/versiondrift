@@ -24,7 +24,7 @@ export type ChangeItem = z.output<typeof ChangeItem>;
 // ── Product file: v1/products/<id>.json ─────────────────────────────────────────────────────────────────
 
 /** 1.1 added FeedProduct.moduleHash. */
-export const FEED_FORMAT_VERSION = '1.2';
+export const FEED_FORMAT_VERSION = '1.3';
 
 const IsoDateTime = z
   .string()
@@ -97,7 +97,19 @@ export const FeedProduct = z.strictObject({
   /** Only for versionScheme regex: clients need them to parse versions the same way. */
   versionRegex: z.string().optional(),
   branchGroups: z.int().min(1).optional(),
-  tracks: z.array(z.strictObject({ id: z.string(), match: z.string(), label: z.string().optional() })),
+  /**
+   * Tracks with their rules resolved: `match` is always set (for a pointer track, the current branch), `current` is
+   * the version a pointer track named at collection time (since 1.3), `prereleases` lets release candidates count.
+   */
+  tracks: z.array(
+    z.strictObject({
+      id: z.string(),
+      match: z.string(),
+      label: z.string().optional(),
+      current: z.string().optional(),
+      prereleases: z.boolean().optional(),
+    }),
+  ),
   defaultTrack: z.string(),
   /** Human-facing links to where the data comes from. */
   sources: z.array(z.strictObject({ type: z.string(), url: z.string() })),

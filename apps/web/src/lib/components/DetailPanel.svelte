@@ -9,6 +9,7 @@
   import { categoryLabel } from '$lib/i18n';
   import { i18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
+  import { trackName } from '$lib/tracks';
   import StatusChip from './StatusChip.svelte';
   import TypeChip from './TypeChip.svelte';
 
@@ -189,7 +190,7 @@
         >
           <option value="latest">{t('trackLatest')}</option>
           {#each product.tracks as track (track.id)}
-            <option value={track.id}>{track.id}{track.label ? ` (${track.label})` : ''}</option>
+            <option value={track.id}>{trackName(track)}</option>
           {/each}
         </select>
       </label>

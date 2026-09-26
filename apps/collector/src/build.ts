@@ -1,6 +1,6 @@
 // Feed files from collected products (docs/03-feed-format.md): index, catalog, health, weekly digests.
 import { createHash } from 'node:crypto';
-import { branchFor } from '@versiondrift/core';
+import { branchFor, inTrack } from '@versiondrift/core';
 import { maxSeverity, severityFixedIn } from './advisories.ts';
 import {
   FEED_FORMAT_VERSION,
@@ -33,9 +33,12 @@ export function indexEntry(
   const hash = sha256(bytes);
   const stable = product.releases.filter((r) => !r.prerelease);
   const latest = stable[0];
+  // Latest per track by each track's own rule: tracks may overlap (update channels).
   const tracks: Record<string, string> = {};
-  for (const release of stable)
-    if (release.track !== null && !(release.track in tracks)) tracks[release.track] = release.version;
+  for (const track of product.tracks) {
+    const release = product.releases.find((r) => inTrack(product, track.id, r));
+    if (release) tracks[track.id] = release.version;
+  }
   return {
     name: product.name,
     category: module.category,

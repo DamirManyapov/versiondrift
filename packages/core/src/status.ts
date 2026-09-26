@@ -1,7 +1,7 @@
 // Status engine (docs/05-status-engine.md): one product + what the user runs → critical / eol / update / ok / news /
 // stale, with the releases and advisories behind it. Pure; runs in the browser, Workers and Node alike.
 import type { Advisory, Branch, FeedProduct, ItemType, Release } from '@versiondrift/schema';
-import { trackOf } from './tracks.ts';
+import { inTrack, isTrack, trackOf } from './tracks.ts';
 import { compare, parse, type SchemeSpec } from './version.ts';
 
 export type Status = 'critical' | 'eol' | 'update' | 'ok' | 'news' | 'stale';
@@ -136,9 +136,12 @@ export function computeStatus(
 
   const raw = installed.version?.trim();
   const version = raw ? parse(spec, raw) : null;
+  // A pinned track the product no longer has (renamed channels) counts as not pinned.
+  const pinned =
+    installed.track !== undefined && isTrack(product, installed.track) ? installed.track : undefined;
   if (!raw || !version) {
-    const track = installed.track ?? product.defaultTrack;
-    const latest = stable.find((r) => track === LATEST || r.track === track) ?? stable[0];
+    const track = pinned ?? product.defaultTrack;
+    const latest = product.releases.find((r) => inTrack(product, track, r)) ?? stable[0];
     return {
       ...base,
       status: stale ? 'stale' : 'news',
@@ -150,8 +153,8 @@ export function computeStatus(
   }
 
   // Track: the user's choice, else the one the version belongs to, else the module default.
-  const track = installed.track ?? trackOf(product, version.raw) ?? product.defaultTrack;
-  const candidates = stable.filter((r) => track === LATEST || r.track === track);
+  const track = pinned ?? trackOf(product, version.raw) ?? product.defaultTrack;
+  const candidates = product.releases.filter((r) => inTrack(product, track, r));
   const latest = candidates[0] ?? null;
   const newer = candidates.filter((r) => r.sortKey > version.sortKey);
   if (!product.releases.some((r) => r.sortKey === version.sortKey)) flags.push('unknownVersion');
@@ -225,11 +228,7 @@ export function changelog(product: FeedProduct, from: string, to: string, track:
   const b = parse(spec, to);
   if (!a || !b) return { releases: [], fixedAdvisories: [] };
   const releases = product.releases.filter(
-    (r) =>
-      !r.prerelease &&
-      r.sortKey > a.sortKey &&
-      r.sortKey <= b.sortKey &&
-      (track === LATEST || r.track === track),
+    (r) => r.sortKey > a.sortKey && r.sortKey <= b.sortKey && inTrack(product, track, r),
   );
   const fixedAdvisories = product.advisories.filter((adv) =>
     adv.affected.some((range) => {

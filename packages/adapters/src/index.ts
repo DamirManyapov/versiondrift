@@ -14,6 +14,7 @@ export { fetchLifecycle, fetchReleases } from './sources/index.ts';
 export { extractVersion, parseDate } from './sources/common.ts';
 export { parseFeed } from './sources/feed.ts';
 export { parseHtmlReleases } from './sources/html.ts';
+export { fetchNotes, readPointer } from './sources/pointer.ts';
 export { changelogSections } from './sources/github.ts';
 export { fetchAdvisories } from './advisories/index.ts';
 export { fetchKev, KEV_URL } from './advisories/kev.ts';

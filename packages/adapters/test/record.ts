@@ -10,6 +10,7 @@ import {
   fetchAdvisories,
   fetchKev,
   fetchLifecycle,
+  fetchNotes,
   fetchReleases,
   recordingFetch,
   type AdapterContext,
@@ -47,6 +48,7 @@ function trimmed(inner: FetchFn): FetchFn {
 type Case = {
   name: string;
   release?: ReleaseSource;
+  notes?: { source: Extract<ReleaseSource, { type: 'notes' }>; versions: string[] };
   lifecycle?: EolSource;
   security?: SecuritySource;
   kev?: true;
@@ -93,6 +95,21 @@ const cases: Case[] = [
   },
   { name: 'gitea', release: { type: 'gitea', host: 'codeberg.org', repo: 'forgejo/forgejo' } },
   { name: 'endoflife', lifecycle: { type: 'endoflife', product: 'grafana' } },
+  {
+    name: 'pointer',
+    release: {
+      type: 'pointer',
+      url: 'https://upgrade.mikrotik.com/routeros/NEWESTa7.long-term',
+      epoch: true,
+    },
+  },
+  {
+    name: 'pointer',
+    notes: {
+      source: { type: 'notes', url: 'https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG' },
+      versions: ['7.24', '7.23.7', '7.0.99'],
+    },
+  },
   { name: 'endoflife', lifecycle: { type: 'endoflife', product: 'debian' } },
   { name: 'ghsa', security: { type: 'ghsa', repo: 'grafana/grafana' } },
   { name: 'nvd', security: { type: 'nvd', cpe: 'cpe:2.3:a:grafana:grafana' } },
@@ -115,13 +132,15 @@ for (const c of selected) {
     ...(token && { auth: { 'api.github.com': { authorization: `Bearer ${token}` } } }),
   });
   const ctx: AdapterContext = { fetcher, log: console, knownVersions: new Set() };
-  const result = c.kev
-    ? [...(await fetchKev(fetcher))]
-    : c.security
-      ? await fetchAdvisories(c.security, ctx)
-      : c.release
-        ? await fetchReleases(c.release, ctx)
-        : await fetchLifecycle(c.lifecycle!, ctx);
-  const label = JSON.stringify(c.release ?? c.lifecycle ?? c.security ?? 'kev').slice(0, 70);
+  const result = c.notes
+    ? await Promise.all(c.notes.versions.map((v) => fetchNotes(c.notes!.source, v, ctx)))
+    : c.kev
+      ? [...(await fetchKev(fetcher))]
+      : c.security
+        ? await fetchAdvisories(c.security, ctx)
+        : c.release
+          ? await fetchReleases(c.release, ctx)
+          : await fetchLifecycle(c.lifecycle!, ctx);
+  const label = JSON.stringify(c.release ?? c.notes ?? c.lifecycle ?? c.security ?? 'kev').slice(0, 70);
   console.log(`${c.name}: ${label}… → ${result.length} items`);
 }

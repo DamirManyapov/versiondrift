@@ -48,6 +48,12 @@
           },
           "label": {
             "type": "string"
+          },
+          "current": {
+            "type": "string"
+          },
+          "prereleases": {
+            "type": "boolean"
           }
         },
         "required": [

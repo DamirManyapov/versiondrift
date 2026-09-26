@@ -5,6 +5,7 @@ import {
   createFetcher,
   extractVersion,
   fetchLifecycle,
+  fetchNotes,
   fetchReleases,
   fixtureFetch,
   parseDate,
@@ -120,6 +121,37 @@ describe('gitea', () => {
     );
     expect(releases.length).toBeGreaterThan(0);
     expect(releases.every((r) => r.version.startsWith('15.'))).toBe(true);
+  });
+});
+
+describe('pointer and notes (MikroTik update server)', () => {
+  it('reads the version a channel file names, dated by its Unix time', async () => {
+    const releases = await fetchReleases(
+      { type: 'pointer', url: 'https://upgrade.mikrotik.com/routeros/NEWESTa7.long-term', epoch: true },
+      ctx('pointer'),
+    );
+    expect(releases).toHaveLength(1);
+    expect(releases[0]?.version).toBe('7.23.7');
+    expect(releases[0]?.date).toMatch(/^2026-09-1\dT\d{2}:\d{2}:\d{2}Z$/);
+  });
+
+  it('fetches notes per version, with the date from the first line in either format', async () => {
+    const source = {
+      type: 'notes' as const,
+      url: 'https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG',
+    };
+    const patch = await fetchNotes(source, '7.23.7', ctx('pointer'));
+    expect(patch).toMatchObject({ notes: { format: 'text' }, date: '2026-09-16T00:00:00Z' });
+    expect(patch?.notes.body).toContain('*) lte');
+    const minor = await fetchNotes(source, '7.24', ctx('pointer'));
+    expect(minor?.date).toBe('2026-08-14T00:00:00Z');
+    expect(await fetchNotes(source, '7.0.99', ctx('pointer'))).toBeUndefined();
+  });
+
+  it('refuses notes as a primary source', async () => {
+    await expect(
+      fetchReleases({ type: 'notes', url: 'https://example.test/{version}' }, ctx('pointer')),
+    ).rejects.toThrow(/releasesExtra/);
   });
 });
 

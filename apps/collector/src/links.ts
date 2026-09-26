@@ -1,4 +1,10 @@
-import type { EolSource, Module, ReleaseSource, SecuritySource } from '@versiondrift/schema';
+import {
+  releaseSourcesOf,
+  type EolSource,
+  type Module,
+  type ReleaseSource,
+  type SecuritySource,
+} from '@versiondrift/schema';
 
 /** Human-facing link for a source (docs/03: "sources": [{ type, url }]). */
 function linkFor(source: ReleaseSource | SecuritySource | EolSource): string | undefined {
@@ -30,6 +36,10 @@ function linkFor(source: ReleaseSource | SecuritySource | EolSource): string | u
       return `https://nvd.nist.gov/products/cpe/search/results?namingFormat=2.3&keyword=${encodeURIComponent(source.cpe)}`;
     case 'debian':
       return 'https://security-tracker.debian.org/tracker/';
+    case 'pointer':
+      return source.url;
+    case 'notes':
+      return undefined; // a template, not a page
     case 'manual':
       return undefined;
   }
@@ -37,7 +47,7 @@ function linkFor(source: ReleaseSource | SecuritySource | EolSource): string | u
 
 export function sourceLinks(module: Module): { type: string; url: string }[] {
   const all = [
-    module.sources.releases,
+    ...releaseSourcesOf(module),
     ...(module.sources.releasesExtra ?? []),
     ...(module.sources.security ?? []),
     ...(module.sources.eol ? [module.sources.eol] : []),

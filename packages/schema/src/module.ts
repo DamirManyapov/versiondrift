@@ -143,6 +143,30 @@ const EndoflifeReleasesSource = z.strictObject({
   product: nonEmpty.meta({ description: 'endoflife.date product slug' }),
 });
 
+/**
+ * A URL whose text names the current version, like an update server's "newest version" file (MikroTik's
+ * NEWESTa7.stable holds "7.24.4 1789558341"). Gives one release a day; history accumulates.
+ */
+const PointerSource = z.strictObject({
+  type: z.literal('pointer'),
+  url: httpUrl,
+  versionRegex: regex('Extracts the version from the text; the first capture group wins.').optional(),
+  epoch: z
+    .boolean()
+    .optional()
+    .meta({ description: 'The text has a Unix time after the version: use it as the release date.' }),
+});
+
+/** releasesExtra only: release notes per version from a URL template, fetched for releases being classified. */
+const NotesSource = z.strictObject({
+  type: z.literal('notes'),
+  url: z
+    .string()
+    .regex(/^https?:\/\/.*\{version\}/, { error: 'must be an http(s) URL containing {version}' })
+    .meta({ description: 'e.g. https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG' }),
+  format: z.enum(['text', 'markdown', 'html']).optional().meta({ description: 'Default: text' }),
+});
+
 const unknownType =
   (expected: readonly string[]) =>
   (issue: { code?: string }): string | undefined =>
@@ -159,6 +183,8 @@ const RELEASE_SOURCE_TYPES = [
   'dockerhub',
   'manual',
   'endoflife',
+  'pointer',
+  'notes',
 ] as const;
 export const ReleaseSource = z
   .discriminatedUnion(
@@ -172,6 +198,8 @@ export const ReleaseSource = z
       DockerhubSource,
       ManualReleasesSource,
       EndoflifeReleasesSource,
+      PointerSource,
+      NotesSource,
     ],
     { error: unknownType(RELEASE_SOURCE_TYPES) },
   )
@@ -287,8 +315,27 @@ export type DetectRule = z.output<typeof DetectRule>;
 export const Track = z
   .strictObject({
     id: trackId.meta({ description: 'Short and stable, e.g. "12" or "7.0". Quote numbers.' }),
-    match: regex('Versions matching this belong to the track.'),
+    match: regex('Versions matching this belong to the track.').optional(),
+    current: z
+      .strictObject({
+        url: httpUrl,
+        versionRegex: regex('Extracts the version; the first capture group wins.').optional(),
+      })
+      .optional()
+      .meta({
+        description:
+          "Instead of match: a URL naming the track's current version (an update channel); the track is that " +
+          "version's major.minor branch, re-read on every collection.",
+      }),
     label: nonEmpty.optional().meta({ description: 'Shown next to the id, e.g. LTS or bookworm.' }),
+    prereleases: z
+      .boolean()
+      .optional()
+      .meta({ description: 'Pre-releases count in this track (a testing channel with release candidates).' }),
+  })
+  .superRefine((track, ctx) => {
+    if ((track.match === undefined) === (track.current === undefined))
+      ctx.addIssue({ code: 'custom', message: 'a track needs exactly one of match or current' });
   })
   .meta({ id: 'track' });
 export type Track = z.output<typeof Track>;
@@ -350,7 +397,10 @@ export const Module = z
     defaultTrack: trackId.default(LATEST_TRACK).meta({ description: '"latest" (any track) or a track id.' }),
 
     sources: z.strictObject({
-      releases: ReleaseSource.meta({ description: 'Exactly one primary release source.' }),
+      releases: z.union([ReleaseSource, z.array(ReleaseSource).min(1)]).meta({
+        description:
+          'Where releases come from: one source, or several merged (the first to name a version wins; later ones fill in missing notes, dates and links).',
+      }),
       releasesExtra: z
         .array(ReleaseSource)
         .optional()
@@ -385,6 +435,15 @@ export const Module = z
         message: 'only used with versionScheme: regex',
       });
     }
+    const primaries = Array.isArray(m.sources.releases) ? m.sources.releases : [m.sources.releases];
+    primaries.forEach((source, i) => {
+      if (source.type === 'notes')
+        ctx.addIssue({
+          code: 'custom',
+          path: ['sources', 'releases', ...(Array.isArray(m.sources.releases) ? [i] : []), 'type'],
+          message: 'notes only enriches releases; use it in releasesExtra',
+        });
+    });
     const seen = new Set<string>();
     m.tracks?.forEach((t, i) => {
       if (t.id === LATEST_TRACK) {
@@ -415,3 +474,7 @@ export const Module = z
 export type Module = z.output<typeof Module>;
 /** A module as written in YAML. */
 export type ModuleInput = z.input<typeof Module>;
+
+/** A module's primary release sources as a list (`sources.releases` may be one source or several). */
+export const releaseSourcesOf = (module: Pick<Module, 'sources'>): ReleaseSource[] =>
+  Array.isArray(module.sources.releases) ? module.sources.releases : [module.sources.releases];

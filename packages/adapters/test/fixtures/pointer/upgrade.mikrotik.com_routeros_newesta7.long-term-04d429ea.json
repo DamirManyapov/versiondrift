@@ -1,0 +1,11 @@
+{
+ "method": "GET",
+ "url": "https://upgrade.mikrotik.com/routeros/NEWESTa7.long-term",
+ "status": 200,
+ "headers": {
+  "content-type": "text/plain",
+  "etag": "\"f7561082065d5870122ba792094290dc\"",
+  "last-modified": "Wed, 16 Sep 2026 16:33:55 GMT"
+ },
+ "body": "7.23.7 1789561155\n"
+}

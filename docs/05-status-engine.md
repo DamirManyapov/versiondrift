@@ -56,7 +56,7 @@ if installed.version is empty            → status "news" (show recent releases
 if product.stale && older than 7 days    → status "stale" (still show last data)
 
 track   = installed.track ?? trackOf(installed.version) ?? module.defaultTrack      // defaultTrack is "latest" unless set
-candidates = releases where (track == "latest" or release.track == track) and not prerelease
+candidates = releases in track (track's regex matches; not prerelease unless the track allows pre-releases)
 latest  = max(candidates)
 newer   = candidates where compare(release, installed) > 0, sorted desc
 
@@ -108,3 +108,19 @@ tile shows e.g. "2 of 5 affected", and the detail view lists instances grouped b
 
 `changelog(product, from, to, track?)` → releases with `from < v ≤ to` in the track, newest first,
 plus advisories fixed in that range. Used by the detail panel and by compare pages.
+
+## Update channels (overlapping tracks)
+
+Some vendors ship through channels rather than version lines. MikroTik RouterOS has long-term, stable, testing and
+development: long-term is one 7.x branch at a time (7.23 as of 2026-09), stable is the newest 7.x, testing adds release
+candidates. So tracks may overlap — 7.23.7 is in long-term *and* in stable — and membership is each track's own rule
+(`inTrack` in `packages/core/src/tracks.ts`), not the one track a release was first filed under (`release.track`, kept
+for display). A track with `prereleases: true` counts release candidates. A module can define a track by a URL naming
+the channel's current version (`current`, docs/02); the collector turns it into the regex of that version's
+major.minor branch on every run, so the feed carries a plain `match` plus `current`.
+
+Inference picks the first matching track, so the channel listed first wins for its versions: RouterOS 7.23.7 counts
+as long-term (up to date, hint "stable has 7.24.4") until the user picks "stable" in the detail panel, and then it is
+an update to 7.24.4. A pinned track the product no longer has (a renamed channel) is ignored rather than leaving the
+instance with no releases at all.
+

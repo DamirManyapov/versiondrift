@@ -11,6 +11,8 @@
   import { i18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
   import { jsonLdScript } from '$lib/seo/pages';
+  import { trackName } from '$lib/tracks';
+  import { inTrack } from '@versiondrift/core';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -19,7 +21,10 @@
   const stable = $derived(product.releases.filter((r) => !r.prerelease));
   const latest = $derived(stable[0]);
   const perTrack = $derived(
-    product.tracks.map((track) => ({ track, release: stable.find((r) => r.track === track.id) })),
+    product.tracks.map((track) => ({
+      track,
+      release: product.releases.find((r) => inTrack(product, track.id, r)),
+    })),
   );
   const onBoard = $derived(
     inventory.loaded && !inventory.demo && inventory.data.items.some((i) => i.p === product.id),
@@ -99,7 +104,7 @@
         <tbody>
           {#each perTrack as { track, release } (track.id)}
             <tr>
-              <td class="mono">{track.id}{track.label ? ` (${track.label})` : ''}</td>
+              <td class="mono">{trackName(track)}</td>
               <td class="mono">{release?.version ?? '—'}</td>
               <td>{release ? formatDate(release.date ?? release.firstSeenAt, locale) : '—'}</td>
             </tr>

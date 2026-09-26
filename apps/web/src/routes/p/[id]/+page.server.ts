@@ -1,3 +1,4 @@
+import { inTrack } from '@versiondrift/core';
 import { loadProduct, PAGE_CACHE } from '$lib/feed/load';
 import type { PageServerLoad } from './$types';
 
@@ -12,7 +13,7 @@ export const load: PageServerLoad = async ({ params, fetch, setHeaders }) => {
   const stable = product.releases.filter((r) => !r.prerelease);
   const shown = new Set(stable.slice(0, RECENT));
   for (const track of product.tracks) {
-    const latest = stable.find((r) => r.track === track.id);
+    const latest = product.releases.find((r) => inTrack(product, track.id, r));
     if (latest) shown.add(latest);
   }
   return {
@@ -20,7 +21,7 @@ export const load: PageServerLoad = async ({ params, fetch, setHeaders }) => {
     generatedAt,
     product: {
       ...product,
-      releases: stable.filter((r) => shown.has(r)),
+      releases: product.releases.filter((r) => shown.has(r)),
       advisories: product.advisories.slice(0, ADVISORIES),
     },
   };

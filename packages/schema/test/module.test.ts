@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Module, type ModuleInput } from '../src/index.ts';
+import { Module, type ModuleInput, unwrapUnions } from '../src/index.ts';
 
 const minimal: ModuleInput = {
   id: 'demo',
@@ -16,7 +16,8 @@ const withSource = (key: string, value: unknown) =>
 function issuesOf(input: unknown): { path: string; message: string }[] {
   const result = Module.safeParse(input);
   if (result.success) return [];
-  return result.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message }));
+  // What `pnpm modules:validate` reports: unions unwrapped to the branch that fits.
+  return unwrapUnions(result.error.issues).map((i) => ({ path: i.path.join('.'), message: i.message }));
 }
 
 describe('Module', () => {
@@ -192,5 +193,62 @@ describe('Inventory', async () => {
     const result = Inventory.safeParse({ boards: { prod: { products: { debian: 12.1 } } } });
     expect(result.success).toBe(false);
     expect(JSON.stringify(result.error?.issues)).toContain('quote versions');
+  });
+});
+
+describe('update channels and several release sources', () => {
+  const channelTrack = {
+    id: 'long-term',
+    current: { url: 'https://upgrade.mikrotik.com/routeros/NEWESTa7.long-term' },
+  };
+
+  it('accepts pointer tracks, a list of release sources and notes templates', () => {
+    const input = withFields({
+      tracks: [
+        channelTrack,
+        { id: 'stable', match: '^7\\.' },
+        { id: 'testing', match: '^7\\.', prereleases: true },
+      ],
+      sources: {
+        releases: [
+          { type: 'rss', url: 'https://mikrotik.com/current.rss' },
+          { type: 'pointer', url: 'https://upgrade.mikrotik.com/routeros/NEWESTa7.stable', epoch: true },
+        ],
+        releasesExtra: [{ type: 'notes', url: 'https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG' }],
+      },
+    });
+    expect(issuesOf(input)).toEqual([]);
+  });
+
+  it.each([
+    [
+      'a track with neither rule',
+      withFields({ tracks: [{ id: 'x' }] }),
+      'tracks.0',
+      'exactly one of match or current',
+    ],
+    [
+      'a track with both rules',
+      withFields({ tracks: [{ ...channelTrack, match: '^7' }] }),
+      'tracks.0',
+      'exactly one of match or current',
+    ],
+    [
+      'notes as a primary source',
+      withSource('releases', [{ type: 'notes', url: 'https://x.test/{version}' }]),
+      'sources.releases.0.type',
+      'use it in releasesExtra',
+    ],
+    [
+      'a notes URL without {version}',
+      withSource('releasesExtra', [{ type: 'notes', url: 'https://x.test/CHANGELOG' }]),
+      'sources.releasesExtra.0.url',
+      'containing {version}',
+    ],
+    ['an empty list of release sources', withSource('releases', []), 'sources.releases', ''],
+  ])('rejects %s', (_, input, path, message) => {
+    const issues = issuesOf(input);
+    expect(issues.map((i) => i.path)).toContain(path);
+    expect(issues.find((i) => i.path === path)?.message).toContain(message);
   });
 });

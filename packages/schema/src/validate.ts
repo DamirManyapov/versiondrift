@@ -78,8 +78,23 @@ function locate({ doc, lines }: Parsed, p: Path): Pick<ModuleIssue, 'line' | 'co
   return { line, column: col };
 }
 
+/**
+ * A union reports only "Invalid input". When exactly one branch fits the input's shape (sources.releases: one source
+ * or a list), report that branch's own issues at their full paths instead.
+ */
+export function unwrapUnions(issues: readonly z.core.$ZodIssue[]): z.core.$ZodIssue[] {
+  return issues.flatMap((issue) => {
+    if (issue.code !== 'invalid_union' || issue.errors.length === 0) return [issue];
+    const fitting = issue.errors.filter(
+      (branch) => !branch.some((i) => i.code === 'invalid_type' && i.path.length === 0),
+    );
+    if (fitting.length !== 1) return [issue];
+    return unwrapUnions(fitting[0]!.map((i) => ({ ...i, path: [...issue.path, ...i.path] })));
+  });
+}
+
 function schemaIssues(parsed: Parsed, error: z.ZodError): ModuleIssue[] {
-  return error.issues.map((issue) => {
+  return unwrapUnions(error.issues).map((issue) => {
     const p = issue.path.filter((k): k is string | number => typeof k !== 'symbol');
     // For an unknown key, point at the key itself rather than at the object that contains it.
     const at = issue.code === 'unrecognized_keys' && issue.keys[0] !== undefined ? [...p, issue.keys[0]] : p;
