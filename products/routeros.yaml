@@ -13,17 +13,23 @@ tagFilter:
   exclude: 'beta'                # the development channel (7.25beta5) is not shown
 prerelease: include              # release candidates count only in the testing channel
 releaseNotesUrl: https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG
-# MikroTik's update channels (System → Packages → Check For Updates). "long-term" is whatever branch the update
-# server names today (7.23 as of 2026-09); a version of that branch is assumed to be on it unless the user picks
-# "stable". Channels overlap: 7.23.7 is in long-term and in stable.
-defaultTrack: stable
+# MikroTik's update channels (System → Packages → Check For Updates), per RouterOS line: users pick the line, then the
+# channel. "long-term" is whatever branch the update server names today (7.23 and 6.49 as of 2026-09); a version of
+# that branch is assumed to be on it unless the user picks "stable". Channels overlap: 7.23.7 is in long-term and in
+# stable. The development channel (betas) is left out.
+defaultTrack: 7-stable
 tracks:
-  - id: long-term
-    label: RouterOS 7
+  - id: 7-long-term
+    group: RouterOS 7
+    label: long-term
     current: { url: https://upgrade.mikrotik.com/routeros/NEWESTa7.long-term }
-  - { id: stable, label: RouterOS 7, match: '^7\.' }
-  - { id: testing, label: RouterOS 7, match: '^7\.', prereleases: true }
-  - { id: "6", label: long-term, match: '^6\.' }
+  - { id: 7-stable, group: RouterOS 7, label: stable, match: '^7\.' }
+  - { id: 7-testing, group: RouterOS 7, label: testing, match: '^7\.', prereleases: true }
+  - id: 6-long-term
+    group: RouterOS 6
+    label: long-term
+    current: { url: https://upgrade.mikrotik.com/routeros/NEWEST6.long-term }
+  - { id: 6-stable, group: RouterOS 6, label: stable, match: '^6\.' }
 sources:
   releases:
     - type: rss                  # the current stable release, with notes
@@ -37,6 +43,7 @@ sources:
     - { type: pointer, url: https://upgrade.mikrotik.com/routeros/NEWESTa7.long-term, epoch: true }
     - { type: pointer, url: https://upgrade.mikrotik.com/routeros/NEWESTa7.testing, epoch: true }
     - { type: pointer, url: https://upgrade.mikrotik.com/routeros/NEWEST6.long-term, epoch: true }
+    - { type: pointer, url: https://upgrade.mikrotik.com/routeros/NEWEST6.stable, epoch: true }
     - { type: endoflife, product: routeros }   # the latest release of every branch
   releasesExtra:
     - { type: notes, url: "https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG" }
