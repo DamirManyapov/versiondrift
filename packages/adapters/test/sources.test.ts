@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   changelogSections,
   createFetcher,
+  debianAnnouncement,
   extractVersion,
   fetchLifecycle,
   fetchNotes,
@@ -251,10 +252,63 @@ describe('pointer and notes (MikroTik update server)', () => {
     expect(await fetchNotes(source, '7.0.99', ctx('pointer'))).toBeUndefined();
   });
 
+  it("reads the release's own page for {url}, and nothing without one", async () => {
+    const fetcher = createFetcher({
+      fetch: (url) => Promise.resolve(new Response(`notes from ${url}`)),
+      sleep: () => Promise.resolve(),
+    });
+    const source = { type: 'notes' as const, url: '{url}' };
+    const patch = await fetchNotes(source, '13.7', { fetcher }, 'https://x.test/news/13.7');
+    expect(patch?.notes.body).toBe('notes from https://x.test/news/13.7');
+    expect(await fetchNotes(source, '13.7', { fetcher })).toBeUndefined();
+  });
+
   it('refuses notes as a primary source', async () => {
     await expect(
       fetchReleases({ type: 'notes', url: 'https://example.test/{version}' }, ctx('pointer')),
     ).rejects.toThrow(/releasesExtra/);
+  });
+});
+
+describe('Debian point release announcements', () => {
+  const row = (a: string, b: string) => `<tr><td><a href="#">${a}</a></td>\n  <td>${b}</td></tr>`;
+  const page = (security: [string, string][]) => `<h2>Miscellaneous Bugfixes</h2><p>…</p>
+    <table><tr><th>Package</th><th>Reason</th></tr>
+    ${row('alsa-lib', 'Fix heap overflow issue [CVE-2026-25068]')}
+    ${row('at-spi2-core', 'Fix atkversion.h header\n  for C++ linkage')}</table>
+    <h2>Security Updates</h2><table><tr><th>Advisory ID</th><th>Package</th></tr>
+    ${security.map(([a, b]) => row(a, b)).join('')}</table>
+    <h2>Removed packages</h2><table>${row('oldpkg', 'Unmaintained')}</table>`;
+
+  it('turns the tables into one security line and a bug fix per package', () => {
+    const markdown = debianAnnouncement(
+      page([
+        ['DSA-6381', 'linux-signed-amd64'],
+        ['DSA-6381', 'linux'],
+        ['DSA-6382', 'postfix'],
+      ]),
+    );
+    expect(markdown).toBe(
+      [
+        '### Security updates',
+        '- 2 security advisories included: DSA-6381 linux-signed-amd64 +1, DSA-6382 postfix',
+        '',
+        '### Bug fixes',
+        '- alsa-lib: Fix heap overflow issue [CVE-2026-25068]',
+        '- at-spi2-core: Fix atkversion.h header for C++ linkage',
+      ].join('\n'),
+    );
+  });
+
+  it('shortens a long advisory list at a comma', () => {
+    const many = Array.from({ length: 60 }, (_, i): [string, string] => [`DSA-${6000 + i}`, 'chromium']);
+    const line = debianAnnouncement(page(many)).split('\n')[1] ?? '';
+    expect(line.length).toBeLessThanOrEqual(300);
+    expect(line).toMatch(/^- 60 security advisories included: DSA-6000 chromium, .*chromium, …$/);
+  });
+
+  it('is empty for a page without the tables', () => {
+    expect(debianAnnouncement('<h1>Debian 13 released</h1><p>…</p>')).toBe('');
   });
 });
 
@@ -338,6 +392,26 @@ describe('html', () => {
     expect(releases[0]).toMatchObject({ url: 'https://x.test/notes/3.0', date: '2026-03-01T00:00:00Z' });
     expect(releases[1]).toMatchObject({ url: 'https://x.test/changes#r2', date: '2026-02-05T00:00:00Z' });
     expect(releases[1]?.notes?.body).toBe('<p>fixes</p>');
+  });
+
+  it('dates a release by its link when neither title nor body has a date (Debian news)', () => {
+    const news = `<p><tt>[12 Sep 2026]</tt> <strong><a href="./20260912">Updated Debian 13: 13.7 released</a></strong></p>
+      <p><strong><a href="./20260708">Updated Debian 12: 12.15 released</a></strong></p>`;
+    const releases = parseHtmlReleases(news, {
+      type: 'html',
+      url: 'https://www.debian.org/News/2026/',
+      select: { item: 'strong', body: 'script' },
+      versionRegex: 'Updated Debian \\d+: (\\d+\\.\\d+) released',
+      dateFormat: 'YYYYMMDD',
+    });
+    expect(releases).toEqual([
+      expect.objectContaining({
+        version: '13.7',
+        date: '2026-09-12T00:00:00Z',
+        url: 'https://www.debian.org/News/2026/20260912',
+      }),
+      expect.objectContaining({ version: '12.15', date: '2026-07-08T00:00:00Z' }),
+    ]);
   });
 
   it('fails loudly when the item selector matches nothing', () => {

@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schemas/module.schema.json
-# Verified against the live sources on 2026-09-26 (S1-T7).
+# Verified against the live sources on 2026-09-26 (S1-T7); point releases from the yearly news archives added the same day.
 id: debian
 name: Debian GNU/Linux
 aliases: [debian-linux]
@@ -13,12 +13,26 @@ tracks:
   - { id: "13", match: '^13\.', label: trixie }
   - { id: "12", match: '^12\.', label: bookworm }
   - { id: "11", match: '^11\.', label: bullseye }
+  - { id: "10", match: '^10\.', label: buster }
 sources:
-  releases:                      # the news feed only lists recent point releases; history accumulates daily
-    type: rss
-    url: https://www.debian.org/News/news
-    versionFrom: title
-    versionRegex: 'Debian (\d+\.\d+) released|Updated Debian \d+: (\d+\.\d+) released'
+  releases:
+    - type: rss                  # recent point releases, with the announcement's summary
+      url: https://www.debian.org/News/news
+      versionFrom: title
+      versionRegex: 'Debian (\d+\.\d+) released|Updated Debian \d+: (\d+\.\d+) released'
+    # The yearly news archives list every point release ("Updated Debian 13: 13.7 released"), dated by the link
+    # (./20260912); a new year needs its line. News before 2023 moved to chronicles.debian.org.
+    - { type: html, url: https://www.debian.org/News/2026/, select: { item: strong, body: script }, versionRegex: 'Updated Debian \d+: (\d+\.\d+) released', dateFormat: YYYYMMDD }
+    - { type: html, url: https://www.debian.org/News/2025/, select: { item: strong, body: script }, versionRegex: 'Updated Debian \d+: (\d+\.\d+) released', dateFormat: YYYYMMDD }
+    - { type: html, url: https://www.debian.org/News/2024/, select: { item: strong, body: script }, versionRegex: 'Updated Debian \d+: (\d+\.\d+) released', dateFormat: YYYYMMDD }
+    - { type: html, url: https://www.debian.org/News/2023/, select: { item: strong, body: script }, versionRegex: 'Updated Debian \d+: (\d+\.\d+) released', dateFormat: YYYYMMDD }
+    - { type: html, url: https://chronicles.debian.org/www/News/2022/, select: { item: strong, body: script }, versionRegex: 'Updated Debian \d+: (\d+\.\d+) released', dateFormat: YYYYMMDD }
+    - { type: html, url: https://chronicles.debian.org/www/News/2021/, select: { item: strong, body: script }, versionRegex: 'Updated Debian \d+: (\d+\.\d+) released', dateFormat: YYYYMMDD }
+  releasesExtra:
+    - type: notes                # each announcement's tables: bug fixes by package, security advisories
+      url: '{url}'
+      dialect: debian-announcement
+      override: true             # rather than the RSS entry's opening paragraph
   security:
     - { type: debian, packages: fromInventory }
   eol: { type: endoflife, product: debian }

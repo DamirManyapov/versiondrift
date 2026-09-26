@@ -95,7 +95,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `gitlab` | GitLab releases | `host?` (default gitlab.com), `project` | releases + notes |
 | `gitea` | Gitea/Forgejo/Codeberg | `host` (`codeberg.org`), `repo`, `versionRegex?` | releases + notes |
 | `rss` | RSS/Atom feeds | `url`, `versionFrom: title\|link`, `versionRegex` | releases (+ notes from entry body) |
-| `html` | changelog pages without a feed | `url`, `select: { item, title, body, date? }`, `versionRegex`, `dateFormat?` | releases + notes |
+| `html` | changelog pages without a feed | `url`, `select: { item, title, body, date? }`, `versionRegex`, `dateFormat?` | releases + notes; without a `date` selector the date comes from the title, the start of the body, or the item's link (`./20260912` with `dateFormat: YYYYMMDD`) |
 | `dockerhub` | image tags | `repo` (`analogic/poste.io`), `tagRegex?`, `versionRegex?` | versions + push dates (no notes) |
 | `endoflife` | lifecycle, or releases | `product` (endoflife.date slug) | branches, EOL dates, LTS flags; as `releases`: the latest release of every cycle (OS and appliances without usable notes; history grows run by run) |
 | `osv` | OSV.dev advisories | `ecosystem`, `package` | advisories with affected ranges |
@@ -105,7 +105,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `kev` | CISA KEV catalog (global, not per module) | — | "known exploited" flag by CVE id |
 | `manual` | products with no machine-readable source | `file: products/<id>.releases.yaml` | releases maintained by hand |
 | `pointer` | an update server's "newest version" file | `url`, `versionRegex?`, `epoch?` (a Unix time after the version dates the release) | the current version, one a day |
-| `notes` | releasesExtra only: notes per version | `url` with `{version}`, `format?` (`text` default) | notes (and the first line's date) for releases being classified |
+| `notes` | releasesExtra only: notes per version | `url` with `{version}`, or `{url}` (the release's own link); `format?` (`text` default); `dialect?` (`debian-announcement`: the bug-fix and security tables of a point release announcement); `override?` (replace notes the primary source already has, e.g. an RSS summary) | notes (and the first line's date) for releases being classified |
 | `apt` | versions of a package in an APT repository | `url` (the `Packages` index), `package`, `versionRegex?` (e.g. drop the Debian revision `-1`) | versions (no dates or notes) |
 | `debian-changelog` | a package's `debian/changelog` | `url`, `versionRegex?` | notes (Markdown bullets) and the signature line's date per version |
 | `changelog` | a changelog file in a vendor's own layout | `url`, `dialect` (`zabbix`) | notes per version (Zabbix: one ChangeLog per release branch; a final release "released without any changes" gets its rc's notes) |
@@ -172,7 +172,11 @@ with release candidates) and RouterOS 6 (long-term by pointer, stable); the deve
 out. Stable releases below each branch's head (7.24.0–7.24.3) are
 not listed anywhere machine-readable, so they appear as they ship.
 
-Known gaps: debian and postgresql feeds list only recent releases, so their history grows day by day;
+Debian takes its point releases from the yearly news archives (`www.debian.org/News/<year>/`, before 2023
+`chronicles.debian.org/www/News/<year>/`; a new year needs its line) and its notes from each announcement: one line
+listing the included security advisories, then a bug fix per package.
+
+Known gaps: postgresql's feed lists only recent releases, so its history grows day by day;
 percona tags carry no notes. Zabbix takes its notes from the ChangeLog of each supported release branch (7.4, 7.0, 6.0);
 a new LTS branch needs its line added to the module.
 Products taken from tags (mysql, mariadb, mongodb, dovecot, gitlab via the `gitlabhq/gitlabhq` mirror, …) have no notes

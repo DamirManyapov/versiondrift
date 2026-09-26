@@ -569,8 +569,8 @@
             },
             "url": {
               "type": "string",
-              "pattern": "^https?:\\/\\/.*\\{version\\}",
-              "description": "e.g. https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG"
+              "pattern": "^(https?:\\/\\/.*\\{version\\}|\\{url\\})",
+              "description": "e.g. https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG, or {url}"
             },
             "format": {
               "description": "Default: text",
@@ -580,6 +580,17 @@
                 "markdown",
                 "html"
               ]
+            },
+            "dialect": {
+              "description": "Page layout to turn into notes: debian-announcement = the point release tables.",
+              "type": "string",
+              "enum": [
+                "debian-announcement"
+              ]
+            },
+            "override": {
+              "description": "Use these notes even when the release sources already gave some (a summary).",
+              "type": "boolean"
             }
           },
           "required": [

@@ -188,9 +188,19 @@ const NotesSource = z.strictObject({
   type: z.literal('notes'),
   url: z
     .string()
-    .regex(/^https?:\/\/.*\{version\}/, { error: 'must be an http(s) URL containing {version}' })
-    .meta({ description: 'e.g. https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG' }),
+    .regex(/^(https?:\/\/.*\{version\}|\{url\})/, {
+      error: "must be an http(s) URL containing {version}, or {url} (the release's own link)",
+    })
+    .meta({ description: 'e.g. https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG, or {url}' }),
   format: z.enum(['text', 'markdown', 'html']).optional().meta({ description: 'Default: text' }),
+  dialect: z
+    .enum(['debian-announcement'])
+    .optional()
+    .meta({ description: 'Page layout to turn into notes: debian-announcement = the point release tables.' }),
+  override: z
+    .boolean()
+    .optional()
+    .meta({ description: 'Use these notes even when the release sources already gave some (a summary).' }),
 });
 
 const unknownType =

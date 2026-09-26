@@ -51,15 +51,18 @@ export function parseHtmlReleases(html: string, source: HtmlSource): RawRelease[
       body = item.html() ?? '';
     }
 
-    // Without a date selector: the title first, then the start of the body ("Released 05. August 2026").
+    const href = titleEl.is('a') ? titleEl.attr('href') : titleEl.find('a[href]').first().attr('href');
+
+    // Without a date selector: the title first, then the start of the body ("Released 05. August 2026"), then the
+    // link's address when it carries one (Debian news: "./20260912", with dateFormat YYYYMMDD).
     const dateEl = pick(source.select.date);
     const date = dateEl
       ? (parseDate(dateEl.text(), source.dateFormat) ??
         toIso(dateEl.attr('datetime') ?? clean(dateEl.text())))
       : (parseDate(title, source.dateFormat) ??
-        parseDate(clean(cheerio.load(body).text()).slice(0, 300), source.dateFormat));
+        parseDate(clean(cheerio.load(body).text()).slice(0, 300), source.dateFormat) ??
+        (href && source.dateFormat ? parseDate(href, source.dateFormat) : undefined));
 
-    const href = titleEl.is('a') ? titleEl.attr('href') : titleEl.find('a[href]').first().attr('href');
     const id = item.attr('id') ?? titleEl.attr('id') ?? item.find('[id]').first().attr('id');
     const url = href ? new URL(href, source.url).toString() : id ? `${source.url}#${id}` : source.url;
 

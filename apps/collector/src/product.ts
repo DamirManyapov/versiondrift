@@ -313,14 +313,14 @@ export async function collectProduct(
     if (extra.type !== 'notes') continue;
     let fetched = 0;
     for (const [key, c] of candidates) {
-      if ((merged.has(key) && !reclassify) || hasContent(c.raw.notes)) continue;
+      if ((merged.has(key) && !reclassify) || (!extra.override && hasContent(c.raw.notes))) continue;
       if (fetched >= NOTES_PER_RUN) {
         warnings.push(`notes: more than ${NOTES_PER_RUN} releases need notes; the rest follow in later runs`);
         break;
       }
       fetched++;
       try {
-        const found = await fetchNotes(extra, c.raw.version, adapterCtx);
+        const found = await fetchNotes(extra, c.raw.version, adapterCtx, c.raw.url);
         if (found)
           c.raw = { ...c.raw, notes: found.notes, ...(!c.raw.date && found.date && { date: found.date }) };
       } catch (error) {
