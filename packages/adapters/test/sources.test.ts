@@ -7,6 +7,7 @@ import {
   fetchLifecycle,
   fetchNotes,
   parseDebianChangelog,
+  parseZabbixChangelog,
   fetchReleases,
   fixtureFetch,
   parseDate,
@@ -122,6 +123,47 @@ describe('gitea', () => {
     );
     expect(releases.length).toBeGreaterThan(0);
     expect(releases.every((r) => r.version.startsWith('15.'))).toBe(true);
+  });
+});
+
+describe('changelog files (Zabbix)', () => {
+  it('reads notes per version from a release branch ChangeLog', async () => {
+    const releases = await fetchReleases(
+      {
+        type: 'changelog',
+        dialect: 'zabbix',
+        url: 'https://raw.githubusercontent.com/zabbix/zabbix/release/7.4/ChangeLog',
+      },
+      ctx('changelog'),
+    );
+    expect(releases.length).toBeGreaterThan(2);
+    for (const r of releases) expect(r.notes?.body).toMatch(/^(### |- )/m);
+  });
+
+  it('turns sections into headings, drops the flag column and gives a final release its rc notes', () => {
+    const sep = '-'.repeat(80);
+    const text = [
+      'Changes for 7.4.15',
+      '',
+      '7.4.15rc1 was released as 7.4.15 without any changes',
+      '',
+      sep,
+      'Changes for 7.4.15rc1',
+      '',
+      'New features:',
+      '...G...... [ZBXNEXT-1] added a thing (someone)',
+      '',
+      'Bug fixes:',
+      '..F....... [ZBX-2] fixed a bug (someone)',
+      '',
+      sep,
+    ].join('\n');
+    const releases = parseZabbixChangelog(text);
+    const final = releases.find((r) => r.version === '7.4.15');
+    expect(final?.notes?.body).toBe(
+      '### New features\n- [ZBXNEXT-1] added a thing (someone)\n\n### Bug fixes\n- [ZBX-2] fixed a bug (someone)',
+    );
+    expect(releases.find((r) => r.version === '7.4.15rc1')?.notes?.body).toBe(final?.notes?.body);
   });
 });
 

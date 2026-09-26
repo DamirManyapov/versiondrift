@@ -39,6 +39,7 @@ function linkFor(source: ReleaseSource | SecuritySource | EolSource): string | u
     case 'pointer':
     case 'apt':
     case 'debian-changelog':
+    case 'changelog':
       return source.url;
     case 'notes':
       return undefined; // a template, not a page

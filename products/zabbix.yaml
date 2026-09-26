@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schemas/module.schema.json
-# Verified against the live sources on 2026-09-26 (S1-T7).
+# Verified against the live sources on 2026-09-26 (S1-T7); notes from the branches' ChangeLog added the same day.
 id: zabbix
 name: Zabbix
 vendor: Zabbix SIA
@@ -16,7 +16,11 @@ tracks:
   - { id: "6.0", match: '^6\.0\.', label: LTS }
 releaseNotesUrl: https://www.zabbix.com/rn/rn{version}
 sources:
-  releases: { type: github, repo: zabbix/zabbix, useTags: true }   # a mirror: tags only, notes on zabbix.com
+  releases: { type: github, repo: zabbix/zabbix, useTags: true }   # a mirror: tags only
+  releasesExtra:                 # notes: the ChangeLog of each supported release branch
+    - { type: changelog, dialect: zabbix, url: https://raw.githubusercontent.com/zabbix/zabbix/release/7.4/ChangeLog }
+    - { type: changelog, dialect: zabbix, url: https://raw.githubusercontent.com/zabbix/zabbix/release/7.0/ChangeLog }
+    - { type: changelog, dialect: zabbix, url: https://raw.githubusercontent.com/zabbix/zabbix/release/6.0/ChangeLog }
   security:
     - { type: nvd, cpe: "cpe:2.3:a:zabbix:zabbix" }
   eol: { type: endoflife, product: zabbix }

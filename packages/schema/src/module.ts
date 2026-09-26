@@ -174,6 +174,15 @@ const DebianChangelogSource = z.strictObject({
   versionRegex: regex('Extracts the version from the entry header.').optional(),
 });
 
+/** A changelog file in a vendor's own layout: notes per version (one parser per layout). */
+const ChangelogFileSource = z.strictObject({
+  type: z.literal('changelog'),
+  url: httpUrl,
+  dialect: z.enum(['zabbix']).meta({
+    description: 'The file layout: zabbix = "Changes for X.Y.Z" blocks with New features / Bug fixes.',
+  }),
+});
+
 /** releasesExtra only: release notes per version from a URL template, fetched for releases being classified. */
 const NotesSource = z.strictObject({
   type: z.literal('notes'),
@@ -204,6 +213,7 @@ const RELEASE_SOURCE_TYPES = [
   'notes',
   'apt',
   'debian-changelog',
+  'changelog',
 ] as const;
 export const ReleaseSource = z
   .discriminatedUnion(
@@ -221,6 +231,7 @@ export const ReleaseSource = z
       NotesSource,
       AptSource,
       DebianChangelogSource,
+      ChangelogFileSource,
     ],
     { error: unknownType(RELEASE_SOURCE_TYPES) },
   )

@@ -642,6 +642,32 @@
             "url"
           ],
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "changelog"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "dialect": {
+              "type": "string",
+              "enum": [
+                "zabbix"
+              ],
+              "description": "The file layout: zabbix = \"Changes for X.Y.Z\" blocks with New features / Bug fixes."
+            }
+          },
+          "required": [
+            "type",
+            "url",
+            "dialect"
+          ],
+          "additionalProperties": false
         }
       ]
     },

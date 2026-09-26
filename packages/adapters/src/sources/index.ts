@@ -1,5 +1,6 @@
 import type { EolSource, ReleaseSource } from '@versiondrift/schema';
 import { SourceError, type AdapterContext, type RawBranch, type RawRelease } from '../types.ts';
+import { changelogFileReleases } from './changelog.ts';
 import { aptReleases, debianChangelogReleases } from './debian.ts';
 import { dockerhubReleases } from './dockerhub.ts';
 import { rssReleases } from './feed.ts';
@@ -32,6 +33,8 @@ export function fetchReleases(source: ReleaseSource, ctx: AdapterContext): Promi
       return aptReleases(source, ctx);
     case 'debian-changelog':
       return debianChangelogReleases(source, ctx);
+    case 'changelog':
+      return changelogFileReleases(source, ctx);
     case 'notes':
       // Needs the versions to fetch: the collector calls fetchNotes for the releases it classifies.
       return Promise.reject(new SourceError('notes only enriches releases (releasesExtra)'));

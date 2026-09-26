@@ -108,6 +108,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `notes` | releasesExtra only: notes per version | `url` with `{version}`, `format?` (`text` default) | notes (and the first line's date) for releases being classified |
 | `apt` | versions of a package in an APT repository | `url` (the `Packages` index), `package`, `versionRegex?` (e.g. drop the Debian revision `-1`) | versions (no dates or notes) |
 | `debian-changelog` | a package's `debian/changelog` | `url`, `versionRegex?` | notes (Markdown bullets) and the signature line's date per version |
+| `changelog` | a changelog file in a vendor's own layout | `url`, `dialect` (`zabbix`) | notes per version (Zabbix: one ChangeLog per release branch; a final release "released without any changes" gets its rc's notes) |
 
 `sources.releases` may be a list: each source adds the versions it knows, the first to name a version wins and later
 ones fill in missing notes, dates and links (RouterOS: stable RSS + the long-term history page + channel pointers +
@@ -172,7 +173,8 @@ out. Stable releases below each branch's head (7.24.0–7.24.3) are
 not listed anywhere machine-readable, so they appear as they ship.
 
 Known gaps: debian and postgresql feeds list only recent releases, so their history grows day by day;
-zabbix and percona tags carry no notes (zabbix links to its release notes page).
+percona tags carry no notes. Zabbix takes its notes from the ChangeLog of each supported release branch (7.4, 7.0, 6.0);
+a new LTS branch needs its line added to the module.
 Products taken from tags (mysql, mariadb, mongodb, dovecot, gitlab via the `gitlabhq/gitlabhq` mirror, …) have no notes
 either; endoflife.date release sources only know the latest release of each cycle. Windows Server and VMware ESXi were
 left out on purpose: their version strings (build numbers, "8.0 Update 3k") don't identify the patch level reliably.

@@ -27,6 +27,10 @@ function trimText(url: string, text: string): string | undefined {
     const wanted = stanzas.filter((s) => /^Package: proxmox-backup-server$/m.test(s)).slice(-MAX_ITEMS);
     return [...stanzas.slice(0, 3), ...wanted].join('\n\n') + '\n';
   }
+  if (url.endsWith('/ChangeLog')) {
+    const separator = '\n' + '-'.repeat(80) + '\n';
+    return text.split(separator).slice(0, MAX_ITEMS).join(separator) + '\n';
+  }
   if (url.includes('debian/changelog')) {
     const entries = text.split(/(?<=\n -- [^\n]+\n)/);
     return entries.slice(0, MAX_ITEMS).join('');
@@ -112,6 +116,14 @@ const cases: Case[] = [
   },
   { name: 'gitea', release: { type: 'gitea', host: 'codeberg.org', repo: 'forgejo/forgejo' } },
   { name: 'endoflife', lifecycle: { type: 'endoflife', product: 'grafana' } },
+  {
+    name: 'changelog',
+    release: {
+      type: 'changelog',
+      dialect: 'zabbix',
+      url: 'https://raw.githubusercontent.com/zabbix/zabbix/release/7.4/ChangeLog',
+    },
+  },
   {
     name: 'debian',
     release: {
