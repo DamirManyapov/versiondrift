@@ -136,6 +136,15 @@
     if (instance) inventory.update(instance.index, { track: value });
   }
 
+  /** The channel of the same line that has a newer release ("stable" for a long-term user), if any. */
+  function otherChannel(version: string): string | undefined {
+    if (!product || !group) return undefined;
+    const release = { version, prerelease: false };
+    return product.tracks.find(
+      (tr) => tr.group === group && tr.id !== currentTrack && inTrack(product, tr.id, release),
+    )?.label;
+  }
+
   /** A new line: the channel the installed version fits in it, else its first channel. */
   function setGroup(value: string) {
     if (!product) return;
@@ -221,9 +230,7 @@
           <span class="muted">{t('trackChannel')}</span>
           <select value={currentTrack} disabled={readonly} onchange={(e) => setTrack(e.currentTarget.value)}>
             {#each product.tracks.filter((tr) => tr.group === group) as track (track.id)}
-              <option value={track.id}
-                >{track.label ?? track.id}{track.current ? ` · ${track.current}` : ''}</option
-              >
+              <option value={track.id}>{track.label ?? track.id}</option>
             {/each}
           </select>
         </label>
@@ -278,7 +285,15 @@
     {#if s.flags.includes('eolSoon') && s.branch?.eolDate}
       {@render note(t('noteEolSoon', { branch: s.branch.id, date: formatDate(s.branch.eolDate, locale) }))}
     {/if}
-    {#if s.newestOverall}{@render note(t('noteNewMajor', { version: s.newestOverall }), 'info')}{/if}
+    {#if s.newestOverall}
+      {@const channel = otherChannel(s.newestOverall)}
+      {@render note(
+        channel
+          ? t('noteOtherChannel', { channel, version: s.newestOverall })
+          : t('noteNewMajor', { version: s.newestOverall }),
+        'info',
+      )}
+    {/if}
     {#if s.flags.includes('staleData')}{@render note(t('noteStale'))}{/if}
     {#if entry && !entry.hasSecuritySource}{@render note(t('noteNoSecurity'), 'info')}{/if}
     {#if !s.installed}{@render note(t('noteNoVersion'), 'info')}{/if}
@@ -549,13 +564,33 @@
   }
   input,
   select {
+    box-sizing: border-box;
+    height: 40px;
     font: inherit;
     color: var(--text);
-    background: var(--surface);
+    background-color: var(--surface);
     border: 1px solid var(--border-strong);
     border-radius: 8px;
-    padding: 8px 10px;
+    padding: 0 10px;
     max-width: 320px;
+  }
+  /* Safari ignores a native select's height and padding: draw it like the text field, with our own chevron. */
+  select {
+    appearance: none;
+    padding-right: 32px;
+    background-image:
+      linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+      calc(100% - 17px) 50%,
+      calc(100% - 12px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+  }
+  .setup input,
+  .setup select {
+    width: 100%;
+    max-width: none;
   }
   input[aria-invalid='true'] {
     border-color: var(--critical);

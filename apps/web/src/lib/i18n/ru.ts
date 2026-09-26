@@ -69,6 +69,7 @@ export const ru: Messages = {
   noteEol: 'Поддержка ветки {branch} закончилась{date}.',
   noteEolSoon: 'Поддержка ветки {branch} заканчивается {date}.',
   noteNewMajor: 'Вышла новая линейка релизов: {version}.',
+  noteOtherChannel: 'В канале {channel} уже {version}.',
   noteNoSecurity: 'У модуля нет источника данных о безопасности: уязвимости не отслеживаются.',
   noteStale: 'Данные по продукту давно не удавалось обновить.',
   noteNoVersion: 'Укажите свою версию, чтобы увидеть, что изменилось с тех пор.',

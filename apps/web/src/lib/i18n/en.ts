@@ -66,6 +66,7 @@ export const en = {
   noteEol: 'Your branch {branch} has reached end of life{date}.',
   noteEolSoon: 'Your branch {branch} reaches end of life on {date}.',
   noteNewMajor: 'A newer release line is out: {version}.',
+  noteOtherChannel: 'The {channel} channel already has {version}.',
   noteNoSecurity: 'This module has no security source: vulnerabilities are not tracked.',
   noteStale: 'The data for this product could not be collected recently.',
   noteNoVersion: 'Set your version to see what changed since.',
