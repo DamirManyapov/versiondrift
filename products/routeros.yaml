@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schemas/module.schema.json
-# Verified against the live sources on 2026-09-26 (S1-T7).
+# Verified against the live sources on 2026-09-26 (S1-T7); update channels added the same day.
 id: routeros
 name: MikroTik RouterOS
 aliases: [mikrotik]
@@ -10,16 +10,36 @@ logo: simpleicons:mikrotik
 description: Operating system of MikroTik routers and switches.
 versionScheme: loose
 tagFilter:
-  exclude: '(beta|rc)'
+  exclude: 'beta'                # the development channel (7.25beta5) is not shown
+prerelease: include              # release candidates count only in the testing channel
+releaseNotesUrl: https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG
+# MikroTik's update channels (System → Packages → Check For Updates). "long-term" is whatever branch the update
+# server names today (7.23 as of 2026-09); a version of that branch is assumed to be on it unless the user picks
+# "stable". Channels overlap: 7.23.7 is in long-term and in stable.
+defaultTrack: stable
 tracks:
-  - { id: "7", match: '^7\.' }
-  - { id: "6", match: '^6\.' }
+  - id: long-term
+    label: RouterOS 7
+    current: { url: https://upgrade.mikrotik.com/routeros/NEWESTa7.long-term }
+  - { id: stable, label: RouterOS 7, match: '^7\.' }
+  - { id: testing, label: RouterOS 7, match: '^7\.', prereleases: true }
+  - { id: "6", label: long-term, match: '^6\.' }
 sources:
-  releases:                      # only the current stable release is in the feed; history accumulates daily
-    type: rss
-    url: https://mikrotik.com/current.rss
-    versionFrom: title
-    versionRegex: 'RouterOS (\d+\.\d+(?:\.\d+)?) \[stable\]'
+  releases:
+    - type: rss                  # the current stable release, with notes
+      url: https://mikrotik.com/current.rss
+      versionFrom: title
+      versionRegex: 'RouterOS (\d+\.\d+(?:\.\d+)?) \[stable\]'
+    - type: html                 # the long-term channel's history (versions and dates; notes load on demand)
+      url: https://mikrotik.com/download/changelogs
+      select: { item: div.changelog, title: span.mtk-text-sm, body: pre, date: span.mtk-text-xs }
+    - { type: pointer, url: https://upgrade.mikrotik.com/routeros/NEWESTa7.stable, epoch: true }
+    - { type: pointer, url: https://upgrade.mikrotik.com/routeros/NEWESTa7.long-term, epoch: true }
+    - { type: pointer, url: https://upgrade.mikrotik.com/routeros/NEWESTa7.testing, epoch: true }
+    - { type: pointer, url: https://upgrade.mikrotik.com/routeros/NEWEST6.long-term, epoch: true }
+    - { type: endoflife, product: routeros }   # the latest release of every branch
+  releasesExtra:
+    - { type: notes, url: "https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG" }
   security:
     - { type: nvd, cpe: "cpe:2.3:o:mikrotik:routeros" }
   eol: { type: endoflife, product: routeros }
