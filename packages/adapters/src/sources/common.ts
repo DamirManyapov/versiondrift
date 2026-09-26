@@ -6,10 +6,19 @@ export type { SourceType };
 /** Dotted numbers with an optional "v" and "-suffix": v2.0.0, 12.15, 8.0.36-28, 2.0.0-beta.1. */
 const DEFAULT_VERSION = /(?<![\w.])v?(\d+(?:\.\d+)+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?)/;
 
-/** Applies a module's versionRegex: the first non-empty capture group wins, or the whole match without groups. */
-export function extractVersion(text: string, versionRegex?: string): string | undefined {
+/**
+ * Applies a module's versionRegex: the first non-empty capture group wins, or the whole match without groups.
+ * A `versionFormat` builds the version from several groups instead ("$1-$2": ESXi's "8.0.3" and build number).
+ */
+export function extractVersion(
+  text: string,
+  versionRegex?: string,
+  versionFormat?: string,
+): string | undefined {
   const m = (versionRegex ? new RegExp(versionRegex) : DEFAULT_VERSION).exec(text);
   if (!m) return undefined;
+  if (versionFormat)
+    return versionFormat.replace(/\$(\d)/g, (_, n: string) => m[Number(n)] ?? '').trim() || undefined;
   return m.slice(1).find((g) => g !== undefined && g !== '') ?? (m.length === 1 ? m[0] : undefined);
 }
 

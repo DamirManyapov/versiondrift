@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Verified against the live sources on 2026-09-26.
+id: vmware-esxi
+name: VMware ESXi
+aliases: [esxi, vmware-esx]
+vendor: Broadcom (VMware)
+category: virtualization
+homepage: https://www.vmware.com/products/cloud-infrastructure/esxi-and-esx
+description: Bare-metal hypervisor of vSphere and VMware Cloud Foundation (ESX from 9.0).
+# Patches share a version ("8.0.3" from Update 3 to 3k), so a release is the version plus its build number:
+# 8.0.3-25595708. What the host shows works as input too: "8.0.3, 25595708" or `vmware -v`'s "8.0.3 build-25595708".
+versionScheme: regex
+versionRegex: '^(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?\D+(\d{7,9})\D*$'
+branchGroups: 2
+tracks:
+  - { id: "9.1", match: '^9\.1[.-]' }
+  - { id: "9.0", match: '^9\.0[.-]' }
+  - { id: "8.0", match: '^8\.0[.-]' }
+  - { id: "7.0", match: '^7\.0[.-]' }
+sources:
+  releases:
+    # Broadcom KB 316595 "Build numbers and versions of VMware ESXi/ESX": one table row per release
+    # ("ESXi 8.0.3 EP6 | ESXi 8.0 Update 3k | 2026/07/29 | 25595708 | Patch"), linking its release notes.
+    type: html
+    url: https://knowledge.broadcom.com/external/article/316595
+    select: { item: tr, body: script }
+    versionRegex: '^ESXi? ((?:[7-9]|[1-9]\d)\.\d+(?:\.\d+){0,2})[a-z]?\b.* \| (\d{7,9}) \|'
+    versionFormat: '$1-$2'
+    dateFormat: YYYY/MM/DD
+  security:
+    - { type: nvd, cpe: "cpe:2.3:o:vmware:esxi" }
+  eol: { type: endoflife, product: esxi }
+maintainers: ["@DamirManyapov"]

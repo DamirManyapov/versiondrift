@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Verified against the live sources on 2026-09-26.
+id: vmware-vcenter
+name: VMware vCenter Server
+aliases: [vcenter, vcsa]
+vendor: Broadcom (VMware)
+category: virtualization
+homepage: https://www.vmware.com/products/cloud-infrastructure/vcenter
+description: Central management for ESXi hosts and vSphere clusters.
+# The appliance version (VAMI, "About"): 8.0.3.01000 is 8.0 Update 3k.
+versionScheme: loose
+tracks:
+  - { id: "9.1", match: '^9\.1(\.|$)' }
+  - { id: "9.0", match: '^9\.0(\.|$)' }
+  - { id: "8.0", match: '^8\.0(\.|$)' }
+  - { id: "7.0", match: '^7\.0(\.|$)' }
+sources:
+  releases:
+    # Broadcom KB 326316 "VMware vCenter Server versions and build numbers": one table row per release
+    # ("vCenter Server 8.0 Update 3k | 8.0.3.01000 | 2026-07-29 | 25600417 | …"), linking its release notes.
+    type: html
+    url: https://knowledge.broadcom.com/external/article/326316
+    select: { item: tr, body: script }
+    versionRegex: '(?:^|\| )((?:[7-9]|[1-9]\d)\.\d+(?:\.\d+)*) \| \d{4}-\d{2}-\d{2} \|'
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:vmware:vcenter_server" }
+  eol: { type: endoflife, product: vcenter }
+maintainers: ["@DamirManyapov"]

@@ -1,5 +1,5 @@
 // Changelog pages without a feed. `select.item` matches one element per release; `title`, `body` and `date`
-// are looked up inside it (or are the item itself). A heading item without `body` owns the following siblings
+// are looked up inside it (or are the item itself); a table row's title is its cells joined by " | ". A heading item without `body` owns the following siblings
 // up to the next item — the usual "<h2>1.2.3</h2><ul>…</ul>" layout; so does an element that only wraps a heading
 // (docs generators emit "<div class="heading-wrapper"><h2>…</h2></div>").
 import type { ReleaseSource } from '@versiondrift/schema';
@@ -30,8 +30,16 @@ export function parseHtmlReleases(html: string, source: HtmlSource): RawRelease[
       return found.length > 0 ? found : undefined;
     };
     const titleEl = pick(source.select.title) ?? item;
-    const title = clean(titleEl.text());
-    const version = extractVersion(title, source.versionRegex);
+    // A table row reads as its cells joined by " | ", so a regex can tell the columns apart.
+    const cells = titleEl.children('td, th');
+    const title =
+      cells.length > 0
+        ? cells
+            .toArray()
+            .map((cell) => clean($(cell).text()))
+            .join(' | ')
+        : clean(titleEl.text());
+    const version = extractVersion(title, source.versionRegex, source.versionFormat);
     if (!version) return;
 
     let body: string;

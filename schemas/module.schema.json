@@ -449,7 +449,12 @@
               "type": "string",
               "minLength": 1,
               "format": "regex",
-              "description": "Extracts the version from the item title."
+              "description": "Extracts the version from the item title (a table row: its cells joined by \" | \")."
+            },
+            "versionFormat": {
+              "description": "Builds the version from versionRegex capture groups, e.g. \"$1-$2\" (version and build).",
+              "type": "string",
+              "minLength": 1
             },
             "dateFormat": {
               "type": "string",

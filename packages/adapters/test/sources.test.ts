@@ -414,6 +414,32 @@ describe('html', () => {
     ]);
   });
 
+  it('reads a table row as its cells joined by " | " (build number tables)', () => {
+    const table = `<table>
+      <tr><th>Version</th><th>Release Name</th><th>Release Date</th><th>Build Number</th></tr>
+      <tr><td>ESXi 8.0.3 EP6</td><td><a href="/notes/80u3k.html">ESXi 8.0 Update 3k</a></td><td>2026/07/29</td><td>25595708</td></tr>
+      <tr><td>ESX 8.0.0g</td><td><a href="/notes/80g.html">ESXi 8.0g</a></td><td>2026/02/13</td><td>25191479</td></tr>
+      <tr><td>ESXi 6.7 P08</td><td>ESXi670-202210001</td><td>2022/10/06</td><td>20497097</td></tr>
+    </table>`;
+    const releases = parseHtmlReleases(table, {
+      type: 'html',
+      url: 'https://kb.test/316595',
+      select: { item: 'tr', body: 'script' },
+      versionRegex: '^ESXi? ((?:[7-9]|[1-9]\\d)\\.\\d+(?:\\.\\d+){0,2})[a-z]?\\b.* \\| (\\d{7,9})$',
+      versionFormat: '$1-$2',
+      dateFormat: 'YYYY/MM/DD',
+    });
+    expect(releases).toEqual([
+      {
+        version: '8.0.3-25595708',
+        title: 'ESXi 8.0.3 EP6 | ESXi 8.0 Update 3k | 2026/07/29 | 25595708',
+        url: 'https://kb.test/notes/80u3k.html',
+        date: '2026-07-29T00:00:00Z',
+      },
+      expect.objectContaining({ version: '8.0.0-25191479', date: '2026-02-13T00:00:00Z' }),
+    ]);
+  });
+
   it('fails loudly when the item selector matches nothing', () => {
     expect(() => parseHtmlReleases(page, { ...source, select: { item: 'section' } })).toThrow(SourceError);
   });
@@ -500,6 +526,13 @@ describe('extractVersion', () => {
     ).toBe('12.15');
     expect(extractVersion('RouterOS 7.24.4 [stable]')).toBe('7.24.4');
     expect(extractVersion('Security announcement')).toBeUndefined();
+  });
+
+  it('builds the version from several groups with a versionFormat', () => {
+    expect(
+      extractVersion('ESXi 8.0.3 EP6 | 2026/07/29 | 25595708', '^ESXi (\\S+) .* (\\d{8})$', '$1-$2'),
+    ).toBe('8.0.3-25595708');
+    expect(extractVersion('nothing here', '^ESXi (\\S+) .* (\\d{8})$', '$1-$2')).toBeUndefined();
   });
 });
 

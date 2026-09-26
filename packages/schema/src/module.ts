@@ -119,7 +119,12 @@ const HtmlSource = z.strictObject({
       date: nonEmpty.optional(),
     })
     .meta({ description: 'CSS selectors: one `item` per release, the others relative to it.' }),
-  versionRegex: regex('Extracts the version from the item title.').optional(),
+  versionRegex: regex(
+    'Extracts the version from the item title (a table row: its cells joined by " | ").',
+  ).optional(),
+  versionFormat: nonEmpty.optional().meta({
+    description: 'Builds the version from versionRegex capture groups, e.g. "$1-$2" (version and build).',
+  }),
   dateFormat: nonEmpty.optional(),
 });
 

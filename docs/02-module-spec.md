@@ -95,7 +95,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `gitlab` | GitLab releases | `host?` (default gitlab.com), `project` | releases + notes |
 | `gitea` | Gitea/Forgejo/Codeberg | `host` (`codeberg.org`), `repo`, `versionRegex?` | releases + notes |
 | `rss` | RSS/Atom feeds | `url`, `versionFrom: title\|link`, `versionRegex` | releases (+ notes from entry body) |
-| `html` | changelog pages without a feed | `url`, `select: { item, title, body, date? }`, `versionRegex`, `dateFormat?` | releases + notes; without a `date` selector the date comes from the title, the start of the body, or the item's link (`./20260912` with `dateFormat: YYYYMMDD`) |
+| `html` | changelog pages without a feed | `url`, `select: { item, title, body, date? }`, `versionRegex`, `versionFormat?` (build the version from several groups: `'$1-$2'`), `dateFormat?` | releases + notes; without a `date` selector the date comes from the title, the start of the body, or the item's link (`./20260912` with `dateFormat: YYYYMMDD`) |
 | `dockerhub` | image tags | `repo` (`analogic/poste.io`), `tagRegex?`, `versionRegex?` | versions + push dates (no notes) |
 | `endoflife` | lifecycle, or releases | `product` (endoflife.date slug) | branches, EOL dates, LTS flags; as `releases`: the latest release of every cycle (OS and appliances without usable notes; history grows run by run) |
 | `osv` | OSV.dev advisories | `ecosystem`, `package` | advisories with affected ranges |
@@ -153,7 +153,7 @@ Rules 2, 3 and 5 need collected data and run in the collector (`pnpm collect --o
 
 ## Examples in this repo
 
-`products/` holds 72 modules. The first 17 were verified against their live sources in S1-T7 and cover every
+`products/` holds 74 modules. The first 17 were verified against their live sources in S1-T7 and cover every
 source type in use: GitHub releases (grafana, elastic stack, nginx with `versionRegex`, minio with `versionScheme: regex`,
 rabbitmq, outline, bigbluebutton), GitHub tags (zabbix, percona-xtradb-cluster), RSS (debian, routeros, postgresql),
 HTML (poste-io, proxmox-ve and proxmox-backup-server from their roadmap wikis, elastic release-notes pages as an extra
@@ -176,12 +176,17 @@ Debian takes its point releases from the yearly news archives (`www.debian.org/N
 `chronicles.debian.org/www/News/<year>/`; a new year needs its line) and its notes from each announcement: one line
 listing the included security advisories, then a bug fix per package.
 
+VMware ESXi and vCenter come from Broadcom's build number tables (KB 316595, KB 326316), one table row per release
+(an `html` item `tr` reads as its cells joined by `" | "`). ESXi patches share a version (8.0.3 from Update 3 to 3k),
+so an ESXi release is the version plus its build: `8.0.3-25595708`; vCenter's own `8.0.3.01000` is unique. Their
+release notes pages refuse bot user agents (403), so releases carry the link but no notes.
+
 Known gaps: postgresql's feed lists only recent releases, so its history grows day by day;
 percona tags carry no notes. Zabbix takes its notes from the ChangeLog of each supported release branch (7.4, 7.0, 6.0);
 a new LTS branch needs its line added to the module.
 Products taken from tags (mysql, mariadb, mongodb, dovecot, gitlab via the `gitlabhq/gitlabhq` mirror, …) have no notes
-either; endoflife.date release sources only know the latest release of each cycle. Windows Server and VMware ESXi were
-left out on purpose: their version strings (build numbers, "8.0 Update 3k") don't identify the patch level reliably.
+either; endoflife.date release sources only know the latest release of each cycle. Windows Server was left out on
+purpose: its version strings (build numbers) don't identify the patch level reliably.
 pfSense (its public repo stopped at 2.5.2), WireGuard (the tools barely change; the module is in the kernel) and 1C:Enterprise
 (no public release feed) from the priority list have no usable source yet. Operating systems collected from
 endoflife.date have no security source: NVD's OS-level CPEs would mark every supported release as affected.
