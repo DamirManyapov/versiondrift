@@ -6,14 +6,17 @@ import { defineConfig } from 'vitest/config';
 
 /**
  * Dev only: serve a locally built feed (pnpm collect --out .feed) at /feed/. Used automatically when
- * ../../.feed/v1/index.json exists and PUBLIC_FEED_URL is not set; FEED_DIR points elsewhere.
+ * ../../.feed/v1/index.json exists and PUBLIC_FEED_URL is unset or /feed/ (set it for server-side loads to use the
+ * local feed too); FEED_DIR points elsewhere.
  */
 function localFeed(): Plugin {
   const dir = path.resolve(process.env.FEED_DIR ?? path.join(import.meta.dirname, '../../.feed'));
   return {
     name: 'versiondrift-local-feed',
     configureServer(server) {
-      if (process.env.PUBLIC_FEED_URL || !existsSync(path.join(dir, 'v1/index.json'))) return;
+      // PUBLIC_FEED_URL=/feed/ may be set on purpose: SvelteKit reads it at start, so server-side loads use it too.
+      const url = process.env.PUBLIC_FEED_URL;
+      if ((url && url !== '/feed/') || !existsSync(path.join(dir, 'v1/index.json'))) return;
       process.env.PUBLIC_FEED_URL = '/feed/';
       server.config.logger.info(`  serving the local feed from ${dir} at /feed/`);
       server.middlewares.use('/feed', (req, res) => {

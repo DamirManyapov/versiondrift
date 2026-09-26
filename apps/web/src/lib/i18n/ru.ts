@@ -57,8 +57,7 @@ export const ru: Messages = {
   iUpdated: 'Я обновился',
   undo: 'Отменить',
   updatedTo: '{name}: версия отмечена как {version}.',
-  following: 'Трек',
-  trackLatest: 'последний (любой трек)',
+  trackLatest: 'самая новая (любая линейка)',
   myVersion: 'Моя версия',
   versionPlaceholder: 'например, {example}',
   versionInvalid: '«{version}» не похожа на версию по схеме {scheme}.',
@@ -440,4 +439,6 @@ export const ru: Messages = {
   mirrorNever: 'Ещё не синхронизировано — первая синхронизация идёт при запуске, около 20 секунд.',
   mirrorVerified: 'подпись проверена',
   mirrorError: 'Последняя синхронизация не удалась, используется прежняя копия: {message}',
+  trackLine: 'Линейка',
+  trackChannel: 'Канал обновлений',
 };

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fixedIn as fixFor, parse } from '@versiondrift/core';
+  import { fixedIn as fixFor, inTrack, isTrack, parse, trackOf } from '@versiondrift/core';
   import { resolve } from '$app/paths';
   import type { ItemType, Release } from '@versiondrift/schema';
   import type { Row } from '$lib/board/rows';
@@ -67,7 +67,27 @@
     if (!parse(product, value)) return t('versionInvalid', { version: value, scheme: product.versionScheme });
     return s?.flags.includes('unknownVersion') ? t('versionUnknown', { version: value }) : '';
   });
-  const releasesForPicker = $derived(product?.releases.filter((r) => !r.prerelease).slice(0, 300) ?? []);
+  // Lines and channels (RouterOS 7 → long-term): the track in use, the line it belongs to, versions of that line.
+  const currentTrack = $derived(
+    instance?.item.track && product && isTrack(product, instance.item.track)
+      ? instance.item.track
+      : (s?.track ?? 'latest'),
+  );
+  const groups = $derived([
+    ...new Set((product?.tracks ?? []).flatMap((tr) => (tr.group ? [tr.group] : []))),
+  ]);
+  const group = $derived(product?.tracks.find((tr) => tr.id === currentTrack)?.group ?? groups[0]);
+  const releasesForPicker = $derived(
+    (product?.releases ?? [])
+      .filter((r) => !r.prerelease)
+      .filter(
+        (r) =>
+          !product ||
+          groups.length === 0 ||
+          product.tracks.some((tr) => tr.group === group && inTrack(product, tr.id, r)),
+      )
+      .slice(0, 300),
+  );
   const recent = $derived(product?.releases.filter((r) => !r.prerelease).slice(0, 5) ?? []);
   const isThisWeek = (r: Release) => Date.now() - Date.parse(r.date ?? r.firstSeenAt) <= WEEK;
 
@@ -114,6 +134,15 @@
 
   function setTrack(value: string) {
     if (instance) inventory.update(instance.index, { track: value });
+  }
+
+  /** A new line: the channel the installed version fits in it, else its first channel. */
+  function setGroup(value: string) {
+    if (!product) return;
+    const tracks = product.tracks.filter((tr) => tr.group === value);
+    const fits = s?.installed ? trackOf({ tracks }, s.installed) : null;
+    const next = fits ?? tracks[0]?.id;
+    if (next) setTrack(next);
   }
 
   function fixedIn(affected: { fixed?: string | undefined }[]): string | undefined {
@@ -180,21 +209,55 @@
       {/if}
     </div>
 
-    {#if product.tracks.length > 0}
-      <label class="field">
-        <span class="muted">{t('following')}</span>
-        <select
-          value={instance?.item.track ?? s.track}
-          disabled={readonly}
-          onchange={(e) => setTrack(e.currentTarget.value)}
-        >
-          <option value="latest">{t('trackLatest')}</option>
-          {#each product.tracks as track (track.id)}
-            <option value={track.id}>{trackName(track)}</option>
-          {/each}
-        </select>
-      </label>
-    {/if}
+    <div class="setup">
+      {#if groups.length > 0}
+        <label class="field">
+          <span class="muted">{t('trackLine')}</span>
+          <select value={group} disabled={readonly} onchange={(e) => setGroup(e.currentTarget.value)}>
+            {#each groups as g (g)}<option value={g}>{g}</option>{/each}
+          </select>
+        </label>
+        <label class="field">
+          <span class="muted">{t('trackChannel')}</span>
+          <select value={currentTrack} disabled={readonly} onchange={(e) => setTrack(e.currentTarget.value)}>
+            {#each product.tracks.filter((tr) => tr.group === group) as track (track.id)}
+              <option value={track.id}
+                >{track.label ?? track.id}{track.current ? ` · ${track.current}` : ''}</option
+              >
+            {/each}
+          </select>
+        </label>
+      {:else if product.tracks.length > 0}
+        <label class="field">
+          <span class="muted">{t('trackLine')}</span>
+          <select value={currentTrack} disabled={readonly} onchange={(e) => setTrack(e.currentTarget.value)}>
+            <option value="latest">{t('trackLatest')}</option>
+            {#each product.tracks as track (track.id)}
+              <option value={track.id}>{trackName(track)}</option>
+            {/each}
+          </select>
+        </label>
+      {/if}
+      {#if !readonly}
+        <label class="field">
+          <span class="muted">{t('myVersion')}</span>
+          <input
+            class="mono"
+            list="versions-{row.id}"
+            value={versionInput}
+            placeholder={t('versionPlaceholder', { example: s.latest ?? '1.0.0' })}
+            oninput={(e) => (draft = e.currentTarget.value)}
+            onchange={commitVersion}
+            onkeydown={(e) => e.key === 'Enter' && commitVersion()}
+            aria-invalid={versionError !== '' && !s.flags.includes('unknownVersion')}
+          />
+          <datalist id="versions-{row.id}">
+            {#each releasesForPicker as r (r.sortKey)}<option value={r.version}></option>{/each}
+          </datalist>
+        </label>
+      {/if}
+    </div>
+    {#if versionError && !readonly}<span class="hint">{versionError}</span>{/if}
 
     {#snippet note(text: string, tone: 'warn' | 'info' = 'warn')}
       <div class="note {tone}" role="status">
@@ -230,24 +293,6 @@
         {/each}
       </div>
     {/if}
-
-    {#if !readonly}<label class="field">
-        <span class="muted">{t('myVersion')}</span>
-        <input
-          class="mono"
-          list="versions-{row.id}"
-          value={versionInput}
-          placeholder={t('versionPlaceholder', { example: s.latest ?? '1.0.0' })}
-          oninput={(e) => (draft = e.currentTarget.value)}
-          onchange={commitVersion}
-          onkeydown={(e) => e.key === 'Enter' && commitVersion()}
-          aria-invalid={versionError !== '' && !s.flags.includes('unknownVersion')}
-        />
-        <datalist id="versions-{row.id}">
-          {#each releasesForPicker as r (r.sortKey)}<option value={r.version}></option>{/each}
-        </datalist>
-        {#if versionError}<span class="hint">{versionError}</span>{/if}
-      </label>{/if}
 
     <div class="tabs">
       <div role="tablist" tabindex="-1" onkeydown={onTabKey}>
@@ -496,6 +541,11 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+  }
+  .setup {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
   }
   input,
   select {

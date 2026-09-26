@@ -100,6 +100,11 @@ All access wrapped in try/catch; if storage is unavailable, keep in memory and s
 Implemented in `apps/web/src/lib/inventory` (`BrowserInventoryStore`, reactive `inventory` state). Settings kept there:
 `criticalCvss`, `hideOk`; language and theme are cookies (so the server renders them).
 
+**Line, channel, version** (detail panel, under the version box): "Line" (the product's tracks, or its track groups
+when it has update channels, e.g. RouterOS 7 / 6), "Update channel" for grouped products (long-term · 7.23.7, stable,
+testing), then "My version" with suggestions from that line. The line and channel default to what the version
+suggests (docs/05) and are saved per instance once changed.
+
 **Share link**: `/b#s=<base64url(deflate(JSON items))>`; fragment never reaches the server.
 Human-readable variant accepted too: `/b#grafana@11.3.1,poste-io@2.4.5`.
 Implemented in S4-T1 (`apps/web/src/lib/inventory/share.ts`): "Share" in the board's filter row opens a panel with the

@@ -54,8 +54,7 @@ export const en = {
   iUpdated: 'I’ve updated',
   undo: 'Undo',
   updatedTo: 'Marked {name} as {version}.',
-  following: 'Following',
-  trackLatest: 'latest (any track)',
+  trackLatest: 'the newest (any line)',
   myVersion: 'My version',
   versionPlaceholder: 'e.g. {example}',
   versionInvalid: '“{version}” is not a {scheme} version.',
@@ -374,4 +373,6 @@ export const en = {
   mirrorNever: 'Not synced yet — the first sync runs at start and takes about 20 seconds.',
   mirrorVerified: 'signature checked',
   mirrorError: 'The last sync failed, the previous copy is in use: {message}',
+  trackLine: 'Line',
+  trackChannel: 'Update channel',
 };

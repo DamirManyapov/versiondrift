@@ -124,3 +124,8 @@ as long-term (up to date, hint "stable has 7.24.4") until the user picks "stable
 an update to 7.24.4. A pinned track the product no longer has (a renamed channel) is ignored rather than leaving the
 instance with no releases at all.
 
+Tracks can be grouped into product lines (`group`: RouterOS 7, RouterOS 6). The detail panel then asks for the line
+first, then the channel within it, then the version — and suggests only that line's versions. Switching the line picks
+the channel the installed version fits there, else the line's first channel. Products whose tracks have no group
+(Elasticsearch 9/8/7, Debian 13/12) show one "Line" choice.
+
