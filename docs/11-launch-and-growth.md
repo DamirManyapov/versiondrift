@@ -53,7 +53,7 @@ Recommendation: register `versiondrift.dev` (+ `.io` as redirect) at Cloudflare 
 
 ## Initial module priority list (S1–S4)
 
-OS: debian, ubuntu, rocky-linux, alma-linux, alpine, rhel (lifecycle), windows-server (lifecycle)
+OS: debian, ubuntu, rocky-linux, alma-linux, alpine, rhel (lifecycle), windows-server
 Virtualization: proxmox-ve, proxmox-backup-server, xcp-ng, vmware-esxi, vmware-vcenter
 Containers: docker-engine, containerd, kubernetes, k3s, microk8s, helm, portainer, traefik
 Monitoring: grafana, prometheus, zabbix, alertmanager, loki, uptime-kuma, netdata, victoriametrics

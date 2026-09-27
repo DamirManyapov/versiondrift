@@ -56,7 +56,8 @@ export interface Fetcher {
   json<T>(url: string, options?: RequestOptions): Promise<T>;
 }
 
-const DEFAULT_INTERVALS: Record<string, number> = { 'api.github.com': 100 };
+// Hosts that block fast clients (support.microsoft.com answers 403 for a while after ~25 requests in 15 s).
+const DEFAULT_INTERVALS: Record<string, number> = { 'api.github.com': 100, 'support.microsoft.com': 5000 };
 const KEPT_HEADERS = ['content-type', 'etag', 'last-modified', 'link', 'retry-after', 'date'];
 const MAX_CACHED_BODY = 8 * 1024 * 1024;
 const MAX_RETRY_AFTER_MS = 60_000;

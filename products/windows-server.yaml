@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Verified against the live sources on 2026-09-27.
+id: windows-server
+name: Windows Server
+aliases: [microsoft-windows-server]
+vendor: Microsoft
+category: os
+homepage: https://www.microsoft.com/windows-server
+description: Microsoft's server operating system (LTSC releases).
+# A version is the OS build with its update revision, as winver shows it ("OS Build 20348.5622"); `ver`'s
+# "10.0.20348.5622" works too. Each monthly update raises the revision, so the build identifies the patch level.
+versionScheme: regex
+versionRegex: '^(?:10\.0\.)?(\d{5})\.(\d+)$'
+branchGroups: 1
+tracks:
+  - { id: "2025", match: '^(10\.0\.)?26100\.' }
+  - { id: "2022", match: '^(10\.0\.)?20348\.' }
+  - { id: "2019", match: '^(10\.0\.)?17763\.' }
+  - { id: "2016", match: '^(10\.0\.)?14393\.' }
+sources:
+  releases:
+    # "Windows Server release history": a table per version, one row per update
+    # ("LTSC | 2026-09 B | 2026-09-08 | 20348.5622 | KB5122882"). Security updates (B), out-of-band fixes (OOB) and
+    # the first release (A) count; the optional non-security previews (C, D) and the hotpatch calendar do not.
+    type: html
+    url: https://learn.microsoft.com/en-us/windows/release-health/windows-server-release-info
+    select: { item: tr, body: script }
+    versionRegex: '^LTS[BC] \| \d{4}-\d{2} (?:A|B|OOB) \| \d{4}-\d{2}-\d{2} \| (\d{5}\.\d+) \|'
+  releasesExtra:
+    - type: notes                # the KB article's list of changes ("Improvements" or "Summary")
+      url: '{url}'
+      dialect: microsoft-kb
+      perRun: 12                 # support.microsoft.com blocks fast clients: the history fills in over a few weeks
+  eol:
+    type: endoflife
+    product: windows-server
+    cycles: { "2025": "26100", "2022": "20348", "2019": "17763", "2016": "14393" }
+classify:
+  keywords:                      # KB wording: "[Area] Fixed: This update addresses an issue …", "New! …"
+    security: [security, vulnerab]
+    feature: ["New!"]
+    fix: ["Fixed:", addresses an issue]
+maintainers: ["@DamirManyapov"]

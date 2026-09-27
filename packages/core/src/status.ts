@@ -163,7 +163,9 @@ export function computeStatus(
   if (track !== LATEST && newestOverall && latest && newestOverall.sortKey > latest.sortKey)
     flags.push('otherTrackNewer');
 
-  const branch = branchFor(product.branches, version.raw);
+  // By prefix; else the scheme's branch ("10.0.20348.5499" is in branch 20348 when versions drop the "10.0.").
+  const branch =
+    branchFor(product.branches, version.raw) ?? product.branches.find((b) => b.id === version.branch);
   if (branch && !branch.eol && branch.eolDate) {
     const days = (Date.parse(`${branch.eolDate}T00:00:00Z`) - now.getTime()) / 86_400_000;
     if (days <= settings.eolWarnDays) flags.push('eolSoon');

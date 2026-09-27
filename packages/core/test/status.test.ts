@@ -187,6 +187,46 @@ describe('computeStatus', () => {
   });
 });
 
+describe('computeStatus with builds (Windows Server)', () => {
+  const spec = {
+    versionScheme: 'regex' as const,
+    versionRegex: '^(?:10\\.0\\.)?(\\d{5})\\.(\\d+)$',
+    branchGroups: 1,
+  };
+  const build = (version: string): Release => ({
+    ...release('1.0.0'),
+    version,
+    sortKey: parse(spec, version)!.sortKey,
+    track: '2022',
+  });
+  const windows = product({
+    id: 'windows-server',
+    ...spec,
+    tracks: [{ id: '2022', match: '^(10\\.0\\.)?20348\\.' }],
+    branches: [
+      {
+        id: '20348',
+        codename: '2022',
+        releaseDate: null,
+        eol: false,
+        eolDate: '2031-10-14',
+        lts: true,
+        latest: null,
+      },
+    ],
+    releases: [build('20348.5622'), build('20348.5499')],
+    advisories: [],
+  });
+
+  it('reads the build as winver or ver writes it, and finds its branch either way', () => {
+    for (const version of ['20348.5499', '10.0.20348.5499']) {
+      const s = computeStatus(windows, { productId: 'windows-server', version }, undefined, NOW);
+      expect(s).toMatchObject({ status: 'update', track: '2022', latest: '20348.5622', flags: [] });
+      expect(s.branch?.codename).toBe('2022');
+    }
+  });
+});
+
 describe('isAffected', () => {
   it.each([
     ['13.1.0', [{ introduced: '13.0.0', fixed: '13.2.2' }], true],

@@ -97,7 +97,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `rss` | RSS/Atom feeds | `url`, `versionFrom: title\|link`, `versionRegex` | releases (+ notes from entry body) |
 | `html` | changelog pages without a feed | `url`, `select: { item, title, body, date? }`, `versionRegex`, `versionFormat?` (build the version from several groups: `'$1-$2'`), `dateFormat?` | releases + notes; without a `date` selector the date comes from the title, the start of the body, or the item's link (`./20260912` with `dateFormat: YYYYMMDD`) |
 | `dockerhub` | image tags | `repo` (`analogic/poste.io`), `tagRegex?`, `versionRegex?` | versions + push dates (no notes) |
-| `endoflife` | lifecycle, or releases | `product` (endoflife.date slug) | branches, EOL dates, LTS flags; as `releases`: the latest release of every cycle (OS and appliances without usable notes; history grows run by run) |
+| `endoflife` | lifecycle, or releases | `product` (endoflife.date slug), `cycles?` (cycle → the version prefix it covers when versions don't start with the cycle name: Windows Server `{ "2022": "20348" }`; other cycles are left out) | branches, EOL dates, LTS flags; as `releases`: the latest release of every cycle (OS and appliances without usable notes; history grows run by run) |
 | `osv` | OSV.dev advisories | `ecosystem`, `package` | advisories with affected ranges |
 | `ghsa` | GitHub Security Advisories | either `repo` (repository advisories) or `ecosystem`+`package` | advisories with ranges |
 | `nvd` | NVD CVE API 2.0 | `cpe` | CVEs + CVSS + CPE ranges |
@@ -105,15 +105,16 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `kev` | CISA KEV catalog (global, not per module) | — | "known exploited" flag by CVE id |
 | `manual` | products with no machine-readable source | `file: products/<id>.releases.yaml` | releases maintained by hand |
 | `pointer` | an update server's "newest version" file | `url`, `versionRegex?`, `epoch?` (a Unix time after the version dates the release) | the current version, one a day |
-| `notes` | releasesExtra only: notes per version | `url` with `{version}`, or `{url}` (the release's own link); `format?` (`text` default); `dialect?` (`debian-announcement`: the bug-fix and security tables of a point release announcement); `override?` (replace notes the primary source already has, e.g. an RSS summary) | notes (and the first line's date) for releases being classified |
+| `notes` | releasesExtra only: notes per version | `url` with `{version}`, or `{url}` (the release's own link); `format?` (`text` default); `dialect?` (`debian-announcement`: the bug-fix and security tables of a point release announcement; `microsoft-kb`: a Windows update's KB article); `override?` (replace notes the primary source already has, e.g. an RSS summary); `perRun?` (fetches per run, default 200, for sites that throttle) | notes (and the first line's date) for releases being classified |
 | `apt` | versions of a package in an APT repository | `url` (the `Packages` index), `package`, `versionRegex?` (e.g. drop the Debian revision `-1`) | versions (no dates or notes) |
 | `debian-changelog` | a package's `debian/changelog` | `url`, `versionRegex?` | notes (Markdown bullets) and the signature line's date per version |
 | `changelog` | a changelog file in a vendor's own layout | `url`, `dialect` (`zabbix`) | notes per version (Zabbix: one ChangeLog per release branch; a final release "released without any changes" gets its rc's notes) |
 
 `sources.releases` may be a list: each source adds the versions it knows, the first to name a version wins and later
 ones fill in missing notes, dates and links (RouterOS: stable RSS + the long-term history page + channel pointers +
-endoflife.date's branch heads). The run fails only if none answers. `notes` fetches at most 200 files a run, only for
-releases being classified (new ones, or all after a module change).
+endoflife.date's branch heads). The run fails only if none answers. `notes` fetches at most `perRun` (200) files a
+run: for new releases first, then for published ones that still have no items (the cap or a failure left them out)
+or all of them after a module change, newest first; a release whose notes are still due keeps its published items.
 
 New source types = new adapter in `packages/adapters` + fixtures + docs row here. `gitlab` is specified but not
 implemented yet (a module using it fails collection with "not implemented"; gitlab.com's API needs a token even for
@@ -153,7 +154,7 @@ Rules 2, 3 and 5 need collected data and run in the collector (`pnpm collect --o
 
 ## Examples in this repo
 
-`products/` holds 74 modules. The first 17 were verified against their live sources in S1-T7 and cover every
+`products/` holds 75 modules. The first 17 were verified against their live sources in S1-T7 and cover every
 source type in use: GitHub releases (grafana, elastic stack, nginx with `versionRegex`, minio with `versionScheme: regex`,
 rabbitmq, outline, bigbluebutton), GitHub tags (zabbix, percona-xtradb-cluster), RSS (debian, routeros, postgresql),
 HTML (poste-io, proxmox-ve and proxmox-backup-server from their roadmap wikis, elastic release-notes pages as an extra
@@ -181,12 +182,17 @@ VMware ESXi and vCenter come from Broadcom's build number tables (KB 316595, KB 
 so an ESXi release is the version plus its build: `8.0.3-25595708`; vCenter's own `8.0.3.01000` is unique. Their
 release notes pages refuse bot user agents (403), so releases carry the link but no notes.
 
+Windows Server comes from Microsoft's release history (learn.microsoft.com, a table per LTSC version): the monthly
+security updates (B), out-of-band fixes and the first release, without the optional previews and the hotpatch
+calendar. A version is the OS build as winver shows it, `20348.5622` (`ver`'s `10.0.20348.5622` works too); the
+notes are each KB article's list of changes plus a line for the month's security updates. support.microsoft.com
+blocks fast clients, so 12 articles a run, 5 s apart: the history fills in over weeks, newest first.
+
 Known gaps: postgresql's feed lists only recent releases, so its history grows day by day;
 percona tags carry no notes. Zabbix takes its notes from the ChangeLog of each supported release branch (7.4, 7.0, 6.0);
 a new LTS branch needs its line added to the module.
 Products taken from tags (mysql, mariadb, mongodb, dovecot, gitlab via the `gitlabhq/gitlabhq` mirror, …) have no notes
-either; endoflife.date release sources only know the latest release of each cycle. Windows Server was left out on
-purpose: its version strings (build numbers) don't identify the patch level reliably.
+either; endoflife.date release sources only know the latest release of each cycle.
 pfSense (its public repo stopped at 2.5.2), WireGuard (the tools barely change; the module is in the kernel) and 1C:Enterprise
 (no public release feed) from the priority list have no usable source yet. Operating systems collected from
 endoflife.date have no security source: NVD's OS-level CPEs would mark every supported release as affected.

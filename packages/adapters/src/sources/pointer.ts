@@ -55,9 +55,55 @@ export async function fetchNotes(
     const markdown = debianAnnouncement(body);
     return markdown ? { notes: { format: 'markdown', body: markdown } } : undefined;
   }
+  if (source.dialect === 'microsoft-kb') {
+    const markdown = microsoftKb(body);
+    return markdown ? { notes: { format: 'markdown', body: markdown } } : undefined;
+  }
   const firstLine = body.trimStart().split('\n', 1)[0] ?? '';
   const date = parseDate(firstLine) ?? parseDate(firstLine, 'YYYY-MMM-DD');
   return { notes: { format: source.format ?? 'text', body }, ...(date && { date }) };
+}
+
+/**
+ * A Windows update's KB article as notes: the bullets under "Improvements" or "Summary" (the heading differs by
+ * product and age) without the known issues, the "applies to" product lists and the links to earlier KBs; the
+ * link to that month's security updates becomes a first, security line.
+ */
+export function microsoftKb(html: string): string {
+  const $ = cheerio.load(html);
+  const heading = $('h2')
+    .filter((_, el) => /^(improvements( and fixes)?|summary|highlights)$/i.test($(el).text().trim()))
+    .first();
+  if (heading.length === 0) return '';
+  const $s = cheerio.load(
+    heading
+      .nextUntil('h2')
+      .toArray()
+      .map((el) => $.html(el))
+      .join('\n'),
+  );
+  $s('h3, h4')
+    .filter((_, el) => /known issues/i.test($s(el).text()))
+    .each((_, el) => {
+      $s(el).nextUntil('h2, h3').remove();
+      $s(el).remove();
+    });
+  const bullets = new Set<string>();
+  $s('li').each((_, el) => {
+    const own = $s(el).clone();
+    own.find('ul, ol').remove();
+    const text = own.text().replace(/\s+/g, ' ').trim();
+    const earlierKb = /^\w+ \d{1,2}, \d{4}\s*[—–-]\s*KB\d+/.test(text);
+    const label = text.split(' ').length < 5 && !text.includes('.'); // "Windows Server 2019", "[Sysmon]"
+    if (text && !earlierKb && !label) bullets.add(text);
+  });
+  const month = $('a')
+    .filter((_, el) => /^\w+ \d{4} Security Updates$/i.test($(el).text().trim()))
+    .first()
+    .text()
+    .trim();
+  const lines = [...(month ? [`Security update: includes the ${month}`] : []), ...bullets];
+  return lines.map((line) => `- ${line}`).join('\n');
 }
 
 /**

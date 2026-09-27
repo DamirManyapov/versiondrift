@@ -587,11 +587,18 @@
               ]
             },
             "dialect": {
-              "description": "Page layout to turn into notes: debian-announcement = the point release tables.",
+              "description": "Page layout to turn into notes: debian-announcement = the point release tables; microsoft-kb = a Windows update's KB article.",
               "type": "string",
               "enum": [
-                "debian-announcement"
+                "debian-announcement",
+                "microsoft-kb"
               ]
+            },
+            "perRun": {
+              "description": "Notes fetched per run at most (default 200), for sites that throttle; releases still without notes follow in later runs, newest first.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
             },
             "override": {
               "description": "Use these notes even when the release sources already gave some (a summary).",
@@ -852,6 +859,17 @@
               "type": "string",
               "minLength": 1,
               "description": "endoflife.date product slug"
+            },
+            "cycles": {
+              "description": "endoflife.date cycle → the version prefix it covers, when versions do not start with the cycle name (Windows Server: { \"2022\": \"20348\" }); other cycles are left out.",
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
             }
           },
           "required": [

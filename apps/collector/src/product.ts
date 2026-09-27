@@ -308,22 +308,42 @@ export async function collectProduct(
     if (refreshed && !merged.has(refreshed.sortKey)) merged.set(refreshed.sortKey, refreshed);
   }
 
-  // Per-version notes files: only for releases about to be classified (new ones, or all after a module change).
+  // Per-version notes files: for new releases, for published ones after a module change or still without items (a
+  // capped or failed fetch earlier); new ones first, then newest first. `pending` notes were due but not fetched: a
+  // module change keeps those releases' published items rather than reclassifying them without notes.
+  const fetchedNotes = new Set<string>();
+  const pending = new Set<string>();
   for (const extra of module.sources.releasesExtra ?? []) {
     if (extra.type !== 'notes') continue;
-    let fetched = 0;
+    const limit = extra.perRun ?? NOTES_PER_RUN;
+    const fresh: [string, Candidate][] = [];
+    const again: [string, Candidate][] = [];
     for (const [key, c] of candidates) {
-      if ((merged.has(key) && !reclassify) || (!extra.override && hasContent(c.raw.notes))) continue;
-      if (fetched >= NOTES_PER_RUN) {
-        warnings.push(`notes: more than ${NOTES_PER_RUN} releases need notes; the rest follow in later runs`);
-        break;
+      if (!extra.override && hasContent(c.raw.notes)) continue;
+      const known = merged.get(key);
+      if (!known) fresh.push([key, c]);
+      else if (reclassify || known.items.length === 0) again.push([key, c]);
+    }
+    const byDate = (a: [string, Candidate], b: [string, Candidate]) =>
+      (b[1].raw.date ?? '').localeCompare(a[1].raw.date ?? '');
+    const queue = [...fresh.sort(byDate), ...again.sort(byDate)];
+    if (queue.length > limit)
+      warnings.push(
+        `notes: ${queue.length} releases need notes, ${limit} fetched; the rest follow in later runs`,
+      );
+    for (const [i, [key, c]] of queue.entries()) {
+      if (i >= limit) {
+        pending.add(key);
+        continue;
       }
-      fetched++;
       try {
         const found = await fetchNotes(extra, c.raw.version, adapterCtx, c.raw.url);
-        if (found)
+        if (found) {
           c.raw = { ...c.raw, notes: found.notes, ...(!c.raw.date && found.date && { date: found.date }) };
+          fetchedNotes.add(key);
+        }
       } catch (error) {
+        pending.add(key);
         warnings.push(`notes (extra) for ${c.raw.version}: ${(error as Error).message}`);
       }
     }
@@ -338,7 +358,7 @@ export async function collectProduct(
         date: known.date ?? c.raw.date ?? null,
         url: known.url ?? c.raw.url ?? null,
       };
-      if (reclassify) {
+      if (reclassify ? !pending.has(key) : known.items.length === 0 && fetchedNotes.has(key)) {
         const fresh = toRelease(tracked, c, now).release;
         next.items = fresh.items;
         next.url = fresh.url;

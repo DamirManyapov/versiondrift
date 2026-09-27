@@ -11,6 +11,7 @@ import {
   parseZabbixChangelog,
   fetchReleases,
   fixtureFetch,
+  microsoftKb,
   parseDate,
   parseHtmlReleases,
   SourceError,
@@ -312,6 +313,32 @@ describe('Debian point release announcements', () => {
   });
 });
 
+describe('Microsoft KB articles', () => {
+  const page = (heading: string) => `<h1>September 8, 2026—KB5122876 (OS Build 17763.9245)</h1>
+    <h2>${heading}</h2><p>Applies to:</p><ul><li>Windows Server 2019</li><li>Windows 10, version 1809</li></ul>
+    <p>This security update includes fixes that are part of the following update:</p>
+    <ul><li><a href="#">August 11, 2026—KB5120238 (OS Build 17763.9121)</a></li></ul>
+    <ul><li><p>[Secure Boot] This update includes additional device targeting data.</p></li>
+      <li>[Sysmon]<ul><li>Fixed: This update addresses an issue that caused crashes.</li></ul></li></ul>
+    <p>See the Security Update Guide and <a href="#">September 2026 Security Updates</a>.</p>
+    <h3>Known issues in this update</h3><ul><li>Remote Desktop might become unstable after this update.</li></ul>
+    <h2>How to get this update</h2><ul><li>Windows Update: Yes</li></ul>`;
+
+  it('keeps the change bullets and turns the security updates link into a first line', () => {
+    const expected = [
+      '- Security update: includes the September 2026 Security Updates',
+      '- [Secure Boot] This update includes additional device targeting data.',
+      '- Fixed: This update addresses an issue that caused crashes.',
+    ].join('\n');
+    expect(microsoftKb(page('Summary'))).toBe(expected);
+    expect(microsoftKb(page('Improvements'))).toBe(expected);
+  });
+
+  it('is empty without a summary', () => {
+    expect(microsoftKb('<h1>KB</h1><h2>File information</h2><ul><li>a file.dll</li></ul>')).toBe('');
+  });
+});
+
 describe('rss', () => {
   it('reads RSS 1.0 (RDF) and keeps only entries that name a version', async () => {
     const releases = await fetchReleases(
@@ -467,6 +494,39 @@ describe('endoflife', () => {
     expect(trixie).toMatchObject({ codename: 'Trixie', eol: false, lts: false });
     expect(trixie?.eolDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(branches.find((b) => b.name === '10')).toMatchObject({ eol: true });
+  });
+
+  it('renames cycles to the version prefix they cover and leaves the others out (Windows Server)', async () => {
+    const cycle = (name: string, eolFrom: string, latest: string) => ({
+      name,
+      codename: null,
+      releaseDate: null,
+      isLts: true,
+      isEol: false,
+      eolFrom,
+      latest: { name: latest, date: null },
+    });
+    const body = JSON.stringify({
+      result: {
+        releases: [
+          cycle('2022', '2031-10-14', '10.0.20348'),
+          cycle('1809-sac', '2020-11-10', '10.0.17763'),
+          cycle('2019', '2029-01-09', '10.0.17763'),
+        ],
+      },
+    });
+    const fetcher = createFetcher({
+      fetch: () => Promise.resolve(new Response(body, { headers: { 'content-type': 'application/json' } })),
+      sleep: () => Promise.resolve(),
+    });
+    const branches = await fetchLifecycle(
+      { type: 'endoflife', product: 'windows-server', cycles: { '2022': '20348', '2019': '17763' } },
+      { fetcher, log: { info() {}, warn() {} }, knownVersions: new Set() },
+    );
+    expect(branches.map((b) => [b.name, b.codename, b.eolDate])).toEqual([
+      ['20348', '2022', '2031-10-14'],
+      ['17763', '2019', '2029-01-09'],
+    ]);
   });
 
   it('as a release source: the latest release of every cycle, dated at midnight UTC', async () => {

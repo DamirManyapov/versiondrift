@@ -28,7 +28,7 @@ inside your network (HTTP endpoints, Docker, SSH, SNMP, Zabbix, Proxmox) is next
 
 Pre-alpha. See [`docs/09-roadmap.md`](docs/09-roadmap.md).
 
-- **versiondrift.dev**: 74 products collected daily into a signed feed; a board in your browser, share links,
+- **versiondrift.dev**: 75 products collected daily into a signed feed; a board in your browser, share links,
   comparison and "is this version affected?" pages, RSS.
 - **Self-hosted** (no published image yet): `Dockerfile` and `charts/versiondrift`; setup in
   [`docs/07-self-hosted.md`](docs/07-self-hosted.md).

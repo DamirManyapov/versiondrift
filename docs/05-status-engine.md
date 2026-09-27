@@ -62,6 +62,7 @@ newer   = candidates where compare(release, installed) > 0, sorted desc
 
 affecting = advisories where isAffected(installed.version, a.affected)
 branch  = the branch whose id is the longest prefix of installed.version       // "13.2.1" → "13.2", "12.7" → "12"
+          else the branch whose id is the scheme's branch of it                 // "10.0.20348.5499" → "20348"
 
 status =
   "critical" if any a in affecting with (a.kev) or (a.cvss.score >= criticalCvss) or (a.severity == "critical")

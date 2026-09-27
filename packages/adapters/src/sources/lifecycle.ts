@@ -23,16 +23,22 @@ export async function endoflifeBranches(
   );
   const releases = data.result?.releases;
   if (!releases) throw new SourceError(`endoflife.date returned no releases for "${source.product}"`);
-  return releases.map((r) => ({
-    name: r.name,
-    ...(r.codename && { codename: r.codename }),
-    ...(r.releaseDate && { releaseDate: r.releaseDate }),
-    eol: r.isEol,
-    ...(r.eolFrom && { eolDate: r.eolFrom }),
-    lts: r.isLts,
-    ...(r.latest && { latest: r.latest.name }),
-    ...(r.latest?.date && { latestDate: r.latest.date }),
-  }));
+  // `cycles` renames cycles to the version prefix they cover ("2022" → "20348"), keeping the name as codename.
+  const { cycles } = source;
+  const kept = cycles ? releases.filter((r) => cycles[r.name] !== undefined) : releases;
+  return kept.map((r) => {
+    const codename = r.codename ?? (cycles ? r.name : null);
+    return {
+      name: cycles?.[r.name] ?? r.name,
+      ...(codename && { codename }),
+      ...(r.releaseDate && { releaseDate: r.releaseDate }),
+      eol: r.isEol,
+      ...(r.eolFrom && { eolDate: r.eolFrom }),
+      lts: r.isLts,
+      ...(r.latest && { latest: r.latest.name }),
+      ...(r.latest?.date && { latestDate: r.latest.date }),
+    };
+  });
 }
 
 /** `file` holds a YAML list of { name, releaseDate?, eolDate?, eol?, lts?, codename? }. */

@@ -198,10 +198,14 @@ const NotesSource = z.strictObject({
     })
     .meta({ description: 'e.g. https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG, or {url}' }),
   format: z.enum(['text', 'markdown', 'html']).optional().meta({ description: 'Default: text' }),
-  dialect: z
-    .enum(['debian-announcement'])
-    .optional()
-    .meta({ description: 'Page layout to turn into notes: debian-announcement = the point release tables.' }),
+  dialect: z.enum(['debian-announcement', 'microsoft-kb']).optional().meta({
+    description:
+      "Page layout to turn into notes: debian-announcement = the point release tables; microsoft-kb = a Windows update's KB article.",
+  }),
+  perRun: z.int().min(1).max(200).optional().meta({
+    description:
+      'Notes fetched per run at most (default 200), for sites that throttle; releases still without notes follow in later runs, newest first.',
+  }),
   override: z
     .boolean()
     .optional()
@@ -304,6 +308,14 @@ export type SecuritySource = z.output<typeof SecuritySource>;
 const EndoflifeSource = z.strictObject({
   type: z.literal('endoflife'),
   product: nonEmpty.meta({ description: 'endoflife.date product slug' }),
+  cycles: z
+    .record(z.string(), nonEmpty)
+    .optional()
+    .meta({
+      description:
+        'endoflife.date cycle → the version prefix it covers, when versions do not start with the cycle name ' +
+        '(Windows Server: { "2022": "20348" }); other cycles are left out.',
+    }),
 });
 
 const ManualEolSource = z.strictObject({ type: z.literal('manual'), file: nonEmpty });

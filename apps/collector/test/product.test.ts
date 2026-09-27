@@ -1,5 +1,5 @@
 import { createFetcher } from '@versiondrift/adapters';
-import { Module } from '@versiondrift/schema';
+import { Module, type FeedProduct } from '@versiondrift/schema';
 import { describe, expect, it } from 'vitest';
 import { collectProduct } from '../src/index.ts';
 
@@ -131,5 +131,38 @@ describe('update channels', () => {
     expect(result.product.tracks[0]).toMatchObject({ match: '^7\\.23(\\.|$)', current: '7.23.7' });
     expect(result.warnings.some((w) => w.includes('kept the previous branch'))).toBe(true);
     expect(again.asked.filter((u) => u.endsWith('/CHANGELOG'))).toEqual([]);
+  });
+
+  it('fetches at most perRun notes a run and fills in the rest in later runs, newest first', async () => {
+    const capped = Module.parse({
+      ...channelled,
+      sources: {
+        ...channelled.sources,
+        releasesExtra: [{ type: 'notes', url: 'https://upd.test/{version}/CHANGELOG', perRun: 1 }],
+      },
+    });
+    const withNotes = (p: FeedProduct) => p.releases.filter((r) => r.items.length > 0).map((r) => r.version);
+    let previous: FeedProduct | undefined;
+    const runs: string[][] = [];
+    for (let i = 0; i < 3; i++) {
+      const result = await collectProduct(capped, previous, server('7.23.7').ctx);
+      if (!result.ok) throw new Error(result.error);
+      previous = result.product;
+      runs.push(withNotes(result.product));
+      if (i === 0)
+        expect(result.warnings).toContain(
+          'notes: 3 releases need notes, 1 fetched; the rest follow in later runs',
+        );
+    }
+    expect(runs).toEqual([['7.23.7'], ['7.24.4', '7.23.7'], ['7.24.4', '7.23.7', '7.22.3']]);
+    const done = server('7.23.7');
+    await collectProduct(capped, previous, done.ctx);
+    expect(done.asked.filter((u) => u.endsWith('/CHANGELOG'))).toEqual([]);
+
+    // A module change reclassifies what it can fetch this run and keeps the other releases' items meanwhile.
+    const changed = Module.parse({ ...capped, name: 'Channelled 2' });
+    const result = await collectProduct(changed, previous, server('7.23.7').ctx);
+    if (!result.ok) throw new Error(result.error);
+    expect(withNotes(result.product)).toEqual(['7.24.4', '7.23.7', '7.22.3']);
   });
 });
