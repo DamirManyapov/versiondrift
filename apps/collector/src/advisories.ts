@@ -72,7 +72,10 @@ function fixKeys(
  * "advisory"). Items from earlier runs are replaced, so this always reflects the current advisories.
  */
 export function linkAdvisories(module: Module, releases: Release[], advisories: Advisory[]): Release[] {
-  const fixes = advisories.map((a) => ({ advisory: a, keys: fixKeys(module, a), refs: keysOf(a) }));
+  // Exploited ones first, then by score: a Windows update fixes dozens.
+  const fixes = [...advisories]
+    .sort((a, b) => Number(b.kev) - Number(a.kev) || (b.cvss?.score ?? -1) - (a.cvss?.score ?? -1))
+    .map((a) => ({ advisory: a, keys: fixKeys(module, a), refs: keysOf(a) }));
   return releases.map((release) => {
     const own = release.items.filter((i) => i.classifiedBy !== 'advisory');
     const mentioned = new Set(own.flatMap((i) => (i.refs ?? []).map((r) => r.toUpperCase())));

@@ -49,6 +49,8 @@ export interface AdapterContext {
   knownVersions: ReadonlySet<string>;
   /** On a first run, releases older than this are not needed (retention window). */
   since?: Date;
+  /** The run's time (sources that read a window back from now); defaults to the clock. */
+  now?: Date;
   /** Reads a file from the repository (manual sources). */
   readRepoFile?: (path: string) => Promise<string>;
 }

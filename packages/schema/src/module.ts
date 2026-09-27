@@ -281,6 +281,19 @@ const GhsaSource = z
     ],
   });
 
+const MsrcSource = z.strictObject({
+  type: z.literal('msrc'),
+  products: z.array(nonEmpty).min(1).meta({
+    description: 'Product names as the Security Update Guide writes them, e.g. "Windows Server 2022".',
+  }),
+  months: z
+    .int()
+    .min(1)
+    .max(24)
+    .optional()
+    .meta({ description: 'How far back advisories are read (default 6 months).' }),
+});
+
 const NvdSource = z.strictObject({
   type: z.literal('nvd'),
   cpe: z
@@ -297,11 +310,15 @@ const DebianSource = z.strictObject({
 
 const RssSecuritySource = z.strictObject({ type: z.literal('rss'), url: httpUrl });
 
-const SECURITY_SOURCE_TYPES = ['osv', 'ghsa', 'nvd', 'debian', 'rss'] as const;
+const SECURITY_SOURCE_TYPES = ['osv', 'ghsa', 'nvd', 'msrc', 'debian', 'rss'] as const;
 export const SecuritySource = z
-  .discriminatedUnion('type', [OsvSource, GhsaSource, NvdSource, DebianSource, RssSecuritySource], {
-    error: unknownType(SECURITY_SOURCE_TYPES),
-  })
+  .discriminatedUnion(
+    'type',
+    [OsvSource, GhsaSource, NvdSource, MsrcSource, DebianSource, RssSecuritySource],
+    {
+      error: unknownType(SECURITY_SOURCE_TYPES),
+    },
+  )
   .meta({ id: 'securitySource' });
 export type SecuritySource = z.output<typeof SecuritySource>;
 

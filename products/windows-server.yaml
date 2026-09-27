@@ -31,6 +31,10 @@ sources:
       url: '{url}'
       dialect: microsoft-kb
       perRun: 12                 # support.microsoft.com blocks fast clients: the history fills in over a few weeks
+  security:
+    # Microsoft's Security Update Guide: CVEs rated Critical or exploited, each with the build that fixes it.
+    - type: msrc
+      products: [Windows Server 2025, Windows Server 2022, Windows Server 2019, Windows Server 2016]
   eol:
     type: endoflife
     product: windows-server

@@ -197,6 +197,7 @@ export async function collectProduct(
     log: ctx.log,
     knownVersions,
     since,
+    now: ctx.now,
     ...(ctx.readRepoFile && { readRepoFile: ctx.readRepoFile }),
   };
 

@@ -1,6 +1,7 @@
 import type { SecuritySource } from '@versiondrift/schema';
 import type { AdapterContext } from '../types.ts';
 import { ghsaAdvisories } from './ghsa.ts';
+import { msrcAdvisories } from './msrc.ts';
 import { nvdAdvisories } from './nvd.ts';
 import { osvAdvisories } from './osv.ts';
 import type { RawAdvisory } from './types.ts';
@@ -12,6 +13,8 @@ export function fetchAdvisories(source: SecuritySource, ctx: AdapterContext): Pr
       return ghsaAdvisories(source, ctx);
     case 'nvd':
       return nvdAdvisories(source, ctx);
+    case 'msrc':
+      return msrcAdvisories(source, ctx);
     case 'osv':
       return osvAdvisories(source, ctx);
     case 'debian':

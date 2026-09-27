@@ -49,12 +49,18 @@ function trimmed(inner: FetchFn): FetchFn {
     const trim = (list: unknown[]) => list.slice(0, MAX_ITEMS);
     if (Array.isArray(data)) return Response.json(trim(data), response);
     const record = data as {
+      value?: unknown[];
+      '@odata.nextLink'?: string;
       results?: unknown[];
       vulnerabilities?: unknown[];
       totalResults?: number;
       data?: { repository?: { refs?: { nodes: unknown[] } } };
     };
     if (Array.isArray(record.results)) Object.assign(record, { results: trim(record.results), next: null });
+    if (Array.isArray(record.value)) {
+      record.value = trim(record.value);
+      delete record['@odata.nextLink'];
+    }
     if (Array.isArray(record.vulnerabilities)) {
       record.vulnerabilities = trim(record.vulnerabilities);
       if (record.totalResults !== undefined) record.totalResults = record.vulnerabilities.length;
@@ -73,7 +79,11 @@ type Case = {
   lifecycle?: EolSource;
   security?: SecuritySource;
   kev?: true;
+  now?: Date;
 };
+
+/** msrc reads a window back from now: the tests replay it with the same date. */
+const MSRC_NOW = new Date('2026-09-27T00:00:00Z');
 
 const cases: Case[] = [
   { name: 'github', release: { type: 'github', repo: 'grafana/grafana' } },
@@ -159,6 +169,7 @@ const cases: Case[] = [
   { name: 'endoflife', lifecycle: { type: 'endoflife', product: 'debian' } },
   { name: 'ghsa', security: { type: 'ghsa', repo: 'grafana/grafana' } },
   { name: 'nvd', security: { type: 'nvd', cpe: 'cpe:2.3:a:grafana:grafana' } },
+  { name: 'msrc', security: { type: 'msrc', products: ['Windows Server 2022'], months: 1 }, now: MSRC_NOW },
   { name: 'osv', security: { type: 'osv', ecosystem: 'npm', package: 'minimist' } },
   { name: 'kev', kev: true },
 ];
@@ -177,7 +188,12 @@ for (const c of selected) {
     ),
     ...(token && { auth: { 'api.github.com': { authorization: `Bearer ${token}` } } }),
   });
-  const ctx: AdapterContext = { fetcher, log: console, knownVersions: new Set() };
+  const ctx: AdapterContext = {
+    fetcher,
+    log: console,
+    knownVersions: new Set(),
+    ...(c.now && { now: c.now }),
+  };
   const result = c.notes
     ? await Promise.all(c.notes.versions.map((v) => fetchNotes(c.notes!.source, v, ctx)))
     : c.kev

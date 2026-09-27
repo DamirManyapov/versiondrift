@@ -57,7 +57,7 @@ schemas/                  # generated JSON Schemas (module, feed)
 packages/
   schema/                 # zod schemas + types: Module, FeedIndex, FeedProduct, Inventory
   core/                   # version schemes, comparison, status engine, affected-range matching
-  adapters/               # source adapters: github, gitlab, rss, html, dockerhub, endoflife, osv, ghsa, debian, kev
+  adapters/               # source adapters: github, gitlab, rss, html, dockerhub, endoflife, osv, ghsa, msrc, debian, kev
   classify/               # change-item classification: structured → keywords → LLM (optional)
   db/                     # self-hosted SQLite: Drizzle schema, embedded migrations, boards, users, channels
   feed/                   # minisign + the verified feed mirror (self-hosted sync, notify)

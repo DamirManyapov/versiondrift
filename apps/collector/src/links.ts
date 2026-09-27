@@ -36,6 +36,8 @@ function linkFor(source: ReleaseSource | SecuritySource | EolSource): string | u
       return `https://nvd.nist.gov/products/cpe/search/results?namingFormat=2.3&keyword=${encodeURIComponent(source.cpe)}`;
     case 'debian':
       return 'https://security-tracker.debian.org/tracker/';
+    case 'msrc':
+      return 'https://msrc.microsoft.com/update-guide';
     case 'pointer':
     case 'apt':
     case 'debian-changelog':

@@ -101,6 +101,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `osv` | OSV.dev advisories | `ecosystem`, `package` | advisories with affected ranges |
 | `ghsa` | GitHub Security Advisories | either `repo` (repository advisories) or `ecosystem`+`package` | advisories with ranges |
 | `nvd` | NVD CVE API 2.0 | `cpe` | CVEs + CVSS + CPE ranges |
+| `msrc` | Microsoft Security Update Guide | `products` (as MSRC names them: `Windows Server 2022`), `months?` (6) | CVEs rated Critical or exploited, each fixed in an exact build |
 | `debian` | Debian Security Tracker | `packages: [..] \| fromInventory` | DSA/DLA per release |
 | `kev` | CISA KEV catalog (global, not per module) | — | "known exploited" flag by CVE id |
 | `manual` | products with no machine-readable source | `file: products/<id>.releases.yaml` | releases maintained by hand |
@@ -185,7 +186,9 @@ release notes pages refuse bot user agents (403), so releases carry the link but
 Windows Server comes from Microsoft's release history (learn.microsoft.com, a table per LTSC version): the monthly
 security updates (B), out-of-band fixes and the first release, without the optional previews and the hotpatch
 calendar. A version is the OS build as winver shows it, `20348.5622` (`ver`'s `10.0.20348.5622` works too); the
-notes are each KB article's list of changes plus a line for the month's security updates. support.microsoft.com
+notes are each KB article's list of changes plus a line for the month's security updates; advisories come from
+`msrc` (Critical or exploited CVEs of the last 6 months with the build that fixes them), so a server that misses such
+an update is critical. support.microsoft.com
 blocks fast clients, so 12 articles a run, 5 s apart: the history fills in over weeks, newest first.
 
 Known gaps: postgresql's feed lists only recent releases, so its history grows day by day;

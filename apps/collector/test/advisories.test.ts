@@ -90,6 +90,17 @@ describe('linkAdvisories', () => {
     affected: [{ introduced: '1.0.0', fixed: '1.2.0' }],
   });
 
+  it('lists exploited advisories first, then by score (an update may fix dozens)', () => {
+    const scored = (id: string, score: number, kev = false) =>
+      adv({ ...fix, id, aliases: [], kev, cvss: { score, vector: '', version: '3.1' } });
+    const [fixed] = linkAdvisories(
+      module,
+      [release('1.2.0')],
+      [scored('CVE-2026-0011', 7.5), scored('CVE-2026-0012', 9.8), scored('CVE-2026-0013', 7.8, true)],
+    );
+    expect(fixed?.items.map((i) => i.refs?.[0])).toEqual(['CVE-2026-0013', 'CVE-2026-0012', 'CVE-2026-0011']);
+  });
+
   it('adds "Fixes CVE" to the fixing release unless its notes mention the CVE', () => {
     const [fixed, other] = linkAdvisories(module, [release('1.2.0'), release('1.1.0')], [fix]);
     expect(fixed?.items).toEqual([

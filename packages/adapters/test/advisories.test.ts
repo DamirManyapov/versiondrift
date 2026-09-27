@@ -121,6 +121,23 @@ describe('advisory sources', () => {
     expect(cve?.affected).toContainEqual({ introduced: '2.0.0', last_affected: '2.1.2' });
   });
 
+  it('msrc: Critical or exploited CVEs, from the base build up to the build that fixes them', async () => {
+    const list = await fetchAdvisories(
+      { type: 'msrc', products: ['Windows Server 2022'], months: 1 },
+      { ...ctx('msrc'), now: new Date('2026-09-27T00:00:00Z') },
+    );
+    expect(list).toHaveLength(10);
+    const cve = list.find((a) => a.id === 'CVE-2026-69595');
+    expect(cve).toMatchObject({
+      severity: 'critical',
+      cvss: { score: 9.8, version: '3.1' },
+      source: 'vendor',
+      url: 'https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69595',
+      affected: [{ introduced: '10.0.20348.0', fixed: '10.0.20348.5622' }],
+    });
+    expect(cve?.title).toMatch(/Remote Code Execution Vulnerability$/);
+  });
+
   it('osv: OSV events become ranges; the CVE alias becomes the id', async () => {
     const list = await fetchAdvisories({ type: 'osv', ecosystem: 'npm', package: 'minimist' }, ctx('osv'));
     const cve = list.find((a) => a.id === 'CVE-2021-44906');

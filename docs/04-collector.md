@@ -94,13 +94,20 @@ Security sources as implemented (S3-T1, verified 2026-09):
   CVE's `cpeMatch` entries for the module's vendor:product (exact CPE versions become single-version ranges). The
   shared fetcher paces NVD at 6.5 s (0.7 s with `NVD_API_KEY`).
 - **osv**: `POST /v1/query`; events → ranges; a CVE alias becomes the id.
+- **msrc**: Microsoft's Security Update Guide API (`api.msrc.microsoft.com/sug/v2.0`). Hundreds of CVEs a month per
+  Windows version, so only what can make a status critical is read: per `products` name, the `affectedProduct`
+  entries of the last `months` (6) rated Critical or exploited (`vulnerability?$filter=exploited eq 'Yes'`), titles
+  looked up in batches. Each entry names the fixing build: the range runs from the base build
+  (`10.0.20348.0`) to the regular security update's `fixedBuildNumber` (hotpatch builds are another line). `source:
+  vendor`, linked to the Security Update Guide page.
 - `debian` and `rss` security sources yield no advisories yet (per-package Debian data needs the self-hosted inventory;
   RSS announcements carry no version ranges) — they are listed as source links only.
 - Merge: one advisory per vulnerability, keyed by CVE id and aliases; ranges from the most precise source (GHSA, OSV,
   then NVD) that has any; CVSS from the first source with a score; `kev` from the catalog; newest first. If every
   security source of a module fails, its previous advisories stay.
 - Linking: a release that is some advisory's `fixed` version gets a synthetic item "Fixes CVE-…: title"
-  (`classifiedBy: advisory`) unless its own items already reference the CVE/GHSA; recomputed every run.
+  (`classifiedBy: advisory`) unless its own items already reference the CVE/GHSA; exploited (KEV) ones first, then by
+  CVSS; recomputed every run.
 - `index.json` `maxSeverityLast30d` = highest severity among advisories published in the last 30 days; weekly digest
   entries carry the highest severity fixed in that release.
 
