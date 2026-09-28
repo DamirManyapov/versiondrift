@@ -25,5 +25,20 @@ export const MIGRATIONS: readonly { tag: string; statements: readonly string[] }
     "statements": [
       "CREATE TABLE `channels` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`name` text NOT NULL,\n\t`kind` text NOT NULL,\n\t`config` text NOT NULL,\n\t`events` text NOT NULL,\n\t`lang` text DEFAULT 'en' NOT NULL,\n\t`digest_day` integer,\n\t`enabled` integer DEFAULT true NOT NULL,\n\t`state` text,\n\t`last_sent_at` text,\n\t`last_error` text,\n\t`created_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')) NOT NULL\n);"
     ]
+  },
+  {
+    "tag": "0003_fleet",
+    "statements": [
+      "CREATE TABLE `access_profiles` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`name` text NOT NULL,\n\t`kind` text NOT NULL,\n\t`username` text NOT NULL,\n\t`secret` text,\n\t`private_key` text,\n\t`public_key` text,\n\t`created_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')) NOT NULL,\n\t`updated_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')) NOT NULL\n);",
+      "CREATE UNIQUE INDEX `access_profiles_name_unique` ON `access_profiles` (`name`);",
+      "CREATE TABLE `host_events` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`host_id` integer NOT NULL,\n\t`at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')) NOT NULL,\n\t`kind` text NOT NULL,\n\t`product_id` text,\n\t`from_version` text,\n\t`to_version` text,\n\t`poll_state` text,\n\t`message` text,\n\tFOREIGN KEY (`host_id`) REFERENCES `hosts`(`id`) ON UPDATE no action ON DELETE cascade\n);",
+      "CREATE INDEX `host_events_host` ON `host_events` (`host_id`,`at`);",
+      "CREATE TABLE `hosts` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`board_id` integer NOT NULL,\n\t`name` text NOT NULL,\n\t`address` text NOT NULL,\n\t`port` integer,\n\t`kind` text NOT NULL,\n\t`access_profile_id` integer,\n\t`poll_state` text DEFAULT 'pending' NOT NULL,\n\t`poll_since` text,\n\t`last_attempt_at` text,\n\t`last_success_at` text,\n\t`poll_error_code` text,\n\t`poll_error_message` text,\n\t`created_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')) NOT NULL,\n\t`updated_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')) NOT NULL,\n\tFOREIGN KEY (`board_id`) REFERENCES `boards`(`id`) ON UPDATE no action ON DELETE cascade,\n\tFOREIGN KEY (`access_profile_id`) REFERENCES `access_profiles`(`id`) ON UPDATE no action ON DELETE set null\n);",
+      "CREATE UNIQUE INDEX `hosts_name_unique` ON `hosts` (`name`);",
+      "CREATE INDEX `hosts_board` ON `hosts` (`board_id`);",
+      "ALTER TABLE `instances` ADD `host_id` integer REFERENCES hosts(id) ON DELETE cascade;",
+      "ALTER TABLE `instances` ADD `read_raw` text;",
+      "CREATE INDEX `instances_host` ON `instances` (`host_id`);"
+    ]
   }
 ];

@@ -1,10 +1,11 @@
 // The self-hosted board store (docs/07): boards, their product instances and instance-wide settings in SQLite.
 import Database from 'better-sqlite3';
-import { asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { randomBytes } from 'node:crypto';
 import { AuthStore } from './auth.ts';
 import { ChannelStore, createSealer } from './channels.ts';
+import { FleetStore } from './fleet.ts';
 import { MIGRATIONS } from './migrations.ts';
 import * as schema from './schema.ts';
 
@@ -106,7 +107,7 @@ export class BoardStore {
     return this.db
       .select()
       .from(schema.instances)
-      .where(eq(schema.instances.boardId, boardId))
+      .where(and(eq(schema.instances.boardId, boardId), isNull(schema.instances.hostId)))
       .orderBy(asc(schema.instances.position), asc(schema.instances.id))
       .all()
       .map((row) => ({
@@ -117,12 +118,17 @@ export class BoardStore {
       }));
   }
 
-  /** Replaces the board's items (the web app saves the whole board, like the browser store). */
+  /**
+   * Replaces the board's items (the web app saves the whole board, like the browser store). Only products without a
+   * host: a site's hosts and what was found on them belong to the fleet (FleetStore).
+   */
   replaceItems(boardId: number, items: BoardItem[]): void {
     this.db.transaction((tx) => {
       if (!tx.select().from(schema.boards).where(eq(schema.boards.id, boardId)).get())
         throw new StoreError(`no board ${boardId}`);
-      tx.delete(schema.instances).where(eq(schema.instances.boardId, boardId)).run();
+      tx.delete(schema.instances)
+        .where(and(eq(schema.instances.boardId, boardId), isNull(schema.instances.hostId)))
+        .run();
       if (items.length === 0) return;
       tx.insert(schema.instances)
         .values(
@@ -174,6 +180,7 @@ export interface Storage {
   store: BoardStore;
   auth: AuthStore;
   channels: ChannelStore;
+  fleet: FleetStore;
   db: Db;
   close(): void;
 }
@@ -195,6 +202,7 @@ export function openStorage(file: string, options: { secret?: string | Buffer } 
     store: new BoardStore(db),
     auth: new AuthStore(db),
     channels: new ChannelStore(db, sealer),
+    fleet: new FleetStore(db, sealer),
     db,
     close: () => sqlite.close(),
   };
