@@ -82,9 +82,15 @@ const nextBranchStart = (v: string) => `${numeric(v)[0] ?? 0}.${(numeric(v)[1] ?
  */
 export function parseRangeExpression(expression: string, patched?: string): AffectedRange[] {
   const ranges = comparatorRanges(expression);
+  // "9.3.2, 9.2.8", or with operators as GitHub writes some (">= 23.0.3, >= 20.10.24").
   const fixes = (patched ?? '')
     .split(',')
-    .map((s) => s.trim().replace(/^v/, ''))
+    .map((s) =>
+      s
+        .trim()
+        .replace(/^(>=|=)\s*/, '')
+        .replace(/^v/, ''),
+    )
     .filter((v) => /^\d/.test(v) && !WILDCARD.test(v))
     .sort(compareLoose);
   const open = ranges.some((r) => r.fixed === undefined && r.last_affected === undefined);

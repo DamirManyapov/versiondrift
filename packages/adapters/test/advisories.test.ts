@@ -65,6 +65,15 @@ describe('parseRangeExpression', () => {
     ],
     ['>= v5.0.0-beta1', '9.1.8', [{ introduced: '5.0.0-beta1', fixed: '9.1.8' }]],
     ['<9.x, <8.x', undefined, []],
+    [
+      '>= 1.12',
+      '>= 23.0.3, >= 20.10.24',
+      [
+        { introduced: '1.12', fixed: '20.10.24' },
+        { introduced: '20.11.0', fixed: '23.0.0' },
+        { introduced: '23.0.0', fixed: '23.0.3' },
+      ],
+    ],
   ])('%s (patched %s)', (expression, patched, expected) => {
     expect(parseRangeExpression(expression, patched)).toEqual(expected);
   });
