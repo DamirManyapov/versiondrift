@@ -4,6 +4,7 @@ import { isLocale, localeFromHeader } from '$lib/i18n';
 import { json } from '@sveltejs/kit';
 import { bootstrapAdmin, crossSite, currentUser, isOpenPath } from '$lib/server/auth';
 import { runAlerts } from '$lib/server/alerts';
+import { seedDemoFleet } from '$lib/server/fleet-demo';
 import { startFeedSync } from '$lib/server/feed-sync';
 import { watchInventoryFile } from '$lib/server/inventory-file';
 import { mode, selfHostedStore } from '$lib/server/storage';
@@ -13,6 +14,7 @@ import { mode, selfHostedStore } from '$lib/server/storage';
 export const init: ServerInit = async () => {
   if (mode() !== 'selfhosted' || building) return;
   selfHostedStore().defaultBoard();
+  await seedDemoFleet();
   await bootstrapAdmin();
   watchInventoryFile();
   startFeedSync(() => runAlerts());
