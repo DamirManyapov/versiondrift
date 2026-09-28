@@ -14,6 +14,12 @@ tracks:                                        # from 2026-07 MySQL also ships y
   - { id: "8.0", match: '^8\.0\.' }
 sources:
   releases: { type: github, repo: mysql/mysql-server, useTags: true, versionRegex: '^mysql-(\d+\.\d+\.\d+)$' }
+  releasesExtra:
+    # The release notes page of each version: one section per area ("Security Notes", "Bugs Fixed", …); a Critical
+    # Security Patch Update only has a note. Some hotfix releases (9.5.1, 9.6.1) have no page.
+    - type: notes
+      url: https://dev.mysql.com/doc/relnotes/mysql/{major}.{minor}/en/news-{major}-{minor}-{patch}.html
+      select: '#docs-body div.note, #docs-body div.simplesect'
   security:
     - { type: nvd, cpe: "cpe:2.3:a:oracle:mysql" }
   eol: { type: endoflife, product: mysql }

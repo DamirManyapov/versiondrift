@@ -156,6 +156,32 @@ describe('classifyNotes', () => {
 });
 
 describe('classifyNotes: vendor conventions', () => {
+  it('reads the rows of an advisory table that name a CVE, and no other table rows (MariaDB)', () => {
+    const md = [
+      '### InnoDB',
+      '',
+      '* The deadlock detector could report the wrong transaction ([MDEV-37977](https://jira.mariadb.org/browse/MDEV-37977))',
+      '',
+      '| Option | Default |',
+      '| ------ | ------- |',
+      '| innodb_index_shrink | ON |',
+      '',
+      '### Security',
+      '',
+      'Fixes for the following security vulnerabilities:',
+      '',
+      '| CVE ID (with cve.org link) | CVSS base score (v3.1) |',
+      '| -------------------------- | ---------------------- |',
+      '| [CVE-2026-61081](https://www.cve.org/CVERecord?id=CVE-2026-61081) | 2.7 |',
+    ].join('\n');
+    const { items } = classifyNotes({ format: 'markdown', body: md });
+    expect(summary(items)).toEqual([
+      'other/default: The deadlock detector could report the wrong transaction (MDEV-37977)',
+      'security/section: CVE-2026-61081 (CVSS base score (v3.1): 2.7)',
+    ]);
+    expect(items[1]?.refs).toEqual(['CVE-2026-61081']);
+  });
+
   it('reads Conventional Commits prefixes before keywords', () => {
     const md = [
       '- fix: remove unnecessary replication checks',

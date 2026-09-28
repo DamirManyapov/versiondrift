@@ -14,7 +14,7 @@ export { fetchLifecycle, fetchReleases } from './sources/index.ts';
 export { extractVersion, parseDate } from './sources/common.ts';
 export { parseFeed } from './sources/feed.ts';
 export { parseHtmlReleases } from './sources/html.ts';
-export { debianAnnouncement, fetchNotes, microsoftKb, readPointer } from './sources/pointer.ts';
+export { debianAnnouncement, fetchNotes, microsoftKb, notesUrl, readPointer } from './sources/pointer.ts';
 export { parseDebianChangelog, parsePackages } from './sources/debian.ts';
 export { parseZabbixChangelog } from './sources/changelog.ts';
 export { changelogSections } from './sources/github.ts';

@@ -12,6 +12,13 @@ tagFilter:
   include: '^v?\d+\.\d+\.\d+$'
 sources:
   releases: { type: github, repo: nextcloud/server }
+  releasesExtra:
+    # GitHub releases are empty; the changelog page has every supported version: its date and, per app, the changes.
+    - type: html
+      url: https://nextcloud.com/changelog/
+      select: { item: 'div.row:has(> div.nc_version_column)', title: h3.version_name, date: p.version_date, body: div.changelog_list }
+      versionRegex: 'Version (\d+\.\d+\.\d+)'
+      dateFormat: MMM D, YYYY
   security:
     - { type: nvd, cpe: "cpe:2.3:a:nextcloud:nextcloud_server" }
   eol: { type: endoflife, product: nextcloud }

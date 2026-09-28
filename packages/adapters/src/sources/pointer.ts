@@ -41,8 +41,7 @@ export async function fetchNotes(
   releaseUrl?: string,
 ): Promise<{ notes: NonNullable<RawRelease['notes']>; date?: string } | undefined> {
   if (source.url === '{url}' && !releaseUrl) return undefined;
-  const url =
-    source.url === '{url}' ? releaseUrl! : source.url.replaceAll('{version}', encodeURIComponent(version));
+  const url = source.url === '{url}' ? releaseUrl! : notesUrl(source.url, version);
   let body: string;
   try {
     body = (await ctx.fetcher.text(url)).body;
@@ -59,9 +58,40 @@ export async function fetchNotes(
     const markdown = microsoftKb(body);
     return markdown ? { notes: { format: 'markdown', body: markdown } } : undefined;
   }
+  if (source.select !== undefined) {
+    const $ = cheerio.load(body);
+    const parts = $(source.select);
+    if (parts.length === 0) return undefined;
+    // Self-links that docs generators put next to headings and items: "§" (PostgreSQL), "¶" (Sphinx), "#".
+    parts
+      .find('a')
+      .filter((_, a) => /^[§¶#]$/.test($(a).text().trim()))
+      .remove();
+    const opening = parts.first().text().replace(/\s+/g, ' ').slice(0, 500);
+    const date = parseDate(opening);
+    const html = parts
+      .toArray()
+      .map((el) => $.html(el))
+      .join('\n');
+    return { notes: { format: 'html', body: html }, ...(date && { date }) };
+  }
   const firstLine = body.trimStart().split('\n', 1)[0] ?? '';
   const date = parseDate(firstLine) ?? parseDate(firstLine, 'YYYY-MMM-DD');
   return { notes: { format: source.format ?? 'text', body }, ...(date && { date }) };
+}
+
+/**
+ * A notes URL template filled in: {version}, and its first four numbers {major}, {minor}, {patch}, {build}
+ * ("8.4.6-6.1" → 8, 4, 6, 6).
+ */
+export function notesUrl(template: string, version: string): string {
+  const [major = '0', minor = '0', patch = '0', build = '0'] = version.match(/\d+/g) ?? [];
+  return template
+    .replaceAll('{version}', encodeURIComponent(version))
+    .replaceAll('{major}', major)
+    .replaceAll('{minor}', minor)
+    .replaceAll('{patch}', patch)
+    .replaceAll('{build}', build);
 }
 
 /**

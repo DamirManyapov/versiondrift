@@ -12,6 +12,10 @@ tracks:
   - { id: "8.0", match: '^8\.0\.' }
 sources:
   releases: { type: github, repo: percona/percona-server, useTags: true, versionRegex: '^Percona-Server-(\d+\.\d+\.\d+-\d+)$' }
+  releasesExtra:
+    - type: notes                # the release notes page in Percona's documentation
+      url: https://docs.percona.com/percona-server/{major}.{minor}/release-notes/{version}.html
+      select: article.md-content__inner
   security:
     - { type: nvd, cpe: "cpe:2.3:a:percona:percona_server" }
 detect:

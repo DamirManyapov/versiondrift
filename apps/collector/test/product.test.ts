@@ -56,6 +56,49 @@ describe('collectProduct', () => {
   });
 });
 
+describe('notes from a page that lags behind the releases', () => {
+  const lagging = Module.parse({
+    id: 'lagging',
+    name: 'Lagging',
+    category: 'other',
+    versionScheme: 'semver',
+    sources: {
+      releases: { type: 'manual', file: 'products/lagging.releases.yaml' },
+      releasesExtra: [{ type: 'html', url: 'https://x.test/changelog', select: { item: 'h2' } }],
+    },
+    maintainers: ['@someone'],
+  });
+  const context = (page: string) => ({
+    fetcher: createFetcher({
+      fetch: () => Promise.resolve(new Response(page)),
+      sleep: () => Promise.resolve(),
+    }),
+    log: { info() {}, warn() {} },
+    now: new Date('2026-09-26T00:00:00Z'),
+    kev: new Set<string>(),
+    readRepoFile: () =>
+      Promise.resolve('- { version: "1.1.0", date: "2026-09-20" }\n- { version: "1.0.0" }\n'),
+  });
+
+  it('classifies a published release without items once the page has its notes', async () => {
+    const first = await collectProduct(
+      lagging,
+      undefined,
+      context('<h2>1.0.0</h2><ul><li>Fixed a crash</li></ul>'),
+    );
+    if (!first.ok) throw new Error(first.error);
+    expect(first.product.releases.map((r) => [r.version, r.items.length])).toEqual([
+      ['1.1.0', 0],
+      ['1.0.0', 1],
+    ]);
+    const page =
+      '<h2>1.1.0</h2><ul><li>Added dark mode</li></ul><h2>1.0.0</h2><ul><li>Fixed a crash</li></ul>';
+    const second = await collectProduct(lagging, first.product, context(page));
+    if (!second.ok) throw new Error(second.error);
+    expect(second.product.releases[0]?.items.map((i) => i.text)).toEqual(['Added dark mode']);
+  });
+});
+
 describe('update channels', () => {
   const channelled = Module.parse({
     id: 'channelled',

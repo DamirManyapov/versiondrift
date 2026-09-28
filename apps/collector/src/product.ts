@@ -312,7 +312,6 @@ export async function collectProduct(
   // Per-version notes files: for new releases, for published ones after a module change or still without items (a
   // capped or failed fetch earlier); new ones first, then newest first. `pending` notes were due but not fetched: a
   // module change keeps those releases' published items rather than reclassifying them without notes.
-  const fetchedNotes = new Set<string>();
   const pending = new Set<string>();
   for (const extra of module.sources.releasesExtra ?? []) {
     if (extra.type !== 'notes') continue;
@@ -339,10 +338,8 @@ export async function collectProduct(
       }
       try {
         const found = await fetchNotes(extra, c.raw.version, adapterCtx, c.raw.url);
-        if (found) {
+        if (found)
           c.raw = { ...c.raw, notes: found.notes, ...(!c.raw.date && found.date && { date: found.date }) };
-          fetchedNotes.add(key);
-        }
       } catch (error) {
         pending.add(key);
         warnings.push(`notes (extra) for ${c.raw.version}: ${(error as Error).message}`);
@@ -359,7 +356,9 @@ export async function collectProduct(
         date: known.date ?? c.raw.date ?? null,
         url: known.url ?? c.raw.url ?? null,
       };
-      if (reclassify ? !pending.has(key) : known.items.length === 0 && fetchedNotes.has(key)) {
+      // A published release without items is classified as soon as some source has notes for it (a page that
+      // lagged, a notes file fetched in a later run).
+      if (reclassify ? !pending.has(key) : known.items.length === 0 && hasContent(c.raw.notes)) {
         const fresh = toRelease(tracked, c, now).release;
         next.items = fresh.items;
         next.url = fresh.url;

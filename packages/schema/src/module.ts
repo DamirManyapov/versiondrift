@@ -193,14 +193,22 @@ const NotesSource = z.strictObject({
   type: z.literal('notes'),
   url: z
     .string()
-    .regex(/^(https?:\/\/.*\{version\}|\{url\})/, {
-      error: "must be an http(s) URL containing {version}, or {url} (the release's own link)",
+    .regex(/^(https?:\/\/.*\{(version|major|minor|patch|build)\}|\{url\})/, {
+      error:
+        "must be an http(s) URL containing {version} (or its numbers {major}, {minor}, {patch}, {build}), or {url} (the release's own link)",
     })
-    .meta({ description: 'e.g. https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG, or {url}' }),
+    .meta({
+      description:
+        'e.g. https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG, …/relnotes/mysql/{major}.{minor}/en/news-{major}-{minor}-{patch}.html, or {url}',
+    }),
   format: z.enum(['text', 'markdown', 'html']).optional().meta({ description: 'Default: text' }),
   dialect: z.enum(['debian-announcement', 'microsoft-kb']).optional().meta({
     description:
       "Page layout to turn into notes: debian-announcement = the point release tables; microsoft-kb = a Windows update's KB article.",
+  }),
+  select: nonEmpty.optional().meta({
+    description:
+      'CSS selector for the part of an HTML page that holds the notes (#docContent); its opening names the date if the release has none.',
   }),
   perRun: z.int().min(1).max(200).optional().meta({
     description:

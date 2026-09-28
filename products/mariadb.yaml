@@ -10,6 +10,14 @@ description: Relational database (MySQL fork).
 versionScheme: semver
 sources:
   releases: { type: github, repo: MariaDB/server, useTags: true, versionRegex: '^mariadb-(\d+\.\d+\.\d+)$' }
+  releasesExtra:
+    # Release notes from the MariaDB documentation's source (Markdown); a series moves to old-releases/ when it ends.
+    - type: notes
+      url: https://raw.githubusercontent.com/mariadb-corporation/mariadb-docs/main/release-notes/community-server/{major}.{minor}/{version}.md
+      format: markdown
+    - type: notes
+      url: https://raw.githubusercontent.com/mariadb-corporation/mariadb-docs/main/release-notes/community-server/old-releases/{major}.{minor}/{version}.md
+      format: markdown
   security:
     - { type: nvd, cpe: "cpe:2.3:a:mariadb:mariadb" }
   eol: { type: endoflife, product: mariadb }

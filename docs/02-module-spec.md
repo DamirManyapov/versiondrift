@@ -106,7 +106,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `kev` | CISA KEV catalog (global, not per module) | — | "known exploited" flag by CVE id |
 | `manual` | products with no machine-readable source | `file: products/<id>.releases.yaml` | releases maintained by hand |
 | `pointer` | an update server's "newest version" file | `url`, `versionRegex?`, `epoch?` (a Unix time after the version dates the release) | the current version, one a day |
-| `notes` | releasesExtra only: notes per version | `url` with `{version}`, or `{url}` (the release's own link); `format?` (`text` default); `dialect?` (`debian-announcement`: the bug-fix and security tables of a point release announcement; `microsoft-kb`: a Windows update's KB article); `override?` (replace notes the primary source already has, e.g. an RSS summary); `perRun?` (fetches per run, default 200, for sites that throttle) | notes (and the first line's date) for releases being classified |
+| `notes` | releasesExtra only: notes per version | `url` with `{version}` (or its first four numbers `{major}`, `{minor}`, `{patch}`, `{build}`: `…/mysql/{major}.{minor}/en/news-{major}-{minor}-{patch}.html`), or `{url}` (the release's own link); `select?` (CSS selector for the part of an HTML page that holds the notes, `#docContent`; self-links `§ ¶ #` dropped; its opening dates an undated release); `format?` (`text` default); `dialect?` (`debian-announcement`: the bug-fix and security tables of a point release announcement; `microsoft-kb`: a Windows update's KB article); `override?` (replace notes the primary source already has, e.g. an RSS summary); `perRun?` (fetches per run, default 200, for sites that throttle) | notes (and the first line's date) for releases being classified |
 | `apt` | versions of a package in an APT repository | `url` (the `Packages` index), `package`, `versionRegex?` (e.g. drop the Debian revision `-1`) | versions (no dates or notes) |
 | `debian-changelog` | a package's `debian/changelog` | `url`, `versionRegex?` | notes (Markdown bullets) and the signature line's date per version |
 | `changelog` | a changelog file in a vendor's own layout | `url`, `dialect` (`zabbix`) | notes per version (Zabbix: one ChangeLog per release branch; a final release "released without any changes" gets its rc's notes) |
@@ -191,10 +191,20 @@ notes are each KB article's list of changes plus a line for the month's security
 an update is critical. support.microsoft.com
 blocks fast clients, so 12 articles a run, 5 s apart: the history fills in over weeks, newest first.
 
-Known gaps: postgresql's feed lists only recent releases, so its history grows day by day;
-percona tags carry no notes. Zabbix takes its notes from the ChangeLog of each supported release branch (7.4, 7.0, 6.0);
+Databases taken from tags get their notes from the vendor: PostgreSQL from each release's page in the release notes
+archive (which also lists every minor of the supported majors, dated by the page), MySQL from dev.mysql.com's release
+notes (hotfix releases such as 9.5.1 have no page), MariaDB from the Markdown source of its documentation
+(`mariadb-corporation/mariadb-docs`, its CVE table included), MongoDB from the release notes page of each supported
+series (8.3, 8.0, 7.0: the CVEs and key issues of every patch; rapid-release series such as 8.2 lose theirs when they
+end), ClickHouse from the changelog file per release in its repository, Percona Server and XtraDB Cluster from
+docs.percona.com (ended innovation releases 9.0–9.6 have no page any more). Nextcloud's GitHub releases are empty: its
+changelog page (supported versions only) gives the changes per app. A published release without items is classified
+as soon as a source has notes for it, so a page that lags (Nextcloud) catches up; notes only reach releases the
+primary source still lists (the tags' first pages), so older history stays without them.
+
+Known gaps: Zabbix takes its notes from the ChangeLog of each supported release branch (7.4, 7.0, 6.0);
 a new LTS branch needs its line added to the module.
-Products taken from tags (mysql, mariadb, mongodb, dovecot, gitlab via the `gitlabhq/gitlabhq` mirror, …) have no notes
+Other products taken from tags (dovecot, gitlab via the `gitlabhq/gitlabhq` mirror, …) have no notes
 either; endoflife.date release sources only know the latest release of each cycle.
 pfSense (its public repo stopped at 2.5.2), WireGuard (the tools barely change; the module is in the kernel) and 1C:Enterprise
 (no public release feed) from the priority list have no usable source yet. Operating systems collected from

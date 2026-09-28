@@ -28,6 +28,24 @@ function inlineMarkdownToText(md: string): string {
   );
 }
 
+/**
+ * Advisory tables ("| CVE ID | CVSS base score |", MariaDB): each row that names a CVE or GHSA becomes prose (which
+ * counts when it names one), "CVE-2026-1234 (CVSS base score: 6.6)". Other tables are layout, not changes.
+ */
+function advisoryRows(table: Tokens.Table): Block[] {
+  const header = table.header.map((cell) => inlineMarkdownToText(cell.text).trim());
+  return table.rows.flatMap((row) => {
+    const [first = '', ...rest] = row.map((cell) => inlineMarkdownToText(cell.text).trim());
+    if (!/\b(?:CVE-\d{4}-\d{4,}|GHSA(?:-[0-9a-z]{4}){3})\b/i.test([first, ...rest].join(' '))) return [];
+    const details = rest.flatMap((cell, i) =>
+      cell ? [header[i + 1] ? `${header[i + 1]}: ${cell}` : cell] : [],
+    );
+    return [
+      { kind: 'prose' as const, text: details.length > 0 ? `${first} (${details.join(', ')})` : first },
+    ];
+  });
+}
+
 function fromMarkdown(md: string): Block[] {
   const blocks: Block[] = [];
   const walkList = (list: Tokens.List) => {
@@ -71,6 +89,8 @@ function fromMarkdown(md: string): Block[] {
         blocks.push(...fromHtml((token as Tokens.HTML).text));
       } else if (token.type === 'blockquote') {
         walk((token as Tokens.Blockquote).tokens);
+      } else if (token.type === 'table') {
+        blocks.push(...advisoryRows(token as Tokens.Table));
       }
     }
   };

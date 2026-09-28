@@ -52,7 +52,7 @@ const SECTION_TERMS: [ItemType, string[]][] = [
 
 /** Sections whose bullets are not changes at all. */
 const NOISE_SECTION =
-  /\b(new contributors|contributors|acknowledg(e)?ments|thanks|checksums|assets|downloads?|installation|full changelog)\b/;
+  /\b(new contributors|contributors|acknowledg(e)?ments|thanks|checksums|assets|downloads?|installation|full changelog|useful links|additional resources)\b/;
 
 /** Order matters as above; CVE/GHSA ids are handled separately (they always mean security). */
 const KEYWORD_RULES: [ItemType, RegExp][] = [

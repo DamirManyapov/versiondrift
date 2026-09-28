@@ -10,6 +10,12 @@ description: Document database.
 versionScheme: semver
 sources:
   releases: { type: github, repo: mongodb/mongo, useTags: true, versionRegex: '^r(\d+\.\d+\.\d+)$' }
+  releasesExtra:
+    # The release notes page of each supported series: one "8.0.32 - Sept 11, 2026" section per patch release with
+    # the CVEs it fixes and its key issues. Rapid releases' pages go away with the series (8.2), so do EOL ones (6.0).
+    - { type: html, url: https://www.mongodb.com/docs/manual/release-notes/8.3/, select: { item: h3 }, versionRegex: '^(\d+\.\d+\.\d+) - ', dateFormat: 'MMM D, YYYY' }
+    - { type: html, url: https://www.mongodb.com/docs/manual/release-notes/8.0/, select: { item: h3 }, versionRegex: '^(\d+\.\d+\.\d+) - ', dateFormat: 'MMM D, YYYY' }
+    - { type: html, url: https://www.mongodb.com/docs/manual/release-notes/7.0/, select: { item: h3 }, versionRegex: '^(\d+\.\d+\.\d+) - ', dateFormat: 'MMM D, YYYY' }
   security:
     - { type: nvd, cpe: "cpe:2.3:a:mongodb:mongodb" }
   eol: { type: endoflife, product: mongodb }

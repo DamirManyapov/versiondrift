@@ -12,6 +12,7 @@ import {
   fetchReleases,
   fixtureFetch,
   microsoftKb,
+  notesUrl,
   parseDate,
   parseHtmlReleases,
   SourceError,
@@ -262,6 +263,41 @@ describe('pointer and notes (MikroTik update server)', () => {
     const patch = await fetchNotes(source, '13.7', { fetcher }, 'https://x.test/news/13.7');
     expect(patch?.notes.body).toBe('notes from https://x.test/news/13.7');
     expect(await fetchNotes(source, '13.7', { fetcher })).toBeUndefined();
+  });
+
+  it('fills {major}, {minor}, {patch} and {build} from the version', () => {
+    expect(
+      notesUrl(
+        'https://dev.mysql.com/doc/relnotes/mysql/{major}.{minor}/en/news-{major}-{minor}-{patch}.html',
+        '8.4.6',
+      ),
+    ).toBe('https://dev.mysql.com/doc/relnotes/mysql/8.4/en/news-8-4-6.html');
+    expect(notesUrl('https://x.test/{major}.{minor}/{major}.{minor}.{patch}-{build}.html', '8.4.6-6.1')).toBe(
+      'https://x.test/8.4/8.4.6-6.html',
+    );
+  });
+
+  it('takes the selected part of a page, without self-links, dated by its opening', async () => {
+    const page = `<nav><ul><li>Home</li></ul></nav><div id="docContent"><h2>Release 18.1 <a href="#r">#</a></h2>
+      <p>Release date: 2025-11-13</p><ul><li><p>Check for CREATE privileges <a href="#x">§</a> (CVE-2025-12817)</p></li></ul></div>`;
+    const fetcher = createFetcher({
+      fetch: () => Promise.resolve(new Response(page)),
+      sleep: () => Promise.resolve(),
+    });
+    const patch = await fetchNotes(
+      { type: 'notes', url: 'https://x.test/{version}/', select: '#docContent' },
+      '18.1',
+      { fetcher },
+    );
+    expect(patch?.date).toBe('2025-11-13T00:00:00Z');
+    expect(patch?.notes.format).toBe('html');
+    expect(patch?.notes.body).not.toMatch(/Home|§|>#</);
+    expect(patch?.notes.body).toContain('Check for CREATE privileges');
+    expect(
+      await fetchNotes({ type: 'notes', url: 'https://x.test/{version}/', select: '#missing' }, '18.1', {
+        fetcher,
+      }),
+    ).toBeUndefined();
   });
 
   it('refuses notes as a primary source', async () => {

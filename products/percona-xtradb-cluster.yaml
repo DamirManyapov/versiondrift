@@ -19,6 +19,10 @@ sources:
     repo: percona/percona-xtradb-cluster
     useTags: true
     versionRegex: '^Percona-XtraDB-Cluster-(\d+\.\d+\.\d+-\d+(?:\.\d+)?)$'
+  releasesExtra:
+    - type: notes                # the release notes page in Percona's documentation, named without the PXC build (8.4.6-6)
+      url: https://docs.percona.com/percona-xtradb-cluster/{major}.{minor}/release-notes/{major}.{minor}.{patch}-{build}.html
+      select: article.md-content__inner
   security:
     - { type: nvd, cpe: "cpe:2.3:a:percona:xtradb_cluster" }
   # endoflife.date has no Percona XtraDB Cluster page (2026-09)

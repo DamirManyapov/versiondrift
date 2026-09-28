@@ -10,6 +10,10 @@ description: Column-oriented analytics database.
 versionScheme: loose
 sources:
   releases: { type: github, repo: ClickHouse/ClickHouse, versionRegex: '^v?(\d+\.\d+\.\d+\.\d+)-(?:lts|stable)$' }
+  releasesExtra:
+    # GitHub releases carry no notes; the repository keeps a changelog file per release, named after its tag.
+    - { type: notes, url: 'https://raw.githubusercontent.com/ClickHouse/ClickHouse/master/docs/changelogs/v{version}-stable.md', format: markdown }
+    - { type: notes, url: 'https://raw.githubusercontent.com/ClickHouse/ClickHouse/master/docs/changelogs/v{version}-lts.md', format: markdown }
   security:
     - { type: ghsa, repo: ClickHouse/ClickHouse }
   eol: { type: endoflife, product: clickhouse }

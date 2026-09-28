@@ -574,8 +574,8 @@
             },
             "url": {
               "type": "string",
-              "pattern": "^(https?:\\/\\/.*\\{version\\}|\\{url\\})",
-              "description": "e.g. https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG, or {url}"
+              "pattern": "^(https?:\\/\\/.*\\{(version|major|minor|patch|build)\\}|\\{url\\})",
+              "description": "e.g. https://upgrade.mikrotik.com/routeros/{version}/CHANGELOG, …/relnotes/mysql/{major}.{minor}/en/news-{major}-{minor}-{patch}.html, or {url}"
             },
             "format": {
               "description": "Default: text",
@@ -593,6 +593,11 @@
                 "debian-announcement",
                 "microsoft-kb"
               ]
+            },
+            "select": {
+              "description": "CSS selector for the part of an HTML page that holds the notes (#docContent); its opening names the date if the release has none.",
+              "type": "string",
+              "minLength": 1
             },
             "perRun": {
               "description": "Notes fetched per run at most (default 200), for sites that throttle; releases still without notes follow in later runs, newest first.",
