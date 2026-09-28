@@ -20,6 +20,19 @@ test('a first visit shows what VersionDrift is and a sample board', async ({ pag
   await noAxeViolations(page);
 });
 
+test('a product is removed from the panel header, and the removal can be undone', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Start my own board' }).click();
+  await page.goto('/p/nginx');
+  await page.getByRole('button', { name: 'Add to my board' }).click();
+  await page.goto('/');
+  await expect(page.locator('[data-tile]')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Remove from board' }).click();
+  await expect(page.getByRole('heading', { name: 'Your board is empty' })).toBeVisible();
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.locator('[data-tile]')).toHaveCount(1);
+});
+
 test('the board is kept in the browser and can be shared read-only', async ({ page, context }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Start my own board' }).click();

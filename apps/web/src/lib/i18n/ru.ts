@@ -66,6 +66,7 @@ export const ru: Messages = {
   instanceLabel: 'Метка (необязательно)',
   addInstance: 'Добавить экземпляр',
   removeFromBoard: 'Убрать с доски',
+  removedFromBoard: '{name} убран с доски',
   noteEol: 'Поддержка ветки {branch} закончилась{date}.',
   noteEolSoon: 'Поддержка ветки {branch} заканчивается {date}.',
   noteNewMajor: 'Вышла новая линейка релизов: {version}.',

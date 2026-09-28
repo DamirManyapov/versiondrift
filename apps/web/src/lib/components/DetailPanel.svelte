@@ -109,6 +109,16 @@
     );
   }
 
+  // In the header, with an undo toast: at the bottom of a long changelog nobody found it.
+  function removeFromBoard() {
+    if (!instance) return;
+    // Read everything first: once the item is gone, this panel's row is gone too.
+    const message = t('removedFromBoard', { name: row.name });
+    const before = $state.snapshot(inventory.data.items);
+    inventory.remove(instance.index);
+    ontoast(message, () => inventory.replaceItems(before));
+  }
+
   function asMarkdown(): string {
     if (!s) return '';
     const lines = [`## ${row.name} ${s.installed ?? ''} → ${s.latest ?? ''}`, ''];
@@ -172,6 +182,9 @@
       </div>
     </div>
     {#if row.known}<StatusChip status={row.status} cvss={s?.maxCvss} size="md" />{/if}
+    {#if !readonly && instance}
+      <button class="remove" onclick={removeFromBoard}>{t('removeFromBoard')}</button>
+    {/if}
     {#if onclose}
       <button class="icon" onclick={onclose} aria-label={t('closePanel')}>✕</button>
     {/if}
@@ -436,12 +449,6 @@
       {#if r.moreItems}<span class="muted small">{t('moreItems', { n: r.moreItems })}</span>{/if}
     </article>
   {/snippet}
-
-  {#if !readonly}
-    <button class="remove" onclick={() => instance && inventory.remove(instance.index)}
-      >{t('removeFromBoard')}</button
-    >
-  {/if}
 </section>
 
 <style>
@@ -457,6 +464,7 @@
   .top {
     display: flex;
     align-items: flex-start;
+    flex-wrap: wrap;
     gap: 12px;
   }
   .plain {
@@ -794,10 +802,17 @@
     color: var(--text-muted);
   }
   .remove {
-    align-self: flex-start;
+    flex: none;
     font-size: 13px;
-    color: var(--text-muted);
-    text-decoration: underline;
+    padding: 5px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    color: var(--text-soft);
+    white-space: nowrap;
+  }
+  .remove:hover {
+    color: var(--critical);
+    border-color: var(--critical-border);
   }
   @media (max-width: 720px) {
     .panel {

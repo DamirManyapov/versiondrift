@@ -63,6 +63,7 @@ export const en = {
   instanceLabel: 'Label (optional)',
   addInstance: 'Add instance',
   removeFromBoard: 'Remove from board',
+  removedFromBoard: '{name} removed from the board',
   noteEol: 'Your branch {branch} has reached end of life{date}.',
   noteEolSoon: 'Your branch {branch} reaches end of life on {date}.',
   noteNewMajor: 'A newer release line is out: {version}.',
