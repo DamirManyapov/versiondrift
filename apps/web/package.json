@@ -36,6 +36,7 @@
     "@versiondrift/alerts": "workspace:*",
     "@versiondrift/core": "workspace:*",
     "@versiondrift/db": "workspace:*",
+    "@versiondrift/detect": "workspace:*",
     "@versiondrift/feed": "workspace:*",
     "@versiondrift/schema": "workspace:*",
     "better-sqlite3": "^13.0.3",

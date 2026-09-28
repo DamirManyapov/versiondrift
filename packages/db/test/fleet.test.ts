@@ -151,23 +151,20 @@ describe('FleetStore', () => {
   });
 });
 
-describe('SSH keys for profiles', () => {
-  it('makes an ed25519 pair: the public key in authorized_keys format, the private key sealed', async () => {
-    const { sshKeyPair } = await import('../src/index.ts');
-    const { publicKey, privateKey } = sshKeyPair();
-    expect(publicKey).toMatch(/^ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI[A-Za-z0-9+/]{43} versiondrift$/);
-    expect(privateKey).toContain('BEGIN PRIVATE KEY');
-
+describe('SSH key profiles', () => {
+  it('keeps the private key sealed and shows the public key', () => {
     const storage = openStorage(':memory:');
     const profile = storage.fleet.createProfile({
       name: 'Linux',
       kind: 'ssh-linux',
       username: 'versiondrift',
-      generateKey: true,
+      keyPair: {
+        privateKey: '-----BEGIN OPENSSH PRIVATE KEY-----\nx\n',
+        publicKey: 'ssh-ed25519 AAAA versiondrift',
+      },
     });
-    expect(profile.hasSecret).toBe(true);
-    expect(profile.publicKey).toMatch(/^ssh-ed25519 /);
-    expect(storage.fleet.profileCredentials(profile.id).privateKey).toContain('BEGIN PRIVATE KEY');
+    expect(profile).toMatchObject({ hasSecret: true, publicKey: 'ssh-ed25519 AAAA versiondrift' });
+    expect(storage.fleet.profileCredentials(profile.id).privateKey).toContain('OPENSSH PRIVATE KEY');
     expect(JSON.stringify(storage.fleet.profiles())).not.toContain('PRIVATE');
   });
 });

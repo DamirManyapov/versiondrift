@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import { generateSshKey } from '@versiondrift/detect';
 import { attempt, body, json } from '$lib/server/api';
 import { selfHostedStorage } from '$lib/server/storage';
 import type { RequestHandler } from './$types';
@@ -20,7 +21,9 @@ export const POST: RequestHandler = async ({ request }) => {
       name: text('name'),
       kind,
       username: text('username'),
-      ...(kind === 'ssh-linux' ? { generateKey: true } : text('secret') && { secret: text('secret') }),
+      ...(kind === 'ssh-linux'
+        ? { keyPair: generateSshKey() }
+        : text('secret') && { secret: text('secret') }),
     }),
   );
   return json(profile, { status: 201 });

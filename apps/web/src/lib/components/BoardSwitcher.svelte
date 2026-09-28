@@ -44,7 +44,11 @@
         void inventory.openBoard(Number(e.currentTarget.value));
       }}
     >
-      {#each inventory.boards as board (board.id)}<option value={board.id}>{board.name}</option>{/each}
+      <!-- The options arrive after the value: mark the chosen one itself, or the first would show. -->
+      {#each inventory.boards as board (board.id)}<option
+          value={board.id}
+          selected={board.id === inventory.boardId}>{board.name}</option
+        >{/each}
     </select>
   </div>
   {#if mode === 'create' || mode === 'rename'}

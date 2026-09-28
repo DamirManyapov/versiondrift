@@ -12,7 +12,6 @@ export {
 export { MIGRATIONS } from './migrations.ts';
 export {
   FleetStore,
-  sshKeyPair,
   type AccessProfile,
   type AccessProfileInput,
   type HostEvent,

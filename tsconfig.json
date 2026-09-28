@@ -19,6 +19,7 @@
     { "path": "packages/adapters" },
     { "path": "packages/classify" },
     { "path": "packages/db" },
+    { "path": "packages/detect" },
     { "path": "packages/feed" },
     { "path": "packages/alerts" }
   ]

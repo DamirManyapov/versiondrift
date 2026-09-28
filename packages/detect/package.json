@@ -1,0 +1,23 @@
+{
+  "name": "@versiondrift/detect",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Version detectors for self-hosted polling (ADR-0007): SSH (Linux, Windows, RouterOS) and the Proxmox API.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "ssh2": "^1.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/ssh2": "^1.15.5",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,6 +1,5 @@
 // The fleet (ADR-0007, docs/07 "Version detection"): hosts grouped by site (a site is a board), the access profiles
 // that reach them, what each poll found and the history of changes. Secrets are sealed and never returned.
-import { generateKeyPairSync } from 'node:crypto';
 import { and, asc, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import type { Sealer } from './channels.ts';
 import * as schema from './schema.ts';
@@ -25,20 +24,8 @@ export interface AccessProfileInput {
   username: string;
   /** Password or token secret; sealed on write, never read back through the API. */
   secret?: string;
-  /** SSH profiles: the instance makes an ed25519 key pair and shows the public key (the private one stays sealed). */
-  generateKey?: boolean;
-}
-
-/** An ed25519 key pair: the private key as PKCS#8 PEM, the public key in OpenSSH's authorized_keys format. */
-export function sshKeyPair(comment = 'versiondrift'): { privateKey: string; publicKey: string } {
-  const { privateKey, publicKey } = generateKeyPairSync('ed25519');
-  const raw = Buffer.from(publicKey.export({ format: 'jwk' }).x!, 'base64url');
-  const field = (b: Buffer) => Buffer.concat([Buffer.from([0, 0, 0, b.length]), b]);
-  const blob = Buffer.concat([field(Buffer.from('ssh-ed25519')), field(raw)]);
-  return {
-    privateKey: privateKey.export({ format: 'pem', type: 'pkcs8' }).toString(),
-    publicKey: `ssh-ed25519 ${blob.toString('base64')} ${comment}`,
-  };
+  /** SSH profiles: a key pair made by the instance (@versiondrift/detect); the private key is sealed. */
+  keyPair?: { privateKey: string; publicKey: string };
 }
 
 export interface HostInstance {
@@ -156,7 +143,7 @@ export class FleetStore {
     if (input.username.trim() === '') throw new StoreError('a profile needs a user name');
     if (this.profiles().some((p) => p.name.toLowerCase() === name.toLowerCase()))
       throw new StoreError(`a profile named "${name}" already exists`);
-    const keys = input.generateKey ? sshKeyPair() : undefined;
+    const keys = input.keyPair;
     const row = this.db
       .insert(schema.accessProfiles)
       .values({

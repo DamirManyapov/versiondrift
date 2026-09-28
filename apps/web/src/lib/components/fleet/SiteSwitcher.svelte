@@ -27,8 +27,10 @@
     value={current === undefined ? '' : String(current)}
     onchange={(e) => choose(e.currentTarget.value)}
   >
-    <option value="">{t('allSites')}</option>
-    {#each sites as site (site.id)}<option value={String(site.id)}>{site.name}</option>{/each}
+    <option value="" selected={current === undefined}>{t('allSites')}</option>
+    {#each sites as site (site.id)}<option value={String(site.id)} selected={site.id === current}
+        >{site.name}</option
+      >{/each}
   </select>
 </label>
 

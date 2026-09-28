@@ -5,7 +5,9 @@ packages:
 # Dependencies allowed to run install scripts (pnpm blocks all others).
 allowBuilds:
   better-sqlite3: false # ships N-API prebuilds for every platform (incl. musl, arm64); node-gyp would only rebuild them
+  cpu-features: false # optional dependency of ssh2, only for its native crypto binding
   esbuild: true # verifies its platform binary
+  ssh2: false # its native crypto binding is optional; the pure JS code path is used
   workerd: false # ~100 MB local Workers runtime, only for wrangler dev; builds don't need it
 
 # Shared versions: packages depend on these as "catalog:" so the whole repo moves together.

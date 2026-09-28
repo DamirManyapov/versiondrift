@@ -49,6 +49,7 @@ export default defineConfig({
       process.env.VD_ADAPTER === 'cloudflare'
         ? {
             '@versiondrift/db': path.join(import.meta.dirname, 'src/lib/server/db-unavailable.ts'),
+            '@versiondrift/detect': path.join(import.meta.dirname, 'src/lib/server/detect-unavailable.ts'),
             nodemailer: path.join(import.meta.dirname, 'src/lib/server/node-only.ts'),
             croner: path.join(import.meta.dirname, 'src/lib/server/node-only.ts'),
           }
