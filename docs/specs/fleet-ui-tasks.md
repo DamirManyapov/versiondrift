@@ -3,11 +3,25 @@
 Spec: `docs/specs/fleet-ui.md`. Reference: `design/fleet/prototype/`. Test data: `fixtures/fleet-demo.json`.
 Order matters: each task leaves the app working. Mark tasks ✅ when done.
 
+**The plan of record is S6 in `docs/09-roadmap.md` (ADR-0007, model in `docs/07`).** These FL tasks are the UI
+breakdown of it; where names differ, `docs/07` wins (poll states `pending / ok / unreachable / auth-failed /
+unknown`, detector kinds `ssh-linux / windows / routeros / proxmox`).
+
+| S6 task | FL tasks |
+|---|---|
+| S6-T1 data model | FL-2 (schema, demo seed) |
+| S6-T2 poller | FL-4 (poll jobs, progress) |
+| S6-T3 detectors v1 | — (demo detector until then) |
+| S6-T4 module `detect` v2 | FL-11 (instructions per type come from modules) |
+| S6-T5 UI, fleet | FL-3, FL-5, FL-6, FL-7, FL-8, FL-9, FL-13, FL-14, FL-15 |
+| S6-T6 UI, setup | FL-10, FL-11, FL-12 |
+| S6-T7 alerts | new events only (spec §9) |
+
 | # | Task | Done when |
 |---|---|---|
 | FL-1 ✅ | **Audit & plan.** Map spec entities/endpoints to what already exists (hosts, polling, detectors, profiles). Write the gap list and the plan into this file. | Plan reviewed by the owner; no code yet |
 | FL-2 | **Demo seed.** Loader for `fixtures/fleet-demo.json` behind `VD_DEMO=1` (sites, profiles, hosts, instances, poll states, history). | Dev instance starts with 31 hosts |
-| FL-3 | **Status model** in `packages/core`: `hostStatus()`, `productAggregate()`, per-line latest, stale rule, pending, unknown, manual source. Unit tests use `expected` from the fixture. | Tests reproduce every number in spec §5.A and the host chips of kzn-fs-01 / kzn-gw-02 |
+| FL-3 ✅ | **Status model** in `packages/core`: `hostStatus()`, `productAggregate()`, per-line latest, stale rule, pending, unknown, manual source. Unit tests use `expected` from the fixture. | Tests reproduce every number in spec §5.A and the host chips of kzn-fs-01 / kzn-gw-02 |
 | FL-4 | **API** gaps from spec §6 (list/filter hosts, host detail, sites summary, bulk patch/delete, poll job + progress, CSV dry-run/import, profile test). Secrets write-only. | API tests green; CSV dry-run returns line-level errors |
 | FL-5 | **Tokens & primitives**: status chip (solid/dashed), distribution bar, host chip, filter chip group, toast, confirm dialog, code block with copy. Dark + light. | Storybook/demo page or visual test for each |
 | FL-6 | **Header**: tabs, site switcher + popover (F), poll schedule, «Добавить хосты». Site filter in URL. | Switching site updates every screen |
@@ -46,7 +60,8 @@ Order matters: each task leaves the app working. Mark tasks ✅ when done.
    `source = manual` is never overwritten by a poll. Host-less instances (today's inventory) keep working.
 3. **Status stays client-side**: the server returns hosts with instances; `packages/core` adds `hostStatus()` and
    `productAggregate()` on top of `computeStatus()`. The alert runner uses the same functions.
-4. **Poll state lives on the host** (`poll_state`, `poll_since`, `last_attempt_at`, `last_success_at`,
+4. **Poll state lives on the host**, named as in `docs/07`: `pending / ok / unreachable / auth-failed / unknown`,
+   plus `none` for hosts without an access profile (`poll_state`, `poll_since`, `last_attempt_at`, `last_success_at`,
    `poll_error_code`, `poll_error_message`); version and poll changes go to `host_events`.
 5. **Access profiles**: new table; secrets sealed with the existing sealer and write-only in the API; Linux profiles
    get a generated ed25519 key pair (private key sealed, public key shown).
@@ -57,10 +72,12 @@ Order matters: each task leaves the app working. Mark tasks ✅ when done.
    docker → docker-engine; RouterOS lines 7s / 7lt / 6lt → tracks 7-stable / 7-long-term / 6-long-term.
 
 ### Schema (migration 0003)
-- `access_profiles(id, name unique, kind linux|windows|mikrotik|pve|pbs, username, secret sealed?, public_key?,
-  created_at, updated_at)`
-- `hosts(id, board_id → boards cascade, name unique, address, kind linux|windows|mikrotik|proxmox,
-  access_profile_id → access_profiles set null, poll_state ok|timeout|denied|unrecognized|pending, poll_since,
+- `access_profiles(id, name unique, kind ssh-linux|windows|routeros|proxmox, username, secret sealed?,
+  public_key?, created_at, updated_at)` — the detector kinds of ADR-0007; the wizard's five types (Linux, Windows,
+  MikroTik, Proxmox VE, Proxmox Backup) map onto them, PVE and PBS both being `proxmox`
+- `hosts(id, board_id → boards cascade, name unique, address, port?, kind ssh-linux|windows|routeros|proxmox,
+  access_profile_id → access_profiles set null, poll_state pending|ok|unreachable|auth-failed|unknown|none,
+  poll_since,
   last_attempt_at, last_success_at, poll_error_code, poll_error_message, created_at, updated_at)`
 - `instances` + `host_id → hosts cascade` (nullable, indexed) + `read_raw` (what a detector read, for
   unrecognized versions)
