@@ -9,6 +9,8 @@
   import { LOCALES, type Locale } from '$lib/i18n';
   import { i18n, setI18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
+  import SiteSwitcher from '$lib/components/fleet/SiteSwitcher.svelte';
+  import { fleet } from '$lib/fleet/state.svelte';
   import type { LayoutData } from './$types';
 
   let { data, children }: { data: LayoutData; children: Snippet } = $props();
@@ -17,12 +19,27 @@
   inventory.configure(() => data.mode);
   const { t } = $derived(i18n());
 
-  onMount(() => void feed.load());
+  onMount(() => {
+    void feed.load();
+    if (data.mode === 'selfhosted') void fleet.load();
+  });
 
-  const views = [
-    { href: resolve('/'), key: 'navBoard' },
-    { href: resolve('/week'), key: 'navWeek' },
-  ] as const;
+  // Self-hosted with hosts: Board · Hosts · This week · Access profiles (docs/specs/fleet-ui.md §3).
+  const views = $derived(
+    fleet.hasHosts
+      ? ([
+          { href: resolve('/'), key: 'navBoard', count: undefined },
+          { href: resolve('/hosts'), key: 'navHosts', count: fleet.data?.hosts.length },
+          { href: resolve('/week'), key: 'navWeek', count: undefined },
+          { href: resolve('/access-profiles'), key: 'navProfiles', count: undefined },
+        ] as const)
+      : ([
+          { href: resolve('/'), key: 'navBoard', count: undefined },
+          { href: resolve('/week'), key: 'navWeek', count: undefined },
+        ] as const),
+  );
+  const current = (href: string) =>
+    href === resolve('/') ? page.url.pathname === href : page.url.pathname.startsWith(href);
 
   function setCookie(name: string, value: string) {
     document.cookie = `${name}=${value}; path=/; max-age=31536000; samesite=lax`;
@@ -68,13 +85,20 @@
 
     <nav aria-label="Views">
       {#each views as view (view.href)}
-        <a href={view.href} aria-current={page.url.pathname === view.href ? 'page' : undefined}
-          >{t(view.key)}</a
+        <a href={view.href} aria-current={current(view.href) ? 'page' : undefined}
+          >{t(view.key)}{#if view.count !== undefined}<span class="count">{view.count}</span>{/if}</a
         >
       {/each}
     </nav>
 
     <div class="spacer"></div>
+
+    {#if fleet.hasHosts && fleet.data}
+      <SiteSwitcher sites={fleet.data.sites} />
+      <div class="updated">
+        <span class="muted">{t('pollEvery', { h: 6 })}</span>
+      </div>
+    {/if}
 
     {#if feed.index}
       <div class="updated">
@@ -88,10 +112,12 @@
       >
       {t('refresh')}
     </button>
-    <a class="primary" href={resolve('/catalog')}>
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-      {t('addProduct')}
-    </a>
+    {#if !fleet.hasHosts}
+      <a class="primary" href={resolve('/catalog')}>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        {t('addProduct')}
+      </a>
+    {/if}
     {#if data.account && data.account.auth !== 'none'}
       <a class="user" href={resolve('/account')}>{data.account.name}</a>
       {#if data.account.auth === 'password' || data.account.auth === 'oidc'}
@@ -199,6 +225,11 @@
   nav a[aria-current='page'] {
     background: var(--text);
     color: var(--bg);
+  }
+  .count {
+    margin-left: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
   }
   .spacer {
     flex-grow: 1;

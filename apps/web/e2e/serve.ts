@@ -1,6 +1,7 @@
 // Starts the Node build for the e2e tests (run `pnpm build:node` first):
 //   node e2e/serve.ts selfhosted 4174   — self-hosted, no sign-in, the fixed feed in e2e/feed as its local copy
 //   node e2e/serve.ts public 4173       — the public site, reading that copy from the self-hosted server
+//   node e2e/serve.ts fleet 4175        — self-hosted with the demo fleet (VD_DEMO=1)
 import { cp, mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -9,7 +10,7 @@ import { pathToFileURL } from 'node:url';
 const [mode, port = '4173'] = process.argv.slice(2);
 const root = path.join(import.meta.dirname, '..');
 
-if (mode === 'selfhosted') {
+if (mode === 'selfhosted' || mode === 'fleet') {
   const data = await mkdtemp(path.join(tmpdir(), 'vd-e2e-'));
   await cp(path.join(import.meta.dirname, 'feed'), path.join(data, 'feed'), { recursive: true });
   Object.assign(process.env, {
@@ -20,6 +21,7 @@ if (mode === 'selfhosted') {
     VD_FEED_URL: 'http://127.0.0.1:9/',
     VD_FEED_SYNC: '0 0 1 1 *',
     PUBLIC_FEED_URL: '/feed/',
+    ...(mode === 'fleet' && { VD_DEMO: '1' }),
   });
 } else {
   process.env.PUBLIC_FEED_URL = 'http://localhost:4174/feed/';

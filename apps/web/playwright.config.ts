@@ -12,11 +12,17 @@ export default defineConfig({
   projects: [
     { name: 'public', testMatch: 'public.spec.ts', use: { baseURL: 'http://localhost:4173' } },
     { name: 'selfhosted', testMatch: 'selfhosted.spec.ts', use: { baseURL: 'http://localhost:4174' } },
+    { name: 'fleet', testMatch: 'fleet.spec.ts', use: { baseURL: 'http://localhost:4175' } },
   ],
   webServer: [
     {
       command: 'node e2e/serve.ts selfhosted 4174',
       url: 'http://localhost:4174/healthz',
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: 'node e2e/serve.ts fleet 4175',
+      url: 'http://localhost:4175/healthz',
       reuseExistingServer: !process.env.CI,
     },
     {

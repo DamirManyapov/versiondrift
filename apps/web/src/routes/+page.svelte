@@ -8,6 +8,8 @@
   import Meta from '$lib/components/Meta.svelte';
   import SharePanel from '$lib/components/SharePanel.svelte';
   import Toast from '$lib/components/Toast.svelte';
+  import FleetBoard from '$lib/components/fleet/FleetBoard.svelte';
+  import { fleet, siteFrom } from '$lib/fleet/state.svelte';
   import { feed } from '$lib/feed/state.svelte';
   import { i18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
@@ -29,49 +31,53 @@
 <!-- Server-rendered for everyone (search engines see it); hidden once a saved board is known. -->
 {#if page.data.mode === 'public' && (!inventory.loaded || inventory.demo)}<Landing />{/if}
 
-{#if inventory.mode === 'selfhosted' && inventory.boards.length > 0}<BoardSwitcher />{/if}
-
-{#if inventory.serverError}
-  <p class="banner" role="alert">{t('serverError', { message: inventory.serverError })}</p>
-{/if}
-
-{#if inventory.demo}
-  <div class="demo" role="note">
-    <span>{t('demoBanner')}</span>
-    <button class="cta" onclick={() => inventory.startOwn()}>{t('demoStart')}</button>
-  </div>
-{/if}
-
-{#if !inventory.persistent}
-  <p class="banner" role="alert">{t('storageBanner')}</p>
-{/if}
-
-{#if feed.error}
-  <p role="alert" class="error">{t('feedError', { message: feed.error })}</p>
-{:else if !inventory.loaded}
-  <p class="muted">{t('loading')}</p>
-{:else if inventory.data.items.length === 0}
-  <section class="empty">
-    <h2>{t('emptyBoardTitle')}</h2>
-    <p>{t('emptyBoardText')}</p>
-    <a class="cta" href={resolve('/catalog')}>{t('browseCatalog')}</a>
-  </section>
+{#if page.data.mode === 'selfhosted' && fleet.hasHosts && fleet.data}
+  <FleetBoard data={fleet.data} site={siteFrom(page.url, fleet.data)} ontoast={showToast} />
 {:else}
-  {#if sharing}
-    <SharePanel items={inventory.data.items} onclose={() => (sharing = false)} ontoast={showToast} />
+  {#if inventory.mode === 'selfhosted' && inventory.boards.length > 0}<BoardSwitcher />{/if}
+
+  {#if inventory.serverError}
+    <p class="banner" role="alert">{t('serverError', { message: inventory.serverError })}</p>
   {/if}
-  {#snippet share()}
-    <button class="chip" aria-expanded={sharing} onclick={() => (sharing = !sharing)}
-      >{t('shareBoard')}</button
-    >
-  {/snippet}
-  <Board
-    items={inventory.data.items}
-    settings={inventory.data.settings}
-    onhideok={(value: boolean) => inventory.setSettings({ hideOk: value })}
-    ontoast={showToast}
-    actions={share}
-  />
+
+  {#if inventory.demo}
+    <div class="demo" role="note">
+      <span>{t('demoBanner')}</span>
+      <button class="cta" onclick={() => inventory.startOwn()}>{t('demoStart')}</button>
+    </div>
+  {/if}
+
+  {#if !inventory.persistent}
+    <p class="banner" role="alert">{t('storageBanner')}</p>
+  {/if}
+
+  {#if feed.error}
+    <p role="alert" class="error">{t('feedError', { message: feed.error })}</p>
+  {:else if !inventory.loaded}
+    <p class="muted">{t('loading')}</p>
+  {:else if inventory.data.items.length === 0}
+    <section class="empty">
+      <h2>{t('emptyBoardTitle')}</h2>
+      <p>{t('emptyBoardText')}</p>
+      <a class="cta" href={resolve('/catalog')}>{t('browseCatalog')}</a>
+    </section>
+  {:else}
+    {#if sharing}
+      <SharePanel items={inventory.data.items} onclose={() => (sharing = false)} ontoast={showToast} />
+    {/if}
+    {#snippet share()}
+      <button class="chip" aria-expanded={sharing} onclick={() => (sharing = !sharing)}
+        >{t('shareBoard')}</button
+      >
+    {/snippet}
+    <Board
+      items={inventory.data.items}
+      settings={inventory.data.settings}
+      onhideok={(value: boolean) => inventory.setSettings({ hideOk: value })}
+      ontoast={showToast}
+      actions={share}
+    />
+  {/if}
 {/if}
 
 {#if toast}

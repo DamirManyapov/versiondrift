@@ -115,16 +115,16 @@ export function hostStatus(host: FleetHost): HostStatus {
 export type AggregateKey = VersionStatus | 'stale';
 export const AGGREGATE_KEYS: AggregateKey[] = ['critical', 'eol', 'update', 'unknown', 'ok', 'stale'];
 
-export interface AggregateEntry {
-  host: FleetHost;
+export interface AggregateEntry<H extends FleetHost = FleetHost> {
+  host: H;
   instance: FleetInstance;
   /** The instance's status, or stale when its host can't be polled and it isn't critical. */
   key: AggregateKey;
 }
 
-export interface ProductAggregate {
+export interface ProductAggregate<H extends FleetHost = FleetHost> {
   productId: string;
-  entries: AggregateEntry[];
+  entries: AggregateEntry<H>[];
   counts: Record<AggregateKey, number>;
   /** Worst of critical, eol, update, unknown, ok; stale only when every instance is. */
   status: AggregateKey;
@@ -132,11 +132,11 @@ export interface ProductAggregate {
 }
 
 /** One product over the hosts that run it (spec §4 "Product aggregate"). */
-export function productAggregate(
+export function productAggregate<H extends FleetHost>(
   productId: string,
-  hosts: readonly FleetHost[],
-): ProductAggregate | undefined {
-  const entries: AggregateEntry[] = [];
+  hosts: readonly H[],
+): ProductAggregate<H> | undefined {
+  const entries: AggregateEntry<H>[] = [];
   for (const host of hosts)
     for (const instance of host.instances) {
       if (instance.productId !== productId) continue;
@@ -152,7 +152,7 @@ export function productAggregate(
 }
 
 /** Every product on these hosts, aggregated. */
-export function fleetAggregates(hosts: readonly FleetHost[]): ProductAggregate[] {
+export function fleetAggregates<H extends FleetHost>(hosts: readonly H[]): ProductAggregate<H>[] {
   const ids = [...new Set(hosts.flatMap((h) => h.instances.map((i) => i.productId)))];
   return ids.map((id) => productAggregate(id, hosts)).filter((a) => a !== undefined);
 }
@@ -194,22 +194,22 @@ export function lineRows(aggregate: ProductAggregate, trackOrder: readonly strin
     .sort((a, b) => order(a.track) - order(b.track));
 }
 
-export interface VersionGroup {
+export interface VersionGroup<H extends FleetHost = FleetHost> {
   track: string | null;
   version: string;
   latest: string | null;
   instance: FleetInstance;
   /** Status of the version itself (every host on it shares it). */
   status: VersionStatus;
-  entries: AggregateEntry[];
+  entries: AggregateEntry<H>[];
 }
 
 /** "Разбивка по версиям": one group per (line, version), lines in track order, newest version first. */
-export function versionBreakdown(
-  aggregate: ProductAggregate,
+export function versionBreakdown<H extends FleetHost>(
+  aggregate: ProductAggregate<H>,
   trackOrder: readonly string[] = [],
-): VersionGroup[] {
-  const groups = new Map<string, VersionGroup>();
+): VersionGroup<H>[] {
+  const groups = new Map<string, VersionGroup<H>>();
   for (const e of aggregate.entries) {
     const key = `${e.instance.track ?? ''}\u0000${e.instance.sortKey ?? e.instance.version}`;
     const group = groups.get(key);

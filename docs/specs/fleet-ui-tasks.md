@@ -20,16 +20,16 @@ unknown`, detector kinds `ssh-linux / windows / routeros / proxmox`).
 | # | Task | Done when |
 |---|---|---|
 | FL-1 ✅ | **Audit & plan.** Map spec entities/endpoints to what already exists (hosts, polling, detectors, profiles). Write the gap list and the plan into this file. | Plan reviewed by the owner; no code yet |
-| FL-2 | **Demo seed.** Loader for `fixtures/fleet-demo.json` behind `VD_DEMO=1` (sites, profiles, hosts, instances, poll states, history). | Dev instance starts with 31 hosts |
+| FL-2 ✅ | **Demo seed.** Loader for `fixtures/fleet-demo.json` behind `VD_DEMO=1` (sites, profiles, hosts, instances, poll states, history). | Dev instance starts with 31 hosts |
 | FL-3 ✅ | **Status model** in `packages/core`: `hostStatus()`, `productAggregate()`, per-line latest, stale rule, pending, unknown, manual source. Unit tests use `expected` from the fixture. | Tests reproduce every number in spec §5.A and the host chips of kzn-fs-01 / kzn-gw-02 |
-| FL-4 | **API** gaps from spec §6 (list/filter hosts, host detail, sites summary, bulk patch/delete, poll job + progress, CSV dry-run/import, profile test). Secrets write-only. | API tests green; CSV dry-run returns line-level errors |
+| FL-4 ◐ | **API** gaps from spec §6 (list/filter hosts, host detail, sites summary, bulk patch/delete, poll job + progress, CSV dry-run/import, profile test). Secrets write-only. | API tests green; CSV dry-run returns line-level errors |
 | FL-5 | **Tokens & primitives**: status chip (solid/dashed), distribution bar, host chip, filter chip group, toast, confirm dialog, code block with copy. Dark + light. | Storybook/demo page or visual test for each |
-| FL-6 | **Header**: tabs, site switcher + popover (F), poll schedule, «Добавить хосты». Site filter in URL. | Switching site updates every screen |
-| FL-7 | **Board (A)**: aggregated tiles, summary strip + «Проблемы опроса», detail panel with version breakdown, changes expand, copy hosts. | e2e: demo numbers match spec §5.A |
-| FL-8 | **Hosts table (B)**: filters with counts, search, grouping, severity sort, selection rules, bulk bar + dialogs (typed confirm >10). Virtualize if >200 rows. | e2e: select-all selects only filtered rows; delete 31 requires typing 31 |
-| FL-9 | **Host card (C)**: header, poll now, error block with actions, products table, manual product, history. | kzn-fs-01 stays red with «Отказ в доступе»; kzn-gw-02 shows «Нет связи» |
+| FL-6 ◐ | **Header**: tabs, site switcher + popover (F), poll schedule, «Добавить хосты». Site filter in URL. | Switching site updates every screen |
+| FL-7 ◐ | **Board (A)**: aggregated tiles, summary strip + «Проблемы опроса», detail panel with version breakdown, changes expand, copy hosts. | e2e: demo numbers match spec §5.A |
+| FL-8 ◐ | **Hosts table (B)**: filters with counts, search, grouping, severity sort, selection rules, bulk bar + dialogs (typed confirm >10). Virtualize if >200 rows. | e2e: select-all selects only filtered rows; delete 31 requires typing 31 |
+| FL-9 ◐ | **Host card (C)**: header, poll now, error block with actions, products table, manual product, history. | kzn-fs-01 stays red with «Отказ в доступе»; kzn-gw-02 shows «Нет связи» |
 | FL-10 | **Add hosts (D)**: single form with connection check; CSV dropzone → dry-run preview → import → check progress → summary. | Importing the demo CSV into an empty instance yields 29/1/1 |
-| FL-11 | **Access profiles (E)**: list, detail (replace secret, host vs profile failure), 3-step wizard with per-type instructions from modules, generated SSH key, test on host. | Wizard works for all 5 types |
+| FL-11 ◐ | **Access profiles (E)**: list, detail (replace secret, host vs profile failure), 3-step wizard with per-type instructions from modules, generated SSH key, test on host. | Wizard works for all 5 types |
 | FL-12 | **First run (G)**: `/setup` flow; live-filling board during first poll; result banner. | Fresh instance → board fills progressively |
 | FL-13 | **States**: unknown version, manual entry conflicts, empty states, 300-host performance. | Each state in `States.dc.html` reproducible via seed flags |
 | FL-14 | **Phone (H)**: responsive triage view + host card. | 390 px layout passes e2e smoke |
@@ -104,3 +104,22 @@ detail) → FL-6/FL-7 (header, board) → FL-8 (hosts) → FL-9 (host card) → 
 1. Is «a site is a board» (decision 1) right for you?
 2. Keep host-less manual products in self-hosted, or require a host for every version?
 3. One poll schedule for everything (6 h), or per site / per profile?
+
+## Progress (2026-09-28)
+
+✅ done · ◐ started, the rest listed here.
+
+- FL-2/FL-3: `packages/core/src/fleet.ts` (host status, aggregates, lines, version breakdown), migration 0003,
+  `FleetStore`, `seedFleetDemo`; `VD_DEMO=1` seeds an empty instance.
+- FL-4 ◐: `GET /api/fleet`, `GET /api/hosts/:id`. Missing: create / import / bulk / poll jobs / profile test.
+- FL-6 ◐: tabs, site switcher (a select, not yet the popover of F), poll schedule text. Missing: «Добавить хосты».
+- FL-7 ◐: summary strip with poll problems, aggregated tiles, panel with the version breakdown, «Что изменилось до»
+  (the compare page), copy hosts. Missing: inline changes expand, EOL-soon note.
+- FL-8 ◐: table, URL filters with counts, search, grouping by site, severity sort. Missing: selection and bulk actions.
+- FL-9 ◐: header, poll problem explained, products, history. Missing: «Опросить сейчас», «+ Продукт вручную».
+- FL-11 ◐: read-only list with failing hosts. Missing: detail, wizard, secret replace.
+- e2e `fleet.spec.ts` on a `VD_DEMO=1` server over the e2e feed (axe clean on the board and the hosts table).
+
+Found on the way: with the live feed the engine disagrees with the fixture's `expected` in 9 places — Docker Engine
+(a GitHub range bug, fixed in `parseRangeExpression`) and RouterOS 6.49 / 7.23.4 (NVD ranges "before 7.5", "before
+7.20" cover v6 too). The fixture stays the design's oracle for the aggregation; the live statuses are the engine's.

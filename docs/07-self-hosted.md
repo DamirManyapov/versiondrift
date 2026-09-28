@@ -175,7 +175,8 @@ https without `ORIGIN`, which would refuse every form post on a plain-http LAN i
 | `VD_OIDC_ISSUER`, `VD_OIDC_CLIENT_ID`, `VD_OIDC_CLIENT_SECRET` | | Authentik/Keycloak/etc. |
 | `VD_TRUST_PROXY_HEADER` | | e.g. `Remote-User` for forward-auth setups |
 | `VD_BASE_URL` | | for links in notifications |
-| `VD_SECRET_KEY` | generated | encrypts stored credentials (notification channels; later detectors, integrations); without it a random key is kept in `/data/secret.key` — back it up with the database |
+| `VD_SECRET_KEY` | generated | encrypts stored credentials (notification channels, access profiles; later integrations); without it a random key is kept in `/data/secret.key` — back it up with the database |
+| `VD_DEMO` | | `1`: an instance without hosts starts with the demo fleet (31 hosts on two sites, `fixtures/fleet-demo.json`); for trying the fleet screens, never for production |
 
 ## SQLite schema (Drizzle)
 
@@ -244,6 +245,14 @@ grants), Docker through a read-only socket proxy, SNMP v3 read-only.
 **Instructions live with the detector.** A module's `detect` rule carries a short setup text for its least-privilege
 account (commands to copy). The UI shows it when an access profile of that kind is created; the docs site renders
 the same text per product.
+
+**Screens** (S6-T5, design in `docs/specs/fleet-ui.md`): with hosts, the header gets *Board · Hosts · This week ·
+Access profiles* and a site switcher (`?site=<id>`, remembered per browser). The board aggregates each product over
+the hosts of the chosen site (tiles with a status bar and per-line ranges, a panel with the hosts per version);
+`/hosts` lists hosts with filters (status, poll problems, type), search and grouping by site; `/hosts/:id` explains a
+poll problem and shows the products and history; `/access-profiles` lists profiles and which hosts fail. The data
+comes from `GET /api/fleet` (sites, profiles without secrets, hosts with poll state and products) and
+`GET /api/hosts/:id` (history); statuses are computed in the browser by `packages/core` (`fleet.ts`).
 
 **Polling**: every 6 hours by default (`VD_DETECT_INTERVAL`), and "Poll now" per host, site or profile. Timeouts and
 concurrency are bounded (default 8 hosts at a time). A failed poll keeps the last detected versions and marks the

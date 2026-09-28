@@ -10,3 +10,4 @@ apps/web/build
 **/test-results
 inventory*.yaml
 notify-state.json
+*.zip

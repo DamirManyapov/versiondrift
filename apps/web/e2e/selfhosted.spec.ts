@@ -4,7 +4,7 @@ test('boards live on the server: create one, add a product, find it through the 
   page,
   request,
 }) => {
-  const name = `Lab ${Date.now()}`;
+  const name = `Lab ${crypto.randomUUID().slice(0, 8)}`;
   await page.goto('/');
   await expect(
     page.getByRole('heading', { name: 'See how far your stack has drifted from upstream.' }),
@@ -31,7 +31,7 @@ test('boards live on the server: create one, add a product, find it through the 
 });
 
 test('a board is renamed and deleted from the board switcher', async ({ page }) => {
-  const name = `Lab ${Date.now()}`;
+  const name = `Lab ${crypto.randomUUID().slice(0, 8)}`;
   await page.goto('/');
   await page.getByRole('button', { name: '+ New board' }).click();
   await page.getByRole('textbox', { name: 'Board name' }).fill(name);
