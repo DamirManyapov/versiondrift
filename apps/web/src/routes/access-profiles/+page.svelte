@@ -4,6 +4,9 @@
   import { resolve } from '$app/paths';
   import Meta from '$lib/components/Meta.svelte';
   import FleetChip from '$lib/components/fleet/FleetChip.svelte';
+  import CodeCopy from '$lib/components/fleet/CodeCopy.svelte';
+  import { page } from '$app/state';
+  import { fleetApi } from '$lib/fleet/api';
   import { fleet } from '$lib/fleet/state.svelte';
   import { i18n } from '$lib/i18n/context';
   import type { MessageKey } from '$lib/i18n';
@@ -15,14 +18,38 @@
     routeros: 'kind_routeros',
     proxmox: 'kind_proxmox',
   };
+  const canEdit = $derived(page.data.account?.role !== 'viewer');
+  let open = $state<{ id: number; what: 'secret' | 'key' | 'delete' } | undefined>();
+  let secret = $state('');
+  let message = $state('');
+  let problem = $state('');
+
+  async function act(action: () => Promise<void>, done: string) {
+    problem = '';
+    try {
+      await action();
+      message = done;
+      open = undefined;
+      secret = '';
+      await fleet.load();
+    } catch (error) {
+      problem = (error as Error).message;
+    }
+  }
+
   const failing = (profileId: number) =>
     fleet.data?.hosts.filter((h) => h.profileId === profileId && pollBroken(h.poll.state)) ?? [];
 </script>
 
 <Meta title="{t('profilesTitle')} · VersionDrift" description={t('appTagline')} />
 
-<h1>{t('profilesTitle')}</h1>
+<div class="top">
+  <h1>{t('profilesTitle')}</h1>
+  {#if canEdit}<a class="button primary" href={resolve('/access-profiles/new')}>+ {t('newProfile')}</a>{/if}
+</div>
 <p class="note">{t('profilesNote')}</p>
+{#if message}<p role="status">{message}</p>{/if}
+{#if problem}<p class="error" role="alert">{problem}</p>{/if}
 
 {#if fleet.data}
   <ul class="profiles">
@@ -49,6 +76,54 @@
         {:else}
           <FleetChip status="ok" label={t('profileWorks')} />
         {/if}
+        {#if canEdit}
+          <div class="acts">
+            {#if profile.publicKey}
+              <button
+                onclick={() =>
+                  (open =
+                    open?.id === profile.id && open.what === 'key'
+                      ? undefined
+                      : { id: profile.id, what: 'key' })}>{t('showPublicKey')}</button
+              >
+            {:else}
+              <button onclick={() => (open = { id: profile.id, what: 'secret' })}>{t('replaceSecret')}</button
+              >
+            {/if}
+            <button onclick={() => (open = { id: profile.id, what: 'delete' })}>{t('deleteProfile')}</button>
+          </div>
+        {/if}
+        {#if open?.id === profile.id}
+          <div class="drawer">
+            {#if open.what === 'key' && profile.publicKey}
+              <CodeCopy code={profile.publicKey} />
+            {:else if open.what === 'secret'}
+              <form
+                onsubmit={(e) => {
+                  e.preventDefault();
+                  void act(() => fleetApi.replaceSecret(profile.id, secret), t('secretReplaced'));
+                }}
+              >
+                <input
+                  type="password"
+                  bind:value={secret}
+                  required
+                  autocomplete="off"
+                  aria-label={t('replaceSecret')}
+                />
+                <button class="primary" type="submit">{t('save')}</button>
+                <button type="button" onclick={() => (open = undefined)}>{t('cancel')}</button>
+              </form>
+            {:else if open.what === 'delete'}
+              <button
+                class="danger"
+                onclick={() => void act(() => fleetApi.deleteProfile(profile.id), t('profileDeleted'))}
+                >{t('deleteProfileConfirm', { name: profile.name })}</button
+              >
+              <button onclick={() => (open = undefined)}>{t('cancel')}</button>
+            {/if}
+          </div>
+        {/if}
       </li>
     {/each}
   </ul>
@@ -72,6 +147,7 @@
   }
   li {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 16px;
     padding: 16px 18px;
@@ -99,5 +175,57 @@
   .bad {
     margin-top: 6px;
     font-size: 13px;
+  }
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .acts,
+  .drawer,
+  form {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .drawer {
+    flex-basis: 100%;
+  }
+  .drawer :global(.code) {
+    flex: 1;
+  }
+  button,
+  .button {
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    color: var(--text-soft);
+    text-decoration: none;
+    background: none;
+  }
+  .primary {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+    font-weight: 600;
+  }
+  .danger {
+    color: var(--critical);
+    border-color: var(--critical-border);
+  }
+  input {
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 6px 10px;
+  }
+  .error {
+    color: var(--critical);
   }
 </style>

@@ -29,7 +29,7 @@ unknown`, detector kinds `ssh-linux / windows / routeros / proxmox`).
 | FL-8 ◐ | **Hosts table (B)**: filters with counts, search, grouping, severity sort, selection rules, bulk bar + dialogs (typed confirm >10). Virtualize if >200 rows. | e2e: select-all selects only filtered rows; delete 31 requires typing 31 |
 | FL-9 ◐ | **Host card (C)**: header, poll now, error block with actions, products table, manual product, history. | kzn-fs-01 stays red with «Отказ в доступе»; kzn-gw-02 shows «Нет связи» |
 | FL-10 ✅ | **Add hosts (D)**: single form with connection check; CSV dropzone → dry-run preview → import → check progress → summary. | Importing the demo CSV into an empty instance yields 29/1/1 |
-| FL-11 ◐ | **Access profiles (E)**: list, detail (replace secret, host vs profile failure), 3-step wizard with per-type instructions from modules, generated SSH key, test on host. | Wizard works for all 5 types |
+| FL-11 ✅ | **Access profiles (E)**: list, detail (replace secret, host vs profile failure), 3-step wizard with per-type instructions from modules, generated SSH key, test on host. | Wizard works for all 5 types |
 | FL-12 | **First run (G)**: `/setup` flow; live-filling board during first poll; result banner. | Fresh instance → board fills progressively |
 | FL-13 | **States**: unknown version, manual entry conflicts, empty states, 300-host performance. | Each state in `States.dc.html` reproducible via seed flags |
 | FL-14 | **Phone (H)**: responsive triage view + host card. | 390 px layout passes e2e smoke |
@@ -121,7 +121,10 @@ detail) → FL-6/FL-7 (header, board) → FL-8 (hosts) → FL-9 (host card) → 
 - FL-9 ◐: header, poll problem explained, products, history, «Опросить сейчас». Missing: «+ Продукт вручную».
 - FL-10 ✅: dialog over any page (`?add=one|csv`): one host with a connection check, CSV with a line-by-line dry
   run (errors first), import as an upsert by name, then a connection check with progress.
-- FL-11 ◐: read-only list with failing hosts. Missing: detail, wizard, secret replace.
+- FL-11 ✅: list (failing hosts, public key, replace secret, delete) and the 3-step wizard for the 5 types with
+  instructions to copy (`apps/web/src/lib/fleet/instructions.ts`, ru/en, the instance address filled in; they move
+  into the modules with S6-T4), an ed25519 key made by the instance for Linux (the authorized_keys line with the
+  forced command `versiondrift-inventory`, script in `static/downloads/`), and «Проверить на хосте».
 - e2e `fleet.spec.ts` on a `VD_DEMO=1` server over the e2e feed (axe clean on the board and the hosts table).
 
 Found on the way: with the live feed the engine disagrees with the fixture's `expected` in 9 places — Docker Engine

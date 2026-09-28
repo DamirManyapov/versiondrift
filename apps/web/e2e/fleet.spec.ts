@@ -86,3 +86,28 @@ test('add hosts: one through the form, a list through the CSV dry run', async ({
   await expect(page).not.toHaveURL(/add=/);
   await expect(page.locator('tbody tr:not(.site)')).toHaveCount(33);
 });
+
+test('a new access profile: type, instructions to copy, details, test on a host', async ({ page }) => {
+  await page.goto('/access-profiles');
+  await page.getByRole('link', { name: '+ New profile' }).click();
+  await page.getByRole('button', { name: /MikroTik/ }).click();
+  await expect(page.getByText('/user group add name=vd-read policy=read,ssh')).toBeVisible();
+  await expect(page.getByText(/address=localhost\/32/)).toBeVisible();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await page.getByLabel('Profile name').fill('MikroTik e2e');
+  await page.getByLabel('Password').fill('secret-e2e');
+  await page.getByRole('button', { name: 'Save the profile' }).click();
+  await expect(page.getByText('Profile “MikroTik e2e” saved.')).toBeVisible();
+  await page
+    .getByRole('combobox', { name: 'Test on a host' })
+    .selectOption({ label: 'msk-gw-01 · 10.10.0.1' });
+  await page.getByRole('button', { name: 'Test', exact: true }).click();
+  await expect(page.getByRole('status').last()).toContainText('It works. Found: MikroTik RouterOS 7.23.7.');
+
+  await page.goto('/access-profiles/new?type=linux&step=3');
+  await page.getByLabel('Profile name').fill('Linux e2e');
+  await page.getByRole('button', { name: 'Save the profile' }).click();
+  await expect(
+    page.getByText(/restrict,command="\/usr\/local\/bin\/versiondrift-inventory" ssh-ed25519 AAAA/),
+  ).toBeVisible();
+});

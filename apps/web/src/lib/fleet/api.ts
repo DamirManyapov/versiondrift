@@ -66,7 +66,29 @@ async function postText<T>(url: string, text: string): Promise<T> {
   return (await response.json()) as T;
 }
 
+async function send(url: string, method: 'PATCH' | 'DELETE', data?: unknown): Promise<void> {
+  const response = await fetch(url, {
+    method,
+    headers: { 'content-type': 'application/json', accept: 'application/json' },
+    ...(data !== undefined && { body: JSON.stringify(data) }),
+  });
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message ?? `${url}: HTTP ${response.status}`);
+  }
+}
+
+export type TestResult =
+  | { ok: true; found: { productId: string; version: string | null }[] }
+  | { ok: false; state: string; code: string; message: string };
+
 export const fleetApi = {
+  createProfile: (input: { name: string; kind: string; username: string; secret?: string }) =>
+    post<AccessProfile>('/api/access-profiles', input),
+  replaceSecret: (id: number, secret: string) => send(`/api/access-profiles/${id}`, 'PATCH', { secret }),
+  deleteProfile: (id: number) => send(`/api/access-profiles/${id}`, 'DELETE'),
+  testProfile: (id: number, hostId: number) =>
+    post<TestResult>(`/api/access-profiles/${id}/test`, { hostId }),
   createHost: (input: {
     name: string;
     address: string;

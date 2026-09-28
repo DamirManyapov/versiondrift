@@ -117,6 +117,27 @@ export function startPoll(ids?: number[]): PollJob {
 
 export const pollJob = (id: string): PollJob | undefined => jobs.get(id);
 
+/** "Test on a host" in the profile wizard: runs the detector with this profile, stores nothing. */
+export async function testProfile(profileId: number, hostId: number): Promise<Detection> {
+  const { fleet } = selfHostedStorage();
+  const host = fleet.hosts().find((h) => h.id === hostId);
+  const profile = fleet.profiles().find((p) => p.id === profileId);
+  if (!host || !profile)
+    return { ok: false, state: 'unknown', code: 'not_found', message: 'No such host or profile' };
+  if (profile.kind !== host.kind)
+    return {
+      ok: false,
+      state: 'unknown',
+      code: 'wrong_kind',
+      message: `Profile "${profile.name}" is for ${profile.kind} hosts, ${host.name} is ${host.kind}`,
+    };
+  try {
+    return await detect(host);
+  } catch (error) {
+    return { ok: false, state: 'unreachable', code: 'error', message: (error as Error).message };
+  }
+}
+
 /** Called once at server start in self-hosted mode. */
 export function startPolling(): void {
   if (schedule) return;

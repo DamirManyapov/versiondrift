@@ -1,0 +1,17 @@
+#!/bin/sh
+# versiondrift-inventory — what VersionDrift reads on a Linux host, and nothing else (docs/07, ADR-0007).
+# Installed as the forced command of the instance's SSH key: the key can run this script only. It reads the OS
+# release and the list of installed packages; it changes nothing and needs no sudo.
+echo '### os-release'
+cat /etc/os-release 2>/dev/null
+echo '### debian_version'
+cat /etc/debian_version 2>/dev/null
+echo '### dpkg'
+if command -v dpkg-query >/dev/null 2>&1; then
+  dpkg-query -W -f '${Package}\t${Version}\t${db:Status-Abbrev}\n' 2>/dev/null
+fi
+echo '### rpm'
+if command -v rpm >/dev/null 2>&1; then
+  rpm -qa --qf '%{NAME}\t%{VERSION}-%{RELEASE}\n' 2>/dev/null
+fi
+echo '### end'

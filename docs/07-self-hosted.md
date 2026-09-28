@@ -258,7 +258,11 @@ card, or the selected rows of the hosts table) posts `POST /api/hosts/poll {ids}
 `GET /api/poll/jobs/:id` once a second; the poller runs 8 hosts at a time. «Добавить хосты» (header, `?add=one|csv`)
 adds one host (`POST /api/hosts`) or a CSV list: `POST /api/hosts/import?dryRun=1` answers per line (new, already
 there, will change, error with the reason), `POST /api/hosts/import` writes it (an upsert by name; new sites are
-created) and polls what it added. Until the detectors of S6-T3 exist a poll
+created) and polls what it added. Access profiles are made with a wizard (`/access-profiles/new`: type → how to create the
+account, commands to copy → details, save, test on a host); `POST /api/access-profiles` (Linux profiles get an
+ed25519 key pair from the instance: the private key sealed, the public key shown as an authorized_keys line with the
+forced command), `PATCH /api/access-profiles/:id {secret}`, `DELETE`, and `POST /api/access-profiles/:id/test
+{hostId}` (runs the detector, stores nothing). The Linux inventory script is `apps/web/static/downloads/versiondrift-inventory`. Until the detectors of S6-T3 exist a poll
 reads as "unknown"; with `VD_DEMO=1` a demo detector answers from the stored data (hosts with a poll problem keep
 failing).
 
