@@ -1,0 +1,1042 @@
+{
+  "_note": "Demo dataset from the Fleet brief (28.09.2026). Versions/statuses are from the live feed at that date; host names and IPs are fictional. products[].expected is what the status engine must produce for that version — use it as test oracle.",
+  "sites": [
+    {
+      "id": "msk",
+      "name": "Москва, ЦОД"
+    },
+    {
+      "id": "kzn",
+      "name": "Казань, филиал"
+    }
+  ],
+  "accessProfiles": [
+    {
+      "id": "linux-ssh",
+      "name": "Linux SSH (только чтение)",
+      "type": "linux",
+      "typeLabel": "SSH по ключу",
+      "user": "versiondrift",
+      "rights": "Отдельный пользователь без sudo. Ключ может выполнить только одну команду сбора версий."
+    },
+    {
+      "id": "win-ro",
+      "name": "Windows RO",
+      "type": "windows",
+      "typeLabel": "OpenSSH или WinRM",
+      "user": "versiondrift",
+      "rights": "Обычный пользователь, не администратор. Для WinRM — группа Remote Management Users."
+    },
+    {
+      "id": "mt-api",
+      "name": "MikroTik API (read)",
+      "type": "mikrotik",
+      "typeLabel": "API-SSL",
+      "user": "versiondrift",
+      "rights": "Группа только с политиками read и api. Вход разрешён только с адреса VersionDrift."
+    },
+    {
+      "id": "pve-token",
+      "name": "Proxmox VE (PVEAuditor)",
+      "type": "pve",
+      "typeLabel": "API-токен",
+      "user": "versiondrift@pve!vd",
+      "rights": "Роль PVEAuditor — только чтение."
+    },
+    {
+      "id": "pbs-token",
+      "name": "Proxmox Backup (Audit)",
+      "type": "pbs",
+      "typeLabel": "API-токен",
+      "user": "versiondrift@pbs!vd",
+      "rights": "Роль Audit — только чтение."
+    }
+  ],
+  "productLines": {
+    "windows": {
+      "name": "Windows Server",
+      "category": "ОС",
+      "lines": {
+        "2016": {
+          "label": "2016",
+          "latest": "14393.9514",
+          "eolSoon": "EOL 12.01.2027"
+        },
+        "2019": {
+          "label": "2019",
+          "latest": "17763.9247"
+        },
+        "2022": {
+          "label": "2022",
+          "latest": "20348.5631"
+        }
+      }
+    },
+    "debian": {
+      "name": "Debian GNU/Linux",
+      "category": "ОС",
+      "lines": {
+        "11": {
+          "label": "11 bullseye",
+          "latest": "11.11",
+          "eol": "31.08.2026"
+        },
+        "12": {
+          "label": "12 bookworm",
+          "latest": "12.15"
+        },
+        "13": {
+          "label": "13 trixie",
+          "latest": "13.7"
+        }
+      }
+    },
+    "routeros": {
+      "name": "MikroTik RouterOS",
+      "category": "Сеть",
+      "lines": {
+        "7s": {
+          "label": "7 · stable",
+          "latest": "7.24.4"
+        },
+        "7lt": {
+          "label": "7 · long-term",
+          "latest": "7.23.7"
+        },
+        "6lt": {
+          "label": "6 · long-term",
+          "latest": "6.49.22"
+        }
+      }
+    },
+    "pve": {
+      "name": "Proxmox VE",
+      "category": "Виртуализация",
+      "lines": {
+        "9": {
+          "label": "9",
+          "latest": "9.2.20"
+        }
+      }
+    },
+    "docker": {
+      "name": "Docker Engine",
+      "category": "Контейнеры",
+      "lines": {
+        "29": {
+          "label": "29",
+          "latest": "29.8.1"
+        }
+      }
+    },
+    "zabbix": {
+      "name": "Zabbix",
+      "category": "Мониторинг",
+      "lines": {
+        "7.0": {
+          "label": "7.0 LTS",
+          "latest": "7.0.31"
+        }
+      }
+    },
+    "postgresql": {
+      "name": "PostgreSQL",
+      "category": "БД",
+      "lines": {
+        "16": {
+          "label": "16",
+          "latest": "16.15"
+        },
+        "17": {
+          "label": "17",
+          "latest": "17.11"
+        }
+      }
+    },
+    "pbs": {
+      "name": "Proxmox Backup Server",
+      "category": "Бэкапы",
+      "lines": {
+        "4": {
+          "label": "4",
+          "latest": "4.2.6"
+        }
+      }
+    }
+  },
+  "hosts": [
+    {
+      "id": "msk-app-01",
+      "site": "msk",
+      "address": "10.10.1.11",
+      "kind": "linux",
+      "accessProfile": "linux-ssh",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "debian",
+          "version": "13.7",
+          "line": "13",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        },
+        {
+          "product": "docker",
+          "version": "29.8.1",
+          "line": "29",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-app-02",
+      "site": "msk",
+      "address": "10.10.1.12",
+      "kind": "linux",
+      "accessProfile": "linux-ssh",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "debian",
+          "version": "13.7",
+          "line": "13",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        },
+        {
+          "product": "docker",
+          "version": "29.8.1",
+          "line": "29",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-db-01",
+      "site": "msk",
+      "address": "10.10.1.21",
+      "kind": "linux",
+      "accessProfile": "linux-ssh",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "debian",
+          "version": "12.15",
+          "line": "12",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        },
+        {
+          "product": "postgresql",
+          "version": "16.15",
+          "line": "16",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-db-02",
+      "site": "msk",
+      "address": "10.10.1.22",
+      "kind": "linux",
+      "accessProfile": "linux-ssh",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "debian",
+          "version": "12.15",
+          "line": "12",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        },
+        {
+          "product": "postgresql",
+          "version": "16.15",
+          "line": "16",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": [
+        {
+          "at": "12.07.2026",
+          "text": "Debian 12.14 → 12.15"
+        }
+      ]
+    },
+    {
+      "id": "msk-mon-01",
+      "site": "msk",
+      "address": "10.10.1.31",
+      "kind": "linux",
+      "accessProfile": "linux-ssh",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "debian",
+          "version": "12.15",
+          "line": "12",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        },
+        {
+          "product": "zabbix",
+          "version": "7.0.31",
+          "line": "7.0",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        },
+        {
+          "product": "postgresql",
+          "version": "17.11",
+          "line": "17",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-git-01",
+      "site": "msk",
+      "address": "10.10.1.41",
+      "kind": "linux",
+      "accessProfile": "linux-ssh",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "debian",
+          "version": "12.12",
+          "line": "12",
+          "source": "detected",
+          "expected": {
+            "status": "update",
+            "releasesBehind": 3
+          }
+        },
+        {
+          "product": "docker",
+          "version": "29.7.2",
+          "line": "29",
+          "source": "detected",
+          "expected": {
+            "status": "update",
+            "releasesBehind": 2
+          }
+        }
+      ],
+      "history": [
+        {
+          "at": "14.09.2026",
+          "text": "Debian 12.11 → 12.12"
+        }
+      ]
+    },
+    {
+      "id": "msk-files-01",
+      "site": "msk",
+      "address": "10.10.1.51",
+      "kind": "linux",
+      "accessProfile": "linux-ssh",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "debian",
+          "version": "12.12",
+          "line": "12",
+          "source": "detected",
+          "expected": {
+            "status": "update",
+            "releasesBehind": 3
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-legacy-01",
+      "site": "msk",
+      "address": "10.10.1.99",
+      "kind": "linux",
+      "accessProfile": "linux-ssh",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "debian",
+          "version": "11.11",
+          "line": "11",
+          "source": "detected",
+          "expected": {
+            "status": "eol"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-dc-01",
+      "site": "msk",
+      "address": "10.10.2.10",
+      "kind": "windows",
+      "accessProfile": "win-ro",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "windows",
+          "version": "20348.5631",
+          "line": "2022",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-1c-01",
+      "site": "msk",
+      "address": "10.10.2.21",
+      "kind": "windows",
+      "accessProfile": "win-ro",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "windows",
+          "version": "20348.5499",
+          "line": "2022",
+          "source": "detected",
+          "expected": {
+            "status": "critical",
+            "cvss": 9.8,
+            "cves": 61,
+            "kev": 1
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-rds-01",
+      "site": "msk",
+      "address": "10.10.2.31",
+      "kind": "windows",
+      "accessProfile": "win-ro",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "windows",
+          "version": "17763.9247",
+          "line": "2019",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-sql-01",
+      "site": "msk",
+      "address": "10.10.2.41",
+      "kind": "windows",
+      "accessProfile": "win-ro",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "windows",
+          "version": "14393.9514",
+          "line": "2016",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-gw-01",
+      "site": "msk",
+      "address": "10.10.0.1",
+      "kind": "mikrotik",
+      "accessProfile": "mt-api",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "routeros",
+          "version": "7.23.7",
+          "line": "7lt",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": [
+        {
+          "at": "17.09.2026",
+          "text": "RouterOS 7.23.6 → 7.23.7"
+        }
+      ]
+    },
+    {
+      "id": "msk-gw-02",
+      "site": "msk",
+      "address": "10.10.0.2",
+      "kind": "mikrotik",
+      "accessProfile": "mt-api",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "routeros",
+          "version": "7.23.7",
+          "line": "7lt",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-sw-01",
+      "site": "msk",
+      "address": "10.10.0.11",
+      "kind": "mikrotik",
+      "accessProfile": "mt-api",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "routeros",
+          "version": "7.24.4",
+          "line": "7s",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-sw-02",
+      "site": "msk",
+      "address": "10.10.0.12",
+      "kind": "mikrotik",
+      "accessProfile": "mt-api",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "routeros",
+          "version": "7.24.4",
+          "line": "7s",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-ap-01",
+      "site": "msk",
+      "address": "10.10.0.21",
+      "kind": "mikrotik",
+      "accessProfile": "mt-api",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "routeros",
+          "version": "6.49.22",
+          "line": "6lt",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-ap-02",
+      "site": "msk",
+      "address": "10.10.0.22",
+      "kind": "mikrotik",
+      "accessProfile": "mt-api",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "routeros",
+          "version": "6.49.22",
+          "line": "6lt",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-pve-01",
+      "site": "msk",
+      "address": "10.10.3.1",
+      "kind": "proxmox",
+      "accessProfile": "pve-token",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "pve",
+          "version": "9.2.20",
+          "line": "9",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-pve-02",
+      "site": "msk",
+      "address": "10.10.3.2",
+      "kind": "proxmox",
+      "accessProfile": "pve-token",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "pve",
+          "version": "9.2.20",
+          "line": "9",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-pve-03",
+      "site": "msk",
+      "address": "10.10.3.3",
+      "kind": "proxmox",
+      "accessProfile": "pve-token",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "pve",
+          "version": "9.2.17",
+          "line": "9",
+          "source": "detected",
+          "expected": {
+            "status": "update",
+            "releasesBehind": 3
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "msk-pbs-01",
+      "site": "msk",
+      "address": "10.10.3.10",
+      "kind": "proxmox",
+      "accessProfile": "pbs-token",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "pbs",
+          "version": "4.2.6",
+          "line": "4",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "kzn-app-01",
+      "site": "kzn",
+      "address": "10.20.1.11",
+      "kind": "linux",
+      "accessProfile": "linux-ssh",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "debian",
+          "version": "12.12",
+          "line": "12",
+          "source": "detected",
+          "expected": {
+            "status": "update",
+            "releasesBehind": 3
+          }
+        },
+        {
+          "product": "docker",
+          "version": "29.7.2",
+          "line": "29",
+          "source": "detected",
+          "expected": {
+            "status": "update",
+            "releasesBehind": 2
+          }
+        },
+        {
+          "product": "zabbix",
+          "version": "7.0.29",
+          "line": "7.0",
+          "source": "detected",
+          "expected": {
+            "status": "update",
+            "releasesBehind": 2
+          },
+          "label": "Zabbix proxy"
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "kzn-srv-01",
+      "site": "kzn",
+      "address": "10.20.1.12",
+      "kind": "linux",
+      "accessProfile": "linux-ssh",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "debian",
+          "version": "12.15",
+          "line": "12",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "kzn-1c-01",
+      "site": "kzn",
+      "address": "10.20.2.21",
+      "kind": "windows",
+      "accessProfile": "win-ro",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "windows",
+          "version": "20348.5499",
+          "line": "2022",
+          "source": "detected",
+          "expected": {
+            "status": "critical",
+            "cvss": 9.8,
+            "cves": 61,
+            "kev": 1
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "kzn-ts-01",
+      "site": "kzn",
+      "address": "10.20.2.31",
+      "kind": "windows",
+      "accessProfile": "win-ro",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "windows",
+          "version": "17763.9121",
+          "line": "2019",
+          "source": "detected",
+          "expected": {
+            "status": "critical",
+            "cvss": 9.8,
+            "cves": 59,
+            "kev": 1
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "kzn-fs-01",
+      "site": "kzn",
+      "address": "10.20.2.41",
+      "kind": "windows",
+      "accessProfile": "win-ro",
+      "poll": {
+        "state": "denied",
+        "since": "25.09.2026",
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "windows",
+          "version": "20348.5386",
+          "line": "2022",
+          "source": "detected",
+          "expected": {
+            "status": "critical",
+            "cvss": 9.8,
+            "cves": null,
+            "kev": 0
+          }
+        }
+      ],
+      "history": [
+        {
+          "at": "25.09.2026",
+          "text": "Отказ в доступе: истёк пароль учётки профиля «Windows RO»"
+        }
+      ]
+    },
+    {
+      "id": "kzn-gw-01",
+      "site": "kzn",
+      "address": "10.20.0.1",
+      "kind": "mikrotik",
+      "accessProfile": "mt-api",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "routeros",
+          "version": "7.23.4",
+          "line": "7lt",
+          "source": "detected",
+          "expected": {
+            "status": "update",
+            "releasesBehind": 3
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "kzn-gw-02",
+      "site": "kzn",
+      "address": "10.20.0.2",
+      "kind": "mikrotik",
+      "accessProfile": "mt-api",
+      "poll": {
+        "state": "timeout",
+        "since": "26.09.2026 14:10",
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "routeros",
+          "version": "7.23.4",
+          "line": "7lt",
+          "source": "detected",
+          "expected": {
+            "status": "update",
+            "releasesBehind": 3
+          }
+        }
+      ],
+      "history": [
+        {
+          "at": "26.09.2026 14:10",
+          "text": "Перестал отвечать"
+        }
+      ]
+    },
+    {
+      "id": "kzn-ap-01",
+      "site": "kzn",
+      "address": "10.20.0.21",
+      "kind": "mikrotik",
+      "accessProfile": "mt-api",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "routeros",
+          "version": "6.49.19",
+          "line": "6lt",
+          "source": "detected",
+          "expected": {
+            "status": "update",
+            "releasesBehind": 3
+          }
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "kzn-sw-01",
+      "site": "kzn",
+      "address": "10.20.0.11",
+      "kind": "mikrotik",
+      "accessProfile": "mt-api",
+      "poll": {
+        "state": "ok",
+        "since": null,
+        "lastAttempt": "2026-09-28T12:00:00+07:00"
+      },
+      "products": [
+        {
+          "product": "routeros",
+          "version": "7.23.7",
+          "line": "7lt",
+          "source": "detected",
+          "expected": {
+            "status": "ok"
+          }
+        }
+      ],
+      "history": []
+    }
+  ]
+}

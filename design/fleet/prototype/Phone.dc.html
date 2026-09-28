@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>VersionDrift — телефон</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.vdp button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.vdp button:focus-visible{outline:2px solid #7cb7ff;outline-offset:2px}
+.vdp .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.vdp .ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+</style>
+</helmet>
+
+<div class="vdp" style="width: 390px; height: 844px; position: relative; display: flex; flex-direction: column; overflow: hidden; background: #121316; color: #eceae4; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 14px">
+
+  <sc-if value="{{isHome}}" hint-placeholder-val="{{true}}">
+    <header style="flex-shrink: 0; padding: 16px 16px 12px; display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid #2e3136">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="width: 28px; height: 28px; border-radius: 8px; background: #f5a524; color: #1a1206; display: flex; align-items: center; justify-content: center">
+          <svg class="ic" viewBox="0 0 24 24" width="17" height="17"><path d="M3 9c3 0 3-3 6-3s3 3 6 3 3-3 6-3"></path><path d="M3 15c3 0 3-3 6-3s3 3 6 3 3-3 6-3"></path></svg>
+        </div>
+        <span style="font-size: 16px; font-weight: 700">VersionDrift</span>
+        <span style="flex-grow: 1"></span>
+        <span style="font-size: 12px; color: #a3a09a">опрос в 12:00</span>
+      </div>
+      <div role="group" aria-label="Площадка" style="display: flex; gap: 6px">
+        <sc-for list="{{sites}}" as="st" hint-placeholder-count="3">
+          <button onClick="{{st.pick}}" aria-pressed="{{st.on}}" style="height: 36px; padding: 0 12px; border-radius: 18px; font-size: 13px; border: 1px solid {{st.bd}}; background: {{st.bg}}; color: {{st.fg}}">{{st.label}}</button>
+        </sc-for>
+      </div>
+    </header>
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{counters}}" as="c" hint-placeholder-count="4">
+          <div style="padding: 12px; border-radius: 12px; background: #1f2125; border: 1px {{c.bs}} {{c.bd}}; display: flex; flex-direction: column; gap: 2px">
+            <span style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #cfccc5"><span style="width: 8px; height: 8px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid {{c.fg}}; background: {{c.dot}}"></span>{{c.label}}</span>
+            <span style="font-size: 24px; font-weight: 600">{{c.n}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 8px">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 600">Требуют внимания</h2>
+        <span style="font-size: 13px; color: #a3a09a">{{attnCount}}</span>
+      </div>
+      <div style="display: flex; flex-direction: column; border-radius: 14px; background: #1f2125; border: 1px solid #2e3136; overflow: hidden">
+        <sc-for list="{{attn}}" as="a" hint-placeholder-count="6">
+          <button onClick="{{a.open}}" style="min-height: 60px; box-sizing: border-box; padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #2e3136">
+            <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+              <span class="mono" style="font-size: 14px; font-weight: 600">{{a.name}}</span>
+              <span style="font-size: 12.5px; color: #a3a09a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{a.reason}}</span>
+            </span>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; line-height: 1; padding: 5px 9px; border-radius: 999px; white-space: nowrap; border: 1px {{a.chip.bs}} {{a.chip.bd}}; color: {{a.chip.fg}}; background: {{a.chip.bg}}"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; background: {{a.chip.dot}}"></span>{{a.chip.label}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <button onClick="{{toggleOk}}" aria-expanded="{{showOk}}" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #3a3d43; display: flex; align-items: center; gap: 8px; font-size: 14px">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: #3dd68c"></span>{{okText}}<span style="flex-grow: 1"></span><span style="color: #7cb7ff">{{okAction}}</span>
+      </button>
+      <sc-if value="{{showOk}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{okHosts}}" as="o" hint-placeholder-count="8">
+            <button class="mono" onClick="{{o.open}}" style="height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid #3a3d43; font-size: 12.5px">{{o.name}}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <p style="margin: 0; font-size: 12.5px; line-height: 1.5; color: #a3a09a">Профили доступа и загрузка CSV — только в десктопной версии.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isHost}}" hint-placeholder-val="{{false}}">
+    <header style="flex-shrink: 0; height: 56px; padding: 0 8px; display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #2e3136">
+      <button onClick="{{back}}" aria-label="Назад" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center"><svg class="ic" viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6"></path></svg></button>
+      <span class="mono" style="font-size: 16px; font-weight: 600">{{h.name}}</span>
+    </header>
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; line-height: 1; padding: 6px 10px; border-radius: 999px; white-space: nowrap; border: 1px {{h.chip.bs}} {{h.chip.bd}}; color: {{h.chip.fg}}; background: {{h.chip.bg}}"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; background: {{h.chip.dot}}"></span>{{h.chip.label}}</span>
+        <span style="font-size: 13.5px; color: #cfccc5"><span class="mono">{{h.addr}}</span> · {{h.site}}</span>
+        <span style="font-size: 13px; color: #a3a09a">Профиль: {{h.profile}} · {{h.polled}}</span>
+      </div>
+      <sc-if value="{{h.hasError}}" hint-placeholder-val="{{false}}">
+        <div style="padding: 14px; border-radius: 12px; border: 1px dashed #5a5d64; background: #1f2125; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-weight: 600">{{h.errTitle}}</span>
+          <span style="font-size: 13.5px; line-height: 1.5; color: #cfccc5">{{h.errText}}</span>
+        </div>
+      </sc-if>
+      <h2 style="margin: 4px 0 0; font-size: 15px; font-weight: 600">Найдено на хосте</h2>
+      <div style="display: flex; flex-direction: column; border-radius: 14px; background: #1f2125; border: 1px solid #2e3136; overflow: hidden">
+        <sc-for list="{{h.products}}" as="p" hint-placeholder-count="2">
+          <div style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #2e3136">
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px">
+              <span style="font-weight: 600">{{p.name}}</span>
+              <span class="mono" style="font-size: 12.5px; color: #a3a09a">{{p.v}} → {{p.latest}}</span>
+            </span>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; line-height: 1; padding: 5px 9px; border-radius: 999px; white-space: nowrap; border: 1px {{p.chip.bs}} {{p.chip.bd}}; color: {{p.chip.fg}}; background: {{p.chip.bg}}"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; background: {{p.chip.dot}}"></span>{{p.chip.label}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{h.hasLastKnown}}" hint-placeholder-val="{{false}}">
+        <span style="font-size: 12.5px; line-height: 1.5; color: #a3a09a">Показаны последние известные версии.</span>
+      </sc-if>
+    </div>
+    <div style="flex-shrink: 0; padding: 12px 16px 20px; border-top: 1px solid #2e3136; background: #121316">
+      <button onClick="{{h.poll}}" style="width: 100%; height: 48px; border-radius: 12px; background: #eceae4; color: #121316; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px">
+        <svg class="ic" viewBox="0 0 24 24" width="18" height="18"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>{{h.pollBtn}}
+      </button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+    <div role="status" style="position: absolute; left: 16px; right: 16px; bottom: 90px; padding: 12px 14px; border-radius: 12px; background: #eceae4; color: #121316; font-size: 13.5px; line-height: 1.45">{{toast}}</div>
+  </sc-if>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"start":{"editor":null},"host":{"editor":null},"$preview":{"width":390,"height":844}}'>
+var SITES = { msk: "Москва, ЦОД", kzn: "Казань, филиал" };
+var PROFILE_NAMES = { "linux-ssh": "Linux SSH (только чтение)", "win-ro": "Windows RO", "mt-api": "MikroTik API (read)", "pve-token": "Proxmox VE (PVEAuditor)", "pbs-token": "Proxmox Backup (Audit)" };
+var PRODUCTS = {
+  windows: { name: "Windows Server", lines: { "2022": "20348.5631", "2019": "17763.9247", "2016": "14393.9514" } },
+  debian: { name: "Debian", lines: { "13": "13.7", "12": "12.15", "11": "11.11" } },
+  routeros: { name: "RouterOS", lines: { "7s": "7.24.4", "7lt": "7.23.7", "6lt": "6.49.22" } },
+  pve: { name: "Proxmox VE", lines: { "9": "9.2.20" } },
+  docker: { name: "Docker", lines: { "29": "29.8.1" } },
+  zabbix: { name: "Zabbix", lines: { "7.0": "7.0.31" } },
+  postgresql: { name: "PostgreSQL", lines: { "17": "17.11", "16": "16.15" } },
+  pbs: { name: "Proxmox Backup Server", lines: { "4": "4.2.6" } }
+};
+function I(p, v, line, st, x) { var o = { p: p, v: v, line: line, st: st }; if (x) { for (var k in x) { o[k] = x[k]; } } return o; }
+function H(id, site, addr, profile, os, apps, x) { var o = { id: id, site: site, addr: addr, profile: profile, os: os, apps: apps, poll: "ok", since: "" }; if (x) { for (var k in x) { o[k] = x[k]; } } return o; }
+var HOSTS = [
+  H("msk-app-01", "msk", "10.10.1.11", "linux-ssh", I("debian", "13.7", "13", "ok"), [I("docker", "29.8.1", "29", "ok")]),
+  H("msk-app-02", "msk", "10.10.1.12", "linux-ssh", I("debian", "13.7", "13", "ok"), [I("docker", "29.8.1", "29", "ok")]),
+  H("msk-db-01", "msk", "10.10.1.21", "linux-ssh", I("debian", "12.15", "12", "ok"), [I("postgresql", "16.15", "16", "ok")]),
+  H("msk-db-02", "msk", "10.10.1.22", "linux-ssh", I("debian", "12.15", "12", "ok"), [I("postgresql", "16.15", "16", "ok")]),
+  H("msk-mon-01", "msk", "10.10.1.31", "linux-ssh", I("debian", "12.15", "12", "ok"), [I("zabbix", "7.0.31", "7.0", "ok"), I("postgresql", "17.11", "17", "ok")]),
+  H("msk-git-01", "msk", "10.10.1.41", "linux-ssh", I("debian", "12.12", "12", "update", { n: 3 }), [I("docker", "29.7.2", "29", "update", { n: 2 })]),
+  H("msk-files-01", "msk", "10.10.1.51", "linux-ssh", I("debian", "12.12", "12", "update", { n: 3 }), []),
+  H("msk-legacy-01", "msk", "10.10.1.99", "linux-ssh", I("debian", "11.11", "11", "eol"), []),
+  H("msk-dc-01", "msk", "10.10.2.10", "win-ro", I("windows", "20348.5631", "2022", "ok"), []),
+  H("msk-1c-01", "msk", "10.10.2.21", "win-ro", I("windows", "20348.5499", "2022", "critical", { cvss: 9.8, cves: 61 }), []),
+  H("msk-rds-01", "msk", "10.10.2.31", "win-ro", I("windows", "17763.9247", "2019", "ok"), []),
+  H("msk-sql-01", "msk", "10.10.2.41", "win-ro", I("windows", "14393.9514", "2016", "ok"), []),
+  H("msk-gw-01", "msk", "10.10.0.1", "mt-api", I("routeros", "7.23.7", "7lt", "ok"), []),
+  H("msk-gw-02", "msk", "10.10.0.2", "mt-api", I("routeros", "7.23.7", "7lt", "ok"), []),
+  H("msk-sw-01", "msk", "10.10.0.11", "mt-api", I("routeros", "7.24.4", "7s", "ok"), []),
+  H("msk-sw-02", "msk", "10.10.0.12", "mt-api", I("routeros", "7.24.4", "7s", "ok"), []),
+  H("msk-ap-01", "msk", "10.10.0.21", "mt-api", I("routeros", "6.49.22", "6lt", "ok"), []),
+  H("msk-ap-02", "msk", "10.10.0.22", "mt-api", I("routeros", "6.49.22", "6lt", "ok"), []),
+  H("msk-pve-01", "msk", "10.10.3.1", "pve-token", I("pve", "9.2.20", "9", "ok"), []),
+  H("msk-pve-02", "msk", "10.10.3.2", "pve-token", I("pve", "9.2.20", "9", "ok"), []),
+  H("msk-pve-03", "msk", "10.10.3.3", "pve-token", I("pve", "9.2.17", "9", "update", { n: 3 }), []),
+  H("msk-pbs-01", "msk", "10.10.3.10", "pbs-token", I("pbs", "4.2.6", "4", "ok"), []),
+  H("kzn-app-01", "kzn", "10.20.1.11", "linux-ssh", I("debian", "12.12", "12", "update", { n: 3 }), [I("docker", "29.7.2", "29", "update", { n: 2 }), I("zabbix", "7.0.29", "7.0", "update", { n: 2, label: "Zabbix proxy" })]),
+  H("kzn-srv-01", "kzn", "10.20.1.12", "linux-ssh", I("debian", "12.15", "12", "ok"), []),
+  H("kzn-1c-01", "kzn", "10.20.2.21", "win-ro", I("windows", "20348.5499", "2022", "critical", { cvss: 9.8, cves: 61 }), []),
+  H("kzn-ts-01", "kzn", "10.20.2.31", "win-ro", I("windows", "17763.9121", "2019", "critical", { cvss: 9.8, cves: 59 }), []),
+  H("kzn-fs-01", "kzn", "10.20.2.41", "win-ro", I("windows", "20348.5386", "2022", "critical", { cvss: 9.8 }), [], { poll: "denied", since: "25.09.2026" }),
+  H("kzn-gw-01", "kzn", "10.20.0.1", "mt-api", I("routeros", "7.23.4", "7lt", "update", { n: 3 }), []),
+  H("kzn-gw-02", "kzn", "10.20.0.2", "mt-api", I("routeros", "7.23.4", "7lt", "update", { n: 3 }), [], { poll: "timeout", since: "26.09.2026 14:10" }),
+  H("kzn-ap-01", "kzn", "10.20.0.21", "mt-api", I("routeros", "6.49.19", "6lt", "update", { n: 3 }), []),
+  H("kzn-sw-01", "kzn", "10.20.0.11", "mt-api", I("routeros", "7.23.7", "7lt", "ok"), [])
+];
+var RANK = { critical: 0, eol: 1, stale: 2, update: 3, ok: 4 };
+var STY = {
+  critical: { fg: "#ff6b61", bg: "#35181a", bd: "#8c2f2a", bs: "solid", dot: "currentColor" },
+  eol: { fg: "#d9d2c3", bg: "#29251e", bd: "#7a6f5c", bs: "solid", dot: "currentColor" },
+  update: { fg: "#f5a524", bg: "#2a2417", bd: "#6e5320", bs: "solid", dot: "currentColor" },
+  ok: { fg: "#3dd68c", bg: "#17261e", bd: "#2c5a41", bs: "solid", dot: "currentColor" },
+  stale: { fg: "#a3a09a", bg: "transparent", bd: "#5a5d64", bs: "dashed", dot: "transparent" }
+};
+function plural(n, a, b, c) { var m10 = n % 10, m100 = n % 100; if (m10 === 1 && m100 !== 11) { return a; } if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) { return b; } return c; }
+function chip(kind, label) { var s = STY[kind]; return { label: label, fg: s.fg, bg: s.bg, bd: s.bd, bs: s.bs, dot: s.dot }; }
+function pname(inst) { return inst.label || PRODUCTS[inst.p].name; }
+function latest(inst) { return PRODUCTS[inst.p].lines[inst.line]; }
+function stLabel(inst) { if (inst.st === "critical") { return "CVSS " + inst.cvss.toFixed(1); } if (inst.st === "eol") { return "EOL"; } if (inst.st === "update") { return "+" + inst.n + " " + plural(inst.n, "релиз", "релиза", "релизов"); } return "Актуально"; }
+function osText(inst) { return inst.p === "windows" ? "Windows Server " + inst.line + " · " + inst.v : pname(inst) + " " + inst.v; }
+function status(h) {
+  var list = [h.os].concat(h.apps).sort(function (a, b) { return (RANK[a.st] - RANK[b.st]) || ((b.cvss || 0) - (a.cvss || 0)); }), w = list[0];
+  if (h.poll !== "ok" && w.st !== "critical") { return { kind: "stale", chip: chip("stale", h.poll === "timeout" ? "Нет связи" : "Нет доступа"), worst: w }; }
+  return { kind: w.st, chip: chip(w.st, stLabel(w)), worst: w };
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { screen: props.start === "host" ? "host" : "home", host: props.host || "kzn-fs-01", site: "all", showOk: false, polling: false, toast: "" };
+  }
+  componentWillUnmount() { clearTimeout(this.t1); clearTimeout(this.t2); }
+  renderVals() {
+    var self = this, s = this.state;
+    var vis = HOSTS.filter(function (h) { return s.site === "all" || h.site === s.site; });
+    var st = vis.map(function (h) { return { h: h, s: status(h) }; });
+    var cnt = function (k) { return st.filter(function (x) { return x.s.kind === k; }).length; };
+    var counters = [["critical", "Критично"], ["eol", "EOL"], ["update", "Отстают"], ["stale", "Нет связи"]].map(function (p) {
+      var S = STY[p[0]]; return { label: p[1], n: cnt(p[0]), fg: S.fg, dot: p[0] === "stale" ? "transparent" : S.fg, bd: p[0] === "stale" ? "#5a5d64" : "#2e3136", bs: p[0] === "stale" ? "dashed" : "solid" };
+    });
+    var attnList = st.filter(function (x) { return x.s.kind !== "ok"; }).sort(function (a, b) { return (RANK[a.s.kind] - RANK[b.s.kind]) || (a.h.id < b.h.id ? -1 : 1); });
+    var open = function (id) { return function () { self.setState({ screen: "host", host: id }); }; };
+    var attn = attnList.map(function (x) {
+      var w = x.s.worst, reason;
+      if (x.s.kind === "critical") { reason = osText(w) + (w.cves ? " · " + w.cves + " CVE" : "") + (x.h.poll === "denied" ? " · отказ в доступе" : ""); }
+      else if (x.s.kind === "eol") { reason = osText(w) + " · ветка без поддержки"; }
+      else if (x.s.kind === "stale") { reason = "Не отвечает с " + x.h.since; }
+      else { reason = pname(w) + " " + w.v + " → " + latest(w); }
+      return { name: x.h.id, reason: reason, chip: x.s.chip, open: open(x.h.id) };
+    });
+    var okList = st.filter(function (x) { return x.s.kind === "ok"; });
+    var sites = [["all", "Все"], ["msk", "Москва"], ["kzn", "Казань"]].map(function (p) {
+      var on = s.site === p[0]; return { label: p[1], on: on, bd: on ? "#eceae4" : "#3a3d43", bg: on ? "#eceae4" : "transparent", fg: on ? "#121316" : "#cfccc5", pick: function () { self.setState({ site: p[0] }); } };
+    });
+    var hh = HOSTS.filter(function (x) { return x.id === s.host; })[0] || HOSTS[0], hs = status(hh);
+    var h = {
+      name: hh.id, addr: hh.addr, site: SITES[hh.site], profile: PROFILE_NAMES[hh.profile], chip: hs.chip,
+      polled: s.polling ? "опрашиваем…" : (hh.poll === "ok" ? "опрошен в 12:00" : "попытка в 12:00 — ошибка"),
+      hasError: hh.poll !== "ok",
+      errTitle: hh.poll === "timeout" ? "Не отвечает с " + hh.since : "Отказ в доступе с " + hh.since,
+      errText: hh.poll === "timeout" ? "Устройство не принимает подключения по API-SSL. Проверьте питание и доступность с адреса VersionDrift." : "Истёк пароль учётки профиля «Windows RO» на этом хосте. Задайте новый пароль — с десктопа.",
+      hasLastKnown: hh.poll !== "ok",
+      products: [hh.os].concat(hh.apps).map(function (inst) { return { name: pname(inst) + (inst.p === "windows" ? " " + inst.line : ""), v: inst.v, latest: latest(inst), chip: chip(inst.st, stLabel(inst)) }; }),
+      pollBtn: s.polling ? "Опрашиваем…" : "Опросить сейчас",
+      poll: function () {
+        self.setState({ polling: true });
+        clearTimeout(self.t1);
+        self.t1 = setTimeout(function () {
+          self.setState({ polling: false, toast: hh.poll === "ok" ? hh.id + " опрошен: версии не изменились." : hh.id + (hh.poll === "timeout" ? " снова не ответил." : ": отказ в доступе.") });
+          clearTimeout(self.t2); self.t2 = setTimeout(function () { self.setState({ toast: "" }); }, 2800);
+        }, 1400);
+      }
+    };
+    return {
+      isHome: s.screen === "home", isHost: s.screen === "host",
+      sites: sites, counters: counters, attn: attn, attnCount: attn.length + " " + plural(attn.length, "хост", "хоста", "хостов"),
+      showOk: s.showOk, okText: okList.length + " " + plural(okList.length, "хост", "хоста", "хостов") + " в порядке", okAction: s.showOk ? "свернуть" : "показать",
+      toggleOk: function () { self.setState({ showOk: !s.showOk }); },
+      okHosts: okList.map(function (x) { return { name: x.h.id, open: open(x.h.id) }; }),
+      h: h, back: function () { self.setState({ screen: "home" }); },
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

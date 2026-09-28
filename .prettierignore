@@ -15,3 +15,5 @@ packages/db/src/migrations.ts
 apps/web/e2e/feed/
 # Helm templates are Go templates, not YAML
 charts/
+# Hand-written demo data (fleet UI oracle)
+fixtures/

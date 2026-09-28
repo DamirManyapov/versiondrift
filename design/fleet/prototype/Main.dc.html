@@ -1,0 +1,1429 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>VersionDrift — флот хостов</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.vd.dark{--bg:#121316;--surface:#1f2125;--surface-2:#1a1b1f;--surface-3:#2a2d33;--border:#2e3136;--border-strong:#3a3d43;--text:#eceae4;--text-soft:#cfccc5;--muted:#a3a09a;--link:#7cb7ff;--link-bg:#16233a;--critical:#ff6b61;--critical-bg:#35181a;--critical-border:#8c2f2a;--update:#f5a524;--update-bg:#2a2417;--update-border:#6e5320;--ok:#3dd68c;--ok-bg:#17261e;--ok-border:#2c5a41;--eol:#d9d2c3;--eol-bg:#29251e;--eol-border:#7a6f5c;--stale:#a3a09a;--stale-border:#5a5d64;--code-bg:#0e0f11;--primary-bg:#eceae4;--primary-fg:#121316;--overlay:rgba(8,9,10,.72);--shadow:0 12px 40px rgba(0,0,0,.45)}
+.vd.light{--bg:#f7f6f2;--surface:#ffffff;--surface-2:#f0eee8;--surface-3:#e7e4dc;--border:#d9d6ce;--border-strong:#c3c0b7;--text:#1b1c1f;--text-soft:#3d3c39;--muted:#5f5d58;--link:#1f5fbf;--link-bg:#e6eefb;--critical:#c62f25;--critical-bg:#fde8e6;--critical-border:#e8a39d;--update:#9a5b00;--update-bg:#fdf1dc;--update-border:#e4c286;--ok:#16794a;--ok-bg:#e3f5ec;--ok-border:#9fd6b9;--eol:#4d4638;--eol-bg:#eee9df;--eol-border:#b9ad97;--stale:#6b6964;--stale-border:#a8a59e;--code-bg:#f0eee8;--primary-bg:#1b1c1f;--primary-fg:#ffffff;--overlay:rgba(27,28,31,.38);--shadow:0 12px 40px rgba(27,28,31,.16)}
+.vd button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.vd button:focus-visible,.vd input:focus-visible,.vd select:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+.vd .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.vd .ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.vd .hov:hover{background:var(--surface-3)}
+.vd .tile:hover{border-color:var(--border-strong)}
+.vd .scroll::-webkit-scrollbar{width:8px;height:8px}.vd .scroll::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
+</style>
+</helmet>
+
+<div class="vd {{themeClass}}" style="width: 1440px; height: 1024px; position: relative; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 14px">
+
+  <header style="height: 64px; flex-shrink: 0; box-sizing: border-box; padding: 0 28px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border)">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="width: 32px; height: 32px; border-radius: 9px; background: #f5a524; color: #1a1206; display: flex; align-items: center; justify-content: center">
+        <svg class="ic" viewBox="0 0 24 24" width="20" height="20"><path d="M3 9c3 0 3-3 6-3s3 3 6 3 3-3 6-3"></path><path d="M3 15c3 0 3-3 6-3s3 3 6 3 3-3 6-3"></path><path d="M3 21c3 0 3-3 6-3s3 3 6 3"></path></svg>
+      </div>
+      <span style="font-size: 17px; font-weight: 700; letter-spacing: -0.01em">VersionDrift</span>
+      <span style="font-size: 11px; padding: 3px 7px; border-radius: 6px; border: 1px solid var(--border-strong); color: var(--muted)">self-hosted</span>
+    </div>
+    <nav aria-label="Разделы" style="display: flex; gap: 2px; margin-left: 8px">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="4">
+        <button class="hov" onClick="{{n.pick}}" style="height: 40px; padding: 0 14px; border-radius: 9px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; color: {{n.fg}}; background: {{n.bg}}">{{n.label}}<sc-if value="{{n.hasCount}}" hint-placeholder-val="{{false}}"><span class="mono" style="font-size: 12px; color: var(--muted)">{{n.count}}</span></sc-if></button>
+      </sc-for>
+    </nav>
+    <div style="flex-grow: 1"></div>
+    <div style="position: relative">
+      <button class="hov" onClick="{{toggleSites}}" aria-expanded="{{sitesOpen}}" style="height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--border-strong); display: flex; align-items: center; gap: 8px; font-size: 14px">
+        <svg class="ic" viewBox="0 0 24 24" width="17" height="17" style="color: var(--muted)"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>
+        <span style="color: var(--muted)">Площадка:</span><span style="font-weight: 600">{{siteLabel}}</span>
+        <svg class="ic" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6"></path></svg>
+      </button>
+      <sc-if value="{{sitesOpen}}" hint-placeholder-val="{{false}}">
+        <div style="position: absolute; right: 0; top: 48px; width: 400px; z-index: 30; box-sizing: border-box; padding: 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 6px">
+          <sc-for list="{{siteCards}}" as="sc" hint-placeholder-count="3">
+            <button class="hov" onClick="{{sc.pick}}" style="padding: 12px; border-radius: 10px; border: 1px solid {{sc.bd}}; display: flex; flex-direction: column; gap: 8px">
+              <span style="display: flex; align-items: baseline; gap: 8px; width: 100%"><span style="font-weight: 600; font-size: 14px">{{sc.name}}</span><span style="flex-grow: 1"></span><span class="mono" style="font-size: 12px; color: var(--muted)">{{sc.n}}</span></span>
+              <span style="display: flex; height: 6px; gap: 2px; width: 100%">
+                <sc-for list="{{sc.segs}}" as="sg" hint-placeholder-count="3"><span style="flex-grow: {{sg.n}}; flex-basis: 0; box-sizing: border-box; border-radius: 2px; background: {{sg.bg}}; border: {{sg.border}}"></span></sc-for>
+              </span>
+              <span style="font-size: 12.5px; color: var(--text-soft)">{{sc.summary}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.3">
+      <span style="font-size: 12px; color: var(--muted)">Опрос каждые 6 ч</span>
+      <span style="font-size: 12.5px">следующий в 18:00</span>
+    </div>
+    <button onClick="{{openAdd}}" style="height: 40px; padding: 0 14px; border-radius: 10px; background: var(--primary-bg); color: var(--primary-fg); display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600">
+      <svg class="ic" viewBox="0 0 24 24" width="17" height="17"><path d="M12 5v14M5 12h14"></path></svg>Добавить хосты
+    </button>
+  </header>
+
+  <sc-if value="{{isBoard}}" hint-placeholder-val="{{true}}">
+    <div style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 20px 28px 24px; display: flex; gap: 24px">
+      <div style="width: 808px; flex-shrink: 0; min-height: 0; display: flex; flex-direction: column; gap: 14px">
+        <sc-if value="{{showProgress}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 14px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--link); display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; flex-wrap: wrap">
+              <svg class="ic" viewBox="0 0 24 24" width="18" height="18" style="color: var(--link)"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>
+              <span style="font-weight: 600">Первый опрос идёт</span><span class="mono">опрошено {{polled}} из 31</span><span style="color: var(--muted)">· результаты появляются на доске по мере опроса</span>
+            </div>
+            <div style="height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden"><div style="height: 6px; border-radius: 3px; width: {{pollPct}}; background: var(--link)"></div></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{showResult}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 12px 14px 12px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border-strong); display: flex; align-items: center; gap: 12px">
+            <svg class="ic" viewBox="0 0 24 24" width="18" height="18" style="color: var(--ok)"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            <span style="font-size: 14px"><b>Первый опрос завершён:</b> {{resultText}}</span>
+            <span style="flex-grow: 1"></span>
+            <button class="hov" onClick="{{showProblems}}" style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--border-strong); font-size: 13px">Показать проблемные</button>
+            <button class="hov" onClick="{{closeBanner}}" aria-label="Скрыть" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center"><svg class="ic" viewBox="0 0 24 24" width="16" height="16"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+        </sc-if>
+
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{stats}}" as="st" hint-placeholder-count="4">
+            <button class="hov" onClick="{{st.pick}}" aria-pressed="{{st.on}}" style="padding: 12px 14px; border-radius: 12px; background: var(--surface); border: 1px solid {{st.bd}}; display: flex; flex-direction: column; gap: 4px">
+              <span style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-soft)"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{st.dot}}"></span>{{st.label}}</span>
+              <span style="font-size: 24px; font-weight: 600; line-height: 1.15">{{st.n}} <span style="font-size: 12px; font-weight: 400; color: var(--muted)">{{st.unit}}</span></span>
+            </button>
+          </sc-for>
+          <button class="hov" onClick="{{goPollProblems}}" style="padding: 12px 14px; border-radius: 12px; border: 1px dashed var(--stale-border); display: flex; flex-direction: column; gap: 4px">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-soft)"><span style="width: 8px; height: 8px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid var(--stale)"></span>Проблемы опроса</span>
+            <span style="font-size: 24px; font-weight: 600; line-height: 1.15">{{pollProblemsN}} <span style="font-size: 12px; font-weight: 400; color: var(--muted)">{{pollProblemsUnit}}</span></span>
+          </button>
+        </div>
+
+        <div class="scroll" style="flex-grow: 1; min-height: 0; overflow-y: auto; padding: 2px">
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+            <sc-for list="{{tiles}}" as="t" hint-placeholder-count="6">
+              <button class="tile" onClick="{{t.pick}}" style="width: 100%; min-height: 200px; box-sizing: border-box; padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid {{t.bd}}; box-shadow: {{t.ring}}; display: flex; flex-direction: column; gap: 12px">
+                <span style="display: flex; align-items: flex-start; gap: 10px; width: 100%">
+                  <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+                    <span style="font-size: 16px; font-weight: 600">{{t.name}}</span>
+                    <span style="font-size: 12.5px; color: var(--muted)">{{t.sub}}</span>
+                  </span>
+                  <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; line-height: 1; padding: 5px 9px; border-radius: 999px; white-space: nowrap; border: 1px {{t.chip.bs}} {{t.chip.bd}}; color: {{t.chip.fg}}; background: {{t.chip.bg}}"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; background: {{t.chip.dot}}"></span>{{t.chip.label}}</span>
+                </span>
+                <span role="img" aria-label="{{t.barLabel}}" style="display: flex; height: 8px; gap: 2px; width: 100%">
+                  <sc-for list="{{t.segs}}" as="sg" hint-placeholder-count="3"><span style="flex-grow: {{sg.n}}; flex-basis: 0; box-sizing: border-box; border-radius: 2px; background: {{sg.bg}}; border: {{sg.border}}"></span></sc-for>
+                </span>
+                <span style="display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--text-soft)">
+                  <sc-for list="{{t.legend}}" as="lg" hint-placeholder-count="2"><span><b class="mono" style="font-weight: 600; color: {{lg.fg}}">{{lg.n}}</b> {{lg.label}}</span></sc-for>
+                </span>
+                <span style="display: flex; flex-direction: column; gap: 5px; width: 100%; box-sizing: border-box; border-top: 1px solid var(--border); padding-top: 10px">
+                  <sc-for list="{{t.lines}}" as="ln" hint-placeholder-count="2">
+                    <span style="display: grid; grid-template-columns: 104px minmax(0, 1fr) 36px; gap: 8px; align-items: baseline; font-size: 12.5px">
+                      <span style="color: var(--muted)">{{ln.label}}</span>
+                      <span class="mono" style="color: {{ln.fg}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ln.text}}</span>
+                      <span class="mono" style="text-align: right; color: var(--muted)">×{{ln.n}}</span>
+                    </span>
+                  </sc-for>
+                </span>
+                <sc-if value="{{t.hasFoot}}" hint-placeholder-val="{{false}}">
+                  <span style="font-size: 12px; color: var(--muted)">{{t.foot}}</span>
+                </sc-if>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{noTiles}}" hint-placeholder-val="{{false}}">
+            <div style="padding: 48px; text-align: center; color: var(--muted)">{{noTilesText}}</div>
+          </sc-if>
+        </div>
+      </div>
+
+      <aside class="scroll" aria-label="Детали продукта" style="flex-grow: 1; min-width: 0; min-height: 0; overflow-y: auto; box-sizing: border-box; padding: 22px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border)">
+        <sc-if value="{{d.none}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 40px 12px; text-align: center; color: var(--muted)">Пока нет данных. Продукты появятся здесь после первого опроса хостов.</div>
+        </sc-if>
+        <sc-if value="{{d.some}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-direction: column; gap: 18px">
+            <div style="display: flex; align-items: flex-start; gap: 12px">
+              <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px">
+                <h2 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.01em">{{d.name}}</h2>
+                <span style="font-size: 13px; color: var(--muted)">{{d.sub}}</span>
+              </div>
+              <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; line-height: 1; padding: 6px 10px; border-radius: 999px; white-space: nowrap; border: 1px {{d.chip.bs}} {{d.chip.bd}}; color: {{d.chip.fg}}; background: {{d.chip.bg}}"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; background: {{d.chip.dot}}"></span>{{d.chip.label}}</span>
+            </div>
+            <sc-for list="{{d.notes}}" as="nt" hint-placeholder-count="1">
+              <div style="display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); font-size: 13px; line-height: 1.5; color: var(--text-soft)">
+                <svg class="ic" viewBox="0 0 24 24" width="16" height="16" style="margin-top: 2px; color: {{nt.fg}}"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16.5v.01"></path></svg>
+                <span>{{nt.text}}</span>
+              </div>
+            </sc-for>
+            <div style="display: flex; align-items: baseline; gap: 10px">
+              <h3 style="margin: 0; font-size: 15px; font-weight: 600">Разбивка по версиям</h3>
+              <span style="font-size: 12.5px; color: var(--muted)">хост — открыть карточку</span>
+            </div>
+            <sc-for list="{{d.groups}}" as="g" hint-placeholder-count="3">
+              <div style="padding: 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span class="mono" style="font-size: 16px; font-weight: 600">{{g.v}}</span>
+                  <span style="font-size: 12.5px; color: var(--muted)">{{g.line}}</span>
+                  <span class="mono" style="font-size: 13px; color: var(--text-soft)">×{{g.count}}</span>
+                  <span style="flex-grow: 1"></span>
+                  <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; line-height: 1; padding: 5px 9px; border-radius: 999px; white-space: nowrap; border: 1px {{g.chip.bs}} {{g.chip.bd}}; color: {{g.chip.fg}}; background: {{g.chip.bg}}"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; background: {{g.chip.dot}}"></span>{{g.chip.label}}</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                  <sc-for list="{{g.hosts}}" as="hh" hint-placeholder-count="3">
+                    <button class="hov mono" onClick="{{hh.pick}}" style="height: 30px; padding: 0 10px; border-radius: 8px; font-size: 12.5px; border: 1px {{hh.bs}} var(--border-strong); display: flex; align-items: center; gap: 6px">{{hh.name}}<sc-if value="{{hh.stale}}" hint-placeholder-val="{{false}}"><span style="font-family: 'IBM Plex Sans', sans-serif; font-size: 11.5px; color: var(--muted)">{{hh.tag}}</span></sc-if></button>
+                  </sc-for>
+                  <sc-if value="{{g.hasMore}}" hint-placeholder-val="{{false}}">
+                    <button class="hov" onClick="{{g.more}}" style="height: 30px; padding: 0 10px; border-radius: 8px; font-size: 12.5px; color: var(--link)">{{g.moreText}}</button>
+                  </sc-if>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                  <sc-if value="{{g.canChanges}}" hint-placeholder-val="{{false}}">
+                    <button class="hov" onClick="{{g.toggle}}" aria-expanded="{{g.open}}" style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--border-strong); font-size: 13px; display: flex; align-items: center; gap: 6px">{{g.changesLabel}}</button>
+                  </sc-if>
+                  <button class="hov" onClick="{{g.copy}}" style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--border-strong); font-size: 13px; display: flex; align-items: center; gap: 6px">
+                    <svg class="ic" viewBox="0 0 24 24" width="15" height="15"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>Копировать хосты для тикета
+                  </button>
+                </div>
+                <sc-if value="{{g.open}}" hint-placeholder-val="{{false}}">
+                  <div style="padding: 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; font-size: 13px; line-height: 1.5">
+                    <span style="font-weight: 600">{{g.changesTitle}}</span>
+                    <span style="color: var(--text-soft)">{{g.changesText}}</span>
+                    <sc-if value="{{g.hasRel}}" hint-placeholder-val="{{false}}">
+                      <span style="display: flex; gap: 6px; flex-wrap: wrap">
+                        <sc-for list="{{g.rel}}" as="rv" hint-placeholder-count="3"><span class="mono" style="padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); font-size: 12.5px">{{rv}}</span></sc-for>
+                      </span>
+                    </sc-if>
+                    <button onClick="{{openChanges}}" style="align-self: flex-start; font-size: 13px; color: var(--link)">Открыть «Изменения с моей версии» →</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </aside>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isHosts}}" hint-placeholder-val="{{false}}">
+    <div style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 20px 28px 24px; display: flex; flex-direction: column; gap: 14px">
+      <sc-if value="{{showProgress}}" hint-placeholder-val="{{false}}">
+        <div style="padding: 12px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--link); display: flex; align-items: center; gap: 14px">
+          <span style="font-weight: 600">Первый опрос идёт</span><span class="mono">опрошено {{polled}} из 31</span>
+          <div style="flex-grow: 1; height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden"><div style="height: 6px; border-radius: 3px; width: {{pollPct}}; background: var(--link)"></div></div>
+        </div>
+      </sc-if>
+      <div style="display: flex; align-items: center; gap: 14px">
+        <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.01em">Хосты</h1>
+        <span style="font-size: 14px; color: var(--muted)">{{hostsTotalText}}</span>
+        <span style="flex-grow: 1"></span>
+        <label style="display: flex; align-items: center; gap: 8px; height: 40px; width: 320px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface)">
+          <svg class="ic" viewBox="0 0 24 24" width="17" height="17" style="color: var(--muted)"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+          <input value="{{hq}}" onChange="{{onSearch}}" placeholder="Имя или адрес" aria-label="Поиск по имени и адресу" style="flex-grow: 1; min-width: 0; background: transparent; border: 0; outline: none; color: var(--text); font: inherit; font-size: 14px">
+        </label>
+        <button class="hov" onClick="{{toggleGroup}}" aria-pressed="{{grouped}}" style="height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--border-strong); font-size: 14px; display: flex; align-items: center; gap: 8px">
+          <svg class="ic" viewBox="0 0 24 24" width="17" height="17"><path d="M4 6h16M4 12h10M4 18h16"></path></svg>{{groupLabel}}
+        </button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap">
+        <div role="group" aria-label="Статус" style="display: flex; gap: 6px">
+          <sc-for list="{{fStatus}}" as="fc" hint-placeholder-count="5">
+            <button onClick="{{fc.pick}}" aria-pressed="{{fc.on}}" style="height: 32px; padding: 0 12px; border-radius: 16px; font-size: 13px; border: 1px solid {{fc.bd}}; background: {{fc.bg}}; color: {{fc.fg}}">{{fc.label}}</button>
+          </sc-for>
+        </div>
+        <div style="width: 1px; height: 24px; background: var(--border)"></div>
+        <div role="group" aria-label="Опрос" style="display: flex; gap: 6px">
+          <sc-for list="{{fPoll}}" as="fc" hint-placeholder-count="2">
+            <button onClick="{{fc.pick}}" aria-pressed="{{fc.on}}" style="height: 32px; padding: 0 12px; border-radius: 16px; font-size: 13px; border: 1px solid {{fc.bd}}; background: {{fc.bg}}; color: {{fc.fg}}">{{fc.label}}</button>
+          </sc-for>
+        </div>
+        <div style="width: 1px; height: 24px; background: var(--border)"></div>
+        <div role="group" aria-label="Тип" style="display: flex; gap: 6px">
+          <sc-for list="{{fKind}}" as="fc" hint-placeholder-count="5">
+            <button onClick="{{fc.pick}}" aria-pressed="{{fc.on}}" style="height: 32px; padding: 0 12px; border-radius: 16px; font-size: 13px; border: 1px solid {{fc.bd}}; background: {{fc.bg}}; color: {{fc.fg}}">{{fc.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{hasSel}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 16px; border-radius: 12px; background: var(--link-bg); border: 1px solid var(--link)">
+          <span style="font-weight: 600">{{selText}}</span>
+          <sc-if value="{{hasHiddenSel}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: var(--text-soft)">{{hiddenSelText}}</span></sc-if>
+          <span style="flex-grow: 1"></span>
+          <button class="hov" onClick="{{bulkPoll}}" style="height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); font-size: 13px">Опросить сейчас</button>
+          <button class="hov" onClick="{{bulkProfile}}" style="height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); font-size: 13px">Сменить профиль…</button>
+          <button class="hov" onClick="{{bulkMove}}" style="height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); font-size: 13px">Перенести…</button>
+          <button class="hov" onClick="{{bulkDelete}}" style="height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--critical-border); background: var(--surface); color: var(--critical); font-size: 13px">Удалить…</button>
+          <button class="hov" onClick="{{clearSel}}" style="height: 34px; padding: 0 10px; border-radius: 8px; font-size: 13px; color: var(--link)">Снять выбор</button>
+        </div>
+      </sc-if>
+
+      <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; border-radius: 14px; border: 1px solid var(--border); background: var(--surface); overflow: hidden">
+        <div style="display: grid; grid-template-columns: 28px 140px 200px 130px minmax(0, 1fr) 110px 120px 250px; gap: 12px; align-items: center; height: 44px; padding: 0 14px; background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 11.5px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted)">
+          <input type="checkbox" checked="{{allChecked}}" onChange="{{selectAll}}" aria-label="{{selectAllLabel}}" title="{{selectAllLabel}}" style="width: 17px; height: 17px; margin: 0; accent-color: var(--link)">
+          <span>Статус</span><span>Хост</span><span>Площадка</span><span>ОС / прошивка</span><span>Продукты</span><span>Опрос</span><span>Проблема опроса</span>
+        </div>
+        <div class="scroll" style="flex-grow: 1; min-height: 0; overflow-y: auto">
+          <sc-for list="{{groups}}" as="gr" hint-placeholder-count="2">
+            <sc-if value="{{gr.hasHead}}" hint-placeholder-val="{{true}}">
+              <button class="hov" onClick="{{gr.toggle}}" aria-expanded="{{gr.open}}" style="width: 100%; box-sizing: border-box; height: 42px; padding: 0 14px; display: flex; align-items: center; gap: 10px; background: var(--surface-2); border-bottom: 1px solid var(--border)">
+                <svg class="ic" viewBox="0 0 24 24" width="16" height="16" style="transform: {{gr.rot}}"><path d="M9 6l6 6-6 6"></path></svg>
+                <span style="font-weight: 600">{{gr.name}}</span>
+                <span class="mono" style="font-size: 12.5px; color: var(--muted)">{{gr.count}}</span>
+                <span style="font-size: 12.5px; color: var(--text-soft)">· {{gr.summary}}</span>
+              </button>
+            </sc-if>
+            <sc-if value="{{gr.open}}" hint-placeholder-val="{{true}}">
+              <sc-for list="{{gr.rows}}" as="r" hint-placeholder-count="8">
+                <div class="hov" style="display: grid; grid-template-columns: 28px 140px 200px 130px minmax(0, 1fr) 110px 120px 250px; gap: 12px; align-items: center; min-height: 52px; padding: 0 14px; border-bottom: 1px solid var(--border); background: {{r.bg}}">
+                  <input type="checkbox" checked="{{r.checked}}" onChange="{{r.toggle}}" aria-label="Выбрать {{r.name}}" style="width: 17px; height: 17px; margin: 0; accent-color: var(--link)">
+                  <span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; line-height: 1; padding: 5px 9px; border-radius: 999px; white-space: nowrap; border: 1px {{r.chip.bs}} {{r.chip.bd}}; color: {{r.chip.fg}}; background: {{r.chip.bg}}"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; background: {{r.chip.dot}}"></span>{{r.chip.label}}</span></span>
+                  <button onClick="{{r.open}}" style="display: flex; flex-direction: column; gap: 1px; padding: 6px 0">
+                    <span class="mono" style="font-size: 13.5px; font-weight: 600; color: var(--link)">{{r.name}}</span>
+                    <span class="mono" style="font-size: 12px; color: var(--muted)">{{r.addr}}</span>
+                  </button>
+                  <span style="font-size: 13px; color: var(--text-soft)">{{r.site}}</span>
+                  <span class="mono" style="font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.os}}</span>
+                  <span style="font-size: 13px; color: var(--text-soft)">{{r.prod}}</span>
+                  <span style="font-size: 13px; color: var(--text-soft)">{{r.last}}</span>
+                  <span style="font-size: 13px; color: {{r.probFg}}">{{r.problem}}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+          </sc-for>
+          <sc-if value="{{noRows}}" hint-placeholder-val="{{false}}">
+            <div style="padding: 48px; text-align: center; color: var(--muted)">{{noRowsText}}</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isHost}}" hint-placeholder-val="{{false}}">
+    <div class="scroll" style="flex-grow: 1; min-height: 0; overflow-y: auto; box-sizing: border-box; padding: 20px 28px 28px; display: flex; flex-direction: column; gap: 18px">
+      <nav aria-label="Путь" style="display: flex; align-items: center; gap: 8px; font-size: 13.5px">
+        <button onClick="{{backToHosts}}" style="color: var(--link)">Хосты</button><span style="color: var(--muted)">/</span><span class="mono">{{h.name}}</span>
+      </nav>
+      <div style="display: flex; align-items: flex-start; gap: 16px">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <h1 class="mono" style="margin: 0; font-size: 26px; font-weight: 600">{{h.name}}</h1>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; line-height: 1; padding: 6px 10px; border-radius: 999px; white-space: nowrap; border: 1px {{h.chip.bs}} {{h.chip.bd}}; color: {{h.chip.fg}}; background: {{h.chip.bg}}"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; background: {{h.chip.dot}}"></span>{{h.chip.label}}</span>
+          </div>
+          <div style="display: flex; gap: 18px; flex-wrap: wrap; font-size: 13.5px; color: var(--text-soft)">
+            <span class="mono">{{h.addr}}</span><span>{{h.site}}</span><span>{{h.kind}}</span>
+            <span>Профиль: <button onClick="{{h.openProfile}}" style="color: var(--link)">{{h.profile}}</button></span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px">
+          <button onClick="{{h.poll}}" style="height: 40px; padding: 0 14px; border-radius: 10px; background: var(--primary-bg); color: var(--primary-fg); font-weight: 600; display: flex; align-items: center; gap: 8px">
+            <svg class="ic" viewBox="0 0 24 24" width="17" height="17"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>{{h.pollBtn}}
+          </button>
+          <span style="font-size: 12.5px; color: var(--muted)">{{h.polledText}}</span>
+        </div>
+      </div>
+
+      <sc-if value="{{h.hasError}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 14px; padding: 16px 18px; border-radius: 12px; border: 1px dashed var(--stale-border); background: var(--surface)">
+          <svg class="ic" viewBox="0 0 24 24" width="22" height="22" style="color: var(--stale); margin-top: 1px"><path d="M4 12a8 8 0 0 1 13.7-5.7M20 12a8 8 0 0 1-13.7 5.7"></path><path d="M3 3l18 18"></path></svg>
+          <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px">
+            <span style="font-weight: 600; font-size: 15px">{{h.errTitle}}</span>
+            <span style="font-size: 14px; line-height: 1.55; color: var(--text-soft); max-width: 820px">{{h.errText}}</span>
+            <span style="font-size: 13px; line-height: 1.5; color: var(--muted); max-width: 820px">{{h.lastKnown}}</span>
+          </div>
+          <button class="hov" onClick="{{h.errFn}}" style="align-self: flex-start; height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border-strong); font-size: 13px; white-space: nowrap">{{h.errAct}}</button>
+        </div>
+      </sc-if>
+
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 20px; align-items: start">
+        <section style="border-radius: 14px; background: var(--surface); border: 1px solid var(--border); overflow: hidden">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border)">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 600">Найдено на хосте</h2>
+            <span style="font-size: 13px; color: var(--muted)">{{h.prodCount}}</span>
+            <span style="flex-grow: 1"></span>
+            <button class="hov" onClick="{{h.addManual}}" style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--border-strong); font-size: 13px">+ Продукт вручную</button>
+          </div>
+          <sc-for list="{{h.products}}" as="p" hint-placeholder-count="2">
+            <button class="hov" onClick="{{p.open}}" style="width: 100%; box-sizing: border-box; display: grid; grid-template-columns: 200px 200px minmax(0, 1fr) 150px 20px; gap: 12px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border)">
+              <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600">{{p.name}}</span><span style="font-size: 12px; color: var(--muted)">{{p.line}}</span></span>
+              <span class="mono" style="font-size: 13px">{{p.v}} <span style="color: var(--muted)">→ {{p.latest}}</span></span>
+              <span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; line-height: 1; padding: 5px 9px; border-radius: 999px; white-space: nowrap; border: 1px {{p.chip.bs}} {{p.chip.bd}}; color: {{p.chip.fg}}; background: {{p.chip.bg}}"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; background: {{p.chip.dot}}"></span>{{p.chip.label}}</span></span>
+              <span style="font-size: 12.5px; color: var(--muted)">{{p.src}}</span>
+              <svg class="ic" viewBox="0 0 24 24" width="16" height="16" style="color: var(--muted)"><path d="M9 6l6 6-6 6"></path></svg>
+            </button>
+          </sc-for>
+          <sc-if value="{{h.noProducts}}" hint-placeholder-val="{{false}}">
+            <div style="padding: 24px 16px; color: var(--muted); font-size: 14px">{{h.noProductsText}}</div>
+          </sc-if>
+        </section>
+        <section style="border-radius: 14px; background: var(--surface); border: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 600">История</h2>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; line-height: 1; padding: 5px 9px; border-radius: 999px; white-space: nowrap; border: 1px {{h.pollChip.bs}} {{h.pollChip.bd}}; color: {{h.pollChip.fg}}; background: {{h.pollChip.bg}}"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; background: {{h.pollChip.dot}}"></span>{{h.pollChip.label}}</span>
+          </div>
+          <sc-for list="{{h.hist}}" as="e" hint-placeholder-count="2">
+            <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 10px; font-size: 13.5px; line-height: 1.45">
+              <span class="mono" style="font-size: 12.5px; color: var(--muted)">{{e.d}}</span><span>{{e.t}}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{h.noHist}}" hint-placeholder-val="{{false}}">
+            <span style="font-size: 13.5px; color: var(--muted)">Изменений версий не зафиксировано.</span>
+          </sc-if>
+        </section>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isWeek}}" hint-placeholder-val="{{false}}">
+    <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 28px">
+      <div style="max-width: 560px; padding: 28px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px">
+        <h1 style="margin: 0; font-size: 22px">Эта неделя</h1>
+        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-soft)">Существующий экран versiondrift.dev, в этом прототипе не менялся. В self-hosted к нему добавляется только фильтр по площадке из шапки.</p>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isProfiles}}" hint-placeholder-val="{{false}}">
+    <div style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 20px 28px 24px; display: flex; gap: 24px">
+      <div style="width: 640px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <h1 style="margin: 0; font-size: 24px; font-weight: 700">Профили доступа</h1>
+          <span style="flex-grow: 1"></span>
+          <button onClick="{{newProfile}}" style="height: 40px; padding: 0 14px; border-radius: 10px; background: var(--primary-bg); color: var(--primary-fg); font-weight: 600; display: flex; align-items: center; gap: 8px"><svg class="ic" viewBox="0 0 24 24" width="17" height="17"><path d="M12 5v14M5 12h14"></path></svg>Новый профиль</button>
+        </div>
+        <div style="display: flex; gap: 12px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13.5px; line-height: 1.5; color: var(--text-soft)">
+          <svg class="ic" viewBox="0 0 24 24" width="18" height="18" style="color: var(--ok); margin-top: 1px"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+          <span>Учётки хранятся только в этом экземпляре VersionDrift, в зашифрованном виде, и никуда не отправляются. VersionDrift никогда не просит root, sudo, администратора или права на запись.</span>
+        </div>
+        <div style="border-radius: 14px; border: 1px solid var(--border); background: var(--surface); overflow: hidden">
+          <sc-for list="{{profiles}}" as="pf" hint-placeholder-count="5">
+            <button class="hov" onClick="{{pf.pick}}" aria-pressed="{{pf.on}}" style="width: 100%; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr) 90px 150px; gap: 12px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border); background: {{pf.bg}}">
+              <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600">{{pf.name}}</span><span style="font-size: 12.5px; color: var(--muted)">{{pf.type}} · <span class="mono">{{pf.user}}</span></span></span>
+              <span class="mono" style="font-size: 13px; color: var(--text-soft)">{{pf.hosts}}</span>
+              <span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; line-height: 1; padding: 5px 9px; border-radius: 999px; white-space: nowrap; border: 1px {{pf.chip.bs}} {{pf.chip.bd}}; color: {{pf.chip.fg}}; background: {{pf.chip.bg}}"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; background: {{pf.chip.dot}}"></span>{{pf.chip.label}}</span></span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <aside class="scroll" style="flex-grow: 1; min-width: 0; min-height: 0; overflow-y: auto; box-sizing: border-box; padding: 22px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <h2 style="margin: 0; font-size: 22px; font-weight: 700">{{pr.name}}</h2>
+          <span style="font-size: 13px; color: var(--muted)">{{pr.type}}</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px 16px; font-size: 14px; align-items: center">
+          <span style="color: var(--muted)">Пользователь</span><span class="mono">{{pr.user}}</span>
+          <span style="color: var(--muted)">Секрет</span>
+          <span style="display: flex; align-items: center; gap: 10px">
+            <sc-if value="{{pr.replacing}}" hint-placeholder-val="{{false}}">
+              <input type="password" placeholder="Новый секрет" aria-label="Новый секрет" style="height: 36px; width: 240px; box-sizing: border-box; padding: 0 10px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font: inherit">
+              <button onClick="{{pr.saveSecret}}" style="height: 36px; padding: 0 12px; border-radius: 8px; background: var(--primary-bg); color: var(--primary-fg); font-size: 13px; font-weight: 600">Сохранить</button>
+            </sc-if>
+            <sc-if value="{{pr.notReplacing}}" hint-placeholder-val="{{true}}">
+              <span>задан · не показывается</span><button onClick="{{pr.replace}}" style="color: var(--link)">заменить</button>
+            </sc-if>
+          </span>
+          <span style="color: var(--muted)">Права</span><span style="line-height: 1.5; color: var(--text-soft)">{{pr.rights}}</span>
+        </div>
+        <sc-if value="{{pr.hasErr}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 14px 16px; border-radius: 12px; background: var(--surface); border: 1px dashed var(--stale-border); display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; line-height: 1.55">
+            <span style="font-weight: 600">{{pr.errTitle}}</span>
+            <span style="color: var(--text-soft)">{{pr.errText}}</span>
+          </div>
+        </sc-if>
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <h3 style="margin: 0; font-size: 15px">Хосты с этим профилем</h3><span style="font-size: 13px; color: var(--muted)">{{pr.hostsN}}</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{pr.hosts}}" as="ph" hint-placeholder-count="6">
+            <button class="hov mono" onClick="{{ph.pick}}" style="height: 30px; padding: 0 10px; border-radius: 8px; font-size: 12.5px; border: 1px {{ph.bs}} var(--border-strong); display: flex; align-items: center; gap: 6px">{{ph.name}}<sc-if value="{{ph.bad}}" hint-placeholder-val="{{false}}"><span style="font-family: 'IBM Plex Sans', sans-serif; font-size: 11.5px; color: var(--muted)">{{ph.tag}}</span></sc-if></button>
+          </sc-for>
+        </div>
+      </aside>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isProfileNew}}" hint-placeholder-val="{{false}}">
+    <div class="scroll" style="flex-grow: 1; min-height: 0; overflow-y: auto; box-sizing: border-box; padding: 24px 28px 32px; display: flex; justify-content: center">
+      <div style="width: 1000px; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; align-items: center; gap: 14px">
+          <button class="hov" onClick="{{wz.cancel}}" aria-label="Назад" style="width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center"><svg class="ic" viewBox="0 0 24 24" width="18" height="18"><path d="M15 6l-6 6 6 6"></path></svg></button>
+          <h1 style="margin: 0; font-size: 24px; font-weight: 700">Новый профиль доступа</h1>
+          <span style="flex-grow: 1"></span>
+          <ol style="list-style: none; margin: 0; padding: 0; display: flex; gap: 8px">
+            <sc-for list="{{wz.stepper}}" as="sp" hint-placeholder-count="3">
+              <li style="display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px 0 6px; border-radius: 16px; font-size: 13px; border: 1px solid {{sp.bd}}; color: {{sp.fg}}">
+                <span class="mono" style="width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; background: {{sp.numBg}}; color: {{sp.numFg}}">{{sp.n}}</span>{{sp.label}}
+              </li>
+            </sc-for>
+          </ol>
+        </div>
+
+        <sc-if value="{{wz.is1}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <h2 style="margin: 0; font-size: 17px">К чему подключаемся?</h2>
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px">
+              <sc-for list="{{wz.types}}" as="ty" hint-placeholder-count="5">
+                <button class="hov" onClick="{{ty.pick}}" aria-pressed="{{ty.on}}" style="padding: 16px; min-height: 120px; box-sizing: border-box; border-radius: 12px; background: var(--surface); border: 1px solid {{ty.bd}}; box-shadow: {{ty.ring}}; display: flex; flex-direction: column; gap: 8px">
+                  <span style="font-size: 16px; font-weight: 600">{{ty.label}}</span>
+                  <span style="font-size: 13px; color: var(--muted)">{{ty.sub}}</span>
+                  <span style="flex-grow: 1"></span>
+                  <span class="mono" style="font-size: 12px; color: var(--text-soft)">{{ty.hosts}}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{wz.is2}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <h2 style="margin: 0; font-size: 17px">{{wz.title}}</h2>
+              <p style="margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-soft); max-width: 760px">{{wz.lead}}</p>
+            </div>
+            <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px">
+              <sc-for list="{{wz.instr}}" as="st" hint-placeholder-count="3">
+                <li style="display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px">
+                  <span class="mono" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600">{{st.n}}</span>
+                  <div style="display: flex; flex-direction: column; gap: 8px">
+                    <span style="font-size: 14px; line-height: 1.55">{{st.text}}</span>
+                    <sc-if value="{{st.hasCmd}}" hint-placeholder-val="{{true}}">
+                      <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--code-bg); border: 1px solid var(--border)">
+                        <code class="mono" style="flex-grow: 1; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; color: var(--text)">{{st.cmd}}</code>
+                        <button class="hov" onClick="{{st.copy}}" style="height: 30px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--border-strong); font-size: 12.5px; display: flex; align-items: center; gap: 6px; flex-shrink: 0"><svg class="ic" viewBox="0 0 24 24" width="14" height="14"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>Копировать</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </li>
+              </sc-for>
+            </ol>
+            <div style="padding: 12px 14px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13.5px; line-height: 1.5; color: var(--text-soft)">{{wz.note}}</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{wz.is3}}" hint-placeholder-val="{{false}}">
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 20px; align-items: start">
+            <div style="display: flex; flex-direction: column; gap: 14px; padding: 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border)">
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-soft)">Название профиля
+                <input value="{{wz.name}}" onChange="{{wz.onName}}" style="height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); font: inherit; font-size: 14px">
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-soft)">Пользователь
+                <input class="mono" value="{{wz.user}}" readonly style="height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); font-size: 14px">
+              </label>
+              <sc-if value="{{wz.isKey}}" hint-placeholder-val="{{false}}">
+                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-soft)">Публичный ключ этого экземпляра — вставьте его на шаге 3 инструкции
+                  <div style="display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--code-bg); border: 1px solid var(--border)">
+                    <code class="mono" style="flex-grow: 1; font-size: 12.5px; word-break: break-all; color: var(--text)">ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI… versiondrift@vd-01</code>
+                    <button class="hov" onClick="{{wz.copyKey}}" style="height: 30px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--border-strong); font-size: 12.5px; flex-shrink: 0">Копировать</button>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{wz.isSecret}}" hint-placeholder-val="{{true}}">
+                <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-soft)">{{wz.secretLabel}}
+                  <input type="password" value="••••••••••••" readonly style="height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); font: inherit; font-size: 14px">
+                </label>
+              </sc-if>
+              <div style="display: flex; gap: 10px; font-size: 13px; line-height: 1.5; color: var(--muted)">
+                <svg class="ic" viewBox="0 0 24 24" width="16" height="16" style="color: var(--ok); margin-top: 2px"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                <span>Секрет хранится только в этом экземпляре в зашифрованном виде. После сохранения его нельзя посмотреть — только заменить.</span>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border)">
+              <h2 style="margin: 0; font-size: 15px">Проверить на хосте</h2>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{wz.checkHosts}}" as="ch" hint-placeholder-count="4">
+                  <button class="hov mono" onClick="{{ch.pick}}" aria-pressed="{{ch.on}}" style="height: 32px; padding: 0 10px; border-radius: 8px; font-size: 12.5px; border: 1px solid {{ch.bd}}; background: {{ch.bg}}">{{ch.name}}</button>
+                </sc-for>
+              </div>
+              <button onClick="{{wz.check}}" style="height: 38px; border-radius: 10px; border: 1px solid var(--border-strong); font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px">{{wz.checkBtn}}</button>
+              <sc-if value="{{wz.hasResult}}" hint-placeholder-val="{{false}}">
+                <div style="padding: 12px; border-radius: 10px; border: 1px {{wz.resBs}} {{wz.resBd}}; background: {{wz.resBg}}; font-size: 13.5px; line-height: 1.5; color: var(--text)">{{wz.result}}</div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display: flex; align-items: center; gap: 10px; padding-top: 6px; border-top: 1px solid var(--border)">
+          <sc-if value="{{wz.canBack}}" hint-placeholder-val="{{true}}">
+            <button class="hov" onClick="{{wz.back}}" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--border-strong)">Назад</button>
+          </sc-if>
+          <span style="flex-grow: 1"></span>
+          <button class="hov" onClick="{{wz.cancel}}" style="height: 40px; padding: 0 14px; border-radius: 10px">Отмена</button>
+          <button onClick="{{wz.next}}" style="height: 40px; padding: 0 16px; border-radius: 10px; background: var(--primary-bg); color: var(--primary-fg); font-weight: 600">{{wz.nextLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isFirstRun}}" hint-placeholder-val="{{false}}">
+    <div style="flex-grow: 1; display: flex; justify-content: center; align-items: flex-start; padding: 56px 28px">
+      <div style="width: 760px; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span class="mono" style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted)">Новый экземпляр</span>
+          <h1 style="margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.01em">Подключим ваши серверы за три шага</h1>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: var(--text-soft)">VersionDrift сам узнает версии ОС, прошивок и приложений по SSH и API — с учётками только на чтение. Хосты и учётки остаются внутри этого экземпляра.</p>
+        </div>
+        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px">
+          <sc-for list="{{fr}}" as="fs" hint-placeholder-count="3">
+            <li style="display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 18px; border-radius: 14px; background: var(--surface); border: 1px solid {{fs.bd}}; opacity: {{fs.op}}">
+              <span class="mono" style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; background: {{fs.numBg}}; color: {{fs.numFg}}">{{fs.num}}</span>
+              <span style="display: flex; flex-direction: column; gap: 4px">
+                <span style="font-size: 16px; font-weight: 600">{{fs.title}}</span>
+                <span style="font-size: 13.5px; line-height: 1.5; color: var(--text-soft)">{{fs.desc}}</span>
+              </span>
+              <sc-if value="{{fs.hasAct}}" hint-placeholder-val="{{false}}">
+                <span style="display: flex; gap: 8px">
+                  <sc-if value="{{fs.hasAlt}}" hint-placeholder-val="{{false}}">
+                    <button class="hov" onClick="{{fs.alt}}" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--border-strong); font-size: 14px">{{fs.altLabel}}</button>
+                  </sc-if>
+                  <button onClick="{{fs.act}}" style="height: 40px; padding: 0 16px; border-radius: 10px; background: var(--primary-bg); color: var(--primary-fg); font-size: 14px; font-weight: 600">{{fs.actLabel}}</button>
+                </span>
+              </sc-if>
+            </li>
+          </sc-for>
+        </ol>
+        <button onClick="{{manualEntry}}" style="align-self: flex-start; font-size: 14px; color: var(--link)">Или введите версии вручную, как в облачной версии</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{addOpen}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 0; top: 0; width: 1440px; height: 1024px; z-index: 40; background: var(--overlay); display: flex; align-items: center; justify-content: center">
+      <div role="dialog" aria-modal="true" aria-label="Добавить хосты" style="width: 880px; max-height: 900px; box-sizing: border-box; border-radius: 16px; background: var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--shadow); padding: 24px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <h2 style="margin: 0; font-size: 20px; font-weight: 700">Добавить хосты</h2>
+          <span style="flex-grow: 1"></span>
+          <button class="hov" onClick="{{closeAdd}}" aria-label="Закрыть" style="width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center"><svg class="ic" viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+        </div>
+        <div role="tablist" style="display: flex; gap: 4px; border-bottom: 1px solid var(--border)">
+          <sc-for list="{{addTabs}}" as="at" hint-placeholder-count="2">
+            <button role="tab" aria-selected="{{at.on}}" onClick="{{at.pick}}" style="padding: 10px 14px; font-size: 14px; font-weight: 500; margin-bottom: -1px; color: {{at.fg}}; border-bottom: 2px solid {{at.line}}">{{at.label}}</button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{isAddOne}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-soft)">Имя
+                <input class="mono" value="{{fName}}" onChange="{{onFName}}" placeholder="kzn-db-01" style="height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); font-size: 14px">
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-soft)">Адрес
+                <input class="mono" value="{{fAddr}}" onChange="{{onFAddr}}" placeholder="10.20.1.21" style="height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); font-size: 14px">
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-soft)">Площадка
+                <select value="{{fSite}}" onChange="{{onFSite}}" style="height: 40px; box-sizing: border-box; padding: 0 10px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); font: inherit; font-size: 14px">
+                  <option value="msk">Москва, ЦОД</option>
+                  <option value="kzn">Казань, филиал</option>
+                </select>
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-soft)">Профиль доступа
+                <select value="{{fProfile}}" onChange="{{onFProfile}}" style="height: 40px; box-sizing: border-box; padding: 0 10px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); font: inherit; font-size: 14px">
+                  <option value="linux-ssh">Linux SSH (только чтение)</option>
+                  <option value="win-ro">Windows RO</option>
+                  <option value="mt-api">MikroTik API (read)</option>
+                  <option value="pve-token">Proxmox VE (PVEAuditor)</option>
+                  <option value="pbs-token">Proxmox Backup (Audit)</option>
+                  <option value="none">Без профиля — версии вручную</option>
+                </select>
+              </label>
+            </div>
+            <sc-if value="{{fHasMsg}}" hint-placeholder-val="{{false}}">
+              <div style="padding: 12px 14px; border-radius: 10px; border: 1px solid {{fMsgBd}}; background: {{fMsgBg}}; font-size: 13.5px; line-height: 1.5">{{fMsg}}</div>
+            </sc-if>
+            <div style="display: flex; gap: 10px; justify-content: flex-end">
+              <button class="hov" onClick="{{closeAdd}}" style="height: 40px; padding: 0 14px; border-radius: 10px">Отмена</button>
+              <button onClick="{{saveOne}}" style="height: 40px; padding: 0 16px; border-radius: 10px; background: var(--primary-bg); color: var(--primary-fg); font-weight: 600">{{saveOneLabel}}</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isAddCsv}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+            <sc-if value="{{csvEmpty}}" hint-placeholder-val="{{true}}">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 36px; border-radius: 12px; border: 1.5px dashed var(--border-strong); text-align: center">
+                <svg class="ic" viewBox="0 0 24 24" width="28" height="28" style="color: var(--muted)"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg>
+                <span style="font-size: 15px; font-weight: 600">Перетащите CSV сюда</span>
+                <span style="font-size: 13px; color: var(--muted)">Колонки: <span class="mono">name,address,site,profile</span>. Площадку с запятой берите в кавычки.</span>
+                <button onClick="{{loadCsv}}" style="margin-top: 6px; height: 40px; padding: 0 16px; border-radius: 10px; background: var(--primary-bg); color: var(--primary-fg); font-weight: 600">Выбрать файл</button>
+              </div>
+              <div style="padding: 10px 12px; border-radius: 10px; background: var(--code-bg); border: 1px solid var(--border)"><code class="mono" style="font-size: 12.5px; line-height: 1.6; white-space: pre; color: var(--text-soft)">name,address,site,profile
+msk-app-01,10.10.1.11,"Москва, ЦОД",Linux SSH (только чтение)
+kzn-gw-01,10.20.0.1,"Казань, филиал",MikroTik API (read)</code></div>
+            </sc-if>
+            <sc-if value="{{csvLoaded}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+                <span class="mono" style="font-size: 13.5px; font-weight: 600">fleet.csv</span><span style="font-size: 13px; color: var(--muted)">33 строки</span>
+                <sc-for list="{{csvSummary}}" as="cs" hint-placeholder-count="2">
+                  <span style="font-size: 12.5px; font-weight: 500; padding: 4px 9px; border-radius: 999px; border: 1px solid {{cs.bd}}; color: {{cs.fg}}; background: {{cs.bg}}">{{cs.label}}</span>
+                </sc-for>
+                <span style="flex-grow: 1"></span>
+                <button onClick="{{resetCsv}}" style="font-size: 13px; color: var(--link)">Выбрать другой файл</button>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--critical-border); background: var(--critical-bg)">
+                <span style="font-size: 13.5px; font-weight: 600; color: var(--critical)">2 строки с ошибками — будут пропущены</span>
+                <span style="font-size: 13px; line-height: 1.5">Строка 33: <span class="mono">msk-app-01</span> — дубликат строки 2.</span>
+                <span style="font-size: 13px; line-height: 1.5">Строка 34: <span class="mono">msk-gw-02</span> — адрес <span class="mono">10.10.0.256</span> некорректен, и такое имя уже есть в строке 15.</span>
+              </div>
+              <div class="scroll" style="max-height: 360px; overflow-y: auto; border-radius: 10px; border: 1px solid var(--border)">
+                <sc-for list="{{csvRows}}" as="cr" hint-placeholder-count="8">
+                  <div style="display: grid; grid-template-columns: 40px 140px 120px 150px minmax(0, 1fr) 150px; gap: 10px; align-items: center; height: 36px; padding: 0 12px; border-bottom: 1px solid var(--border); font-size: 12.5px; background: {{cr.bg}}">
+                    <span class="mono" style="color: var(--muted)">{{cr.n}}</span>
+                    <span class="mono">{{cr.name}}</span>
+                    <span class="mono" style="color: var(--text-soft)">{{cr.addr}}</span>
+                    <span style="color: var(--text-soft)">{{cr.site}}</span>
+                    <span style="color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{cr.profile}}</span>
+                    <span style="color: {{cr.fg}}; font-weight: 500">{{cr.st}}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center">
+                <span style="font-size: 13px; color: var(--muted); flex-grow: 1">{{csvHint}}</span>
+                <button class="hov" onClick="{{closeAdd}}" style="height: 40px; padding: 0 14px; border-radius: 10px">Отмена</button>
+                <button onClick="{{importCsv}}" aria-disabled="{{csvDisabled}}" style="height: 40px; padding: 0 16px; border-radius: 10px; font-weight: 600; background: {{csvBtnBg}}; color: {{csvBtnFg}}">{{csvBtn}}</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{cfOpen}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 0; top: 0; width: 1440px; height: 1024px; z-index: 50; background: var(--overlay); display: flex; align-items: center; justify-content: center">
+      <div role="dialog" aria-modal="true" aria-label="{{cf.title}}" style="width: 560px; box-sizing: border-box; border-radius: 16px; background: var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--shadow); padding: 24px; display: flex; flex-direction: column; gap: 14px">
+        <h2 style="margin: 0; font-size: 19px; font-weight: 700">{{cf.title}}</h2>
+        <span style="font-size: 14px; line-height: 1.5; color: var(--text-soft)">{{cf.lead}}</span>
+        <div class="mono" style="padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); font-size: 12.5px; line-height: 1.7; color: var(--text-soft)">{{cf.names}}</div>
+        <sc-if value="{{cf.hasOpts}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <sc-for list="{{cf.opts}}" as="co" hint-placeholder-count="3">
+              <button class="hov" onClick="{{co.pick}}" aria-pressed="{{co.on}}" style="height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid {{co.bd}}; background: {{co.bg}}; font-size: 14px; display: flex; align-items: center; gap: 10px"><span style="width: 14px; height: 14px; border-radius: 50%; box-sizing: border-box; border: 2px solid {{co.bd}}; background: {{co.dot}}"></span>{{co.label}}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{cf.needType}}" hint-placeholder-val="{{false}}">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: var(--text-soft)">{{cf.typeLabel}}
+            <input class="mono" value="{{cfText}}" onChange="{{onCfText}}" style="height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); font-size: 14px">
+          </label>
+        </sc-if>
+        <div style="display: flex; gap: 10px; justify-content: flex-end">
+          <button class="hov" onClick="{{cf.cancel}}" style="height: 40px; padding: 0 14px; border-radius: 10px">Отмена</button>
+          <button onClick="{{cf.ok}}" aria-disabled="{{cf.disabled}}" style="height: 40px; padding: 0 16px; border-radius: 10px; font-weight: 600; background: {{cf.btnBg}}; color: {{cf.btnFg}}">{{cf.okLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+    <div role="status" style="position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 60; max-width: 760px; padding: 12px 18px; border-radius: 12px; background: var(--primary-bg); color: var(--primary-fg); font-size: 14px; line-height: 1.45; box-shadow: var(--shadow)">{{toast}}</div>
+  </sc-if>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"start":{"editor":null},"host":{"editor":null},"product":{"editor":null},"ptype":{"editor":null},"pstep":{"editor":null},"addtab":{"editor":null},"poll":{"editor":null},"sites":{"editor":null},"$preview":{"width":1440,"height":1024}}'>
+var SITES = { msk: "Москва, ЦОД", kzn: "Казань, филиал" };
+var SITE_ORDER = ["msk", "kzn"];
+
+var PROFILES = [
+  { id: "linux-ssh", name: "Linux SSH (только чтение)", type: "linux", typeLabel: "SSH по ключу", user: "versiondrift", rights: "Отдельный пользователь без sudo. Ключ может выполнить только одну команду сбора версий." },
+  { id: "win-ro", name: "Windows RO", type: "windows", typeLabel: "OpenSSH или WinRM", user: "versiondrift", rights: "Обычный пользователь, не администратор. Для WinRM — группа Remote Management Users." },
+  { id: "mt-api", name: "MikroTik API (read)", type: "mikrotik", typeLabel: "API-SSL", user: "versiondrift", rights: "Группа только с политиками read и api. Вход разрешён только с адреса VersionDrift." },
+  { id: "pve-token", name: "Proxmox VE (PVEAuditor)", type: "pve", typeLabel: "API-токен", user: "versiondrift@pve!vd", rights: "Роль PVEAuditor — только чтение." },
+  { id: "pbs-token", name: "Proxmox Backup (Audit)", type: "pbs", typeLabel: "API-токен", user: "versiondrift@pbs!vd", rights: "Роль Audit — только чтение." }
+];
+
+var PRODUCTS = {
+  windows: { name: "Windows Server", cat: "ОС", lines: { "2022": { label: "2022", latest: "20348.5631" }, "2019": { label: "2019", latest: "17763.9247" }, "2016": { label: "2016", latest: "14393.9514", eolSoon: "EOL 12.01.2027" } } },
+  debian: { name: "Debian GNU/Linux", short: "Debian", cat: "ОС", lines: { "13": { label: "13 trixie", latest: "13.7" }, "12": { label: "12 bookworm", latest: "12.15" }, "11": { label: "11 bullseye", latest: "11.11", eol: "31.08.2026" } } },
+  routeros: { name: "MikroTik RouterOS", short: "RouterOS", cat: "Сеть", lines: { "7s": { label: "7 · stable", latest: "7.24.4" }, "7lt": { label: "7 · long-term", latest: "7.23.7" }, "6lt": { label: "6 · long-term", latest: "6.49.22" } } },
+  pve: { name: "Proxmox VE", cat: "Виртуализация", lines: { "9": { label: "9", latest: "9.2.20" } } },
+  docker: { name: "Docker Engine", short: "Docker", cat: "Контейнеры", lines: { "29": { label: "29", latest: "29.8.1" } } },
+  zabbix: { name: "Zabbix", cat: "Мониторинг", lines: { "7.0": { label: "7.0 LTS", latest: "7.0.31" } } },
+  postgresql: { name: "PostgreSQL", cat: "БД", lines: { "17": { label: "17", latest: "17.11" }, "16": { label: "16", latest: "16.15" } } },
+  pbs: { name: "Proxmox Backup Server", short: "PBS", cat: "Бэкапы", lines: { "4": { label: "4", latest: "4.2.6" } } }
+};
+var PORDER = ["windows", "debian", "routeros", "pve", "docker", "zabbix", "postgresql", "pbs"];
+var KIND = { linux: "Linux", windows: "Windows", mikrotik: "MikroTik", proxmox: "Proxmox" };
+
+function I(p, v, line, st, x) { var o = { p: p, v: v, line: line, st: st }; if (x) { for (var k in x) { o[k] = x[k]; } } return o; }
+function H(id, site, addr, kind, profile, os, apps, x) {
+  var o = { id: id, site: site, addr: addr, kind: kind, profile: profile, os: os, apps: apps, poll: "ok", since: "", hist: [] };
+  if (x) { for (var k in x) { o[k] = x[k]; } }
+  return o;
+}
+
+var HOSTS = [
+  H("msk-app-01", "msk", "10.10.1.11", "linux", "linux-ssh", I("debian", "13.7", "13", "ok"), [I("docker", "29.8.1", "29", "ok")]),
+  H("msk-app-02", "msk", "10.10.1.12", "linux", "linux-ssh", I("debian", "13.7", "13", "ok"), [I("docker", "29.8.1", "29", "ok")]),
+  H("msk-db-01", "msk", "10.10.1.21", "linux", "linux-ssh", I("debian", "12.15", "12", "ok"), [I("postgresql", "16.15", "16", "ok")]),
+  H("msk-db-02", "msk", "10.10.1.22", "linux", "linux-ssh", I("debian", "12.15", "12", "ok"), [I("postgresql", "16.15", "16", "ok")], { hist: [["12.07.2026", "Debian 12.14 → 12.15"]] }),
+  H("msk-mon-01", "msk", "10.10.1.31", "linux", "linux-ssh", I("debian", "12.15", "12", "ok"), [I("zabbix", "7.0.31", "7.0", "ok"), I("postgresql", "17.11", "17", "ok")]),
+  H("msk-git-01", "msk", "10.10.1.41", "linux", "linux-ssh", I("debian", "12.12", "12", "update", { n: 3 }), [I("docker", "29.7.2", "29", "update", { n: 2 })], { hist: [["14.09.2026", "Debian 12.11 → 12.12"]] }),
+  H("msk-files-01", "msk", "10.10.1.51", "linux", "linux-ssh", I("debian", "12.12", "12", "update", { n: 3 }), []),
+  H("msk-legacy-01", "msk", "10.10.1.99", "linux", "linux-ssh", I("debian", "11.11", "11", "eol"), []),
+  H("msk-dc-01", "msk", "10.10.2.10", "windows", "win-ro", I("windows", "20348.5631", "2022", "ok"), []),
+  H("msk-1c-01", "msk", "10.10.2.21", "windows", "win-ro", I("windows", "20348.5499", "2022", "critical", { cvss: 9.8, cves: 61, kev: 1 }), []),
+  H("msk-rds-01", "msk", "10.10.2.31", "windows", "win-ro", I("windows", "17763.9247", "2019", "ok"), []),
+  H("msk-sql-01", "msk", "10.10.2.41", "windows", "win-ro", I("windows", "14393.9514", "2016", "ok"), []),
+  H("msk-gw-01", "msk", "10.10.0.1", "mikrotik", "mt-api", I("routeros", "7.23.7", "7lt", "ok"), [], { hist: [["17.09.2026", "RouterOS 7.23.6 → 7.23.7"]] }),
+  H("msk-gw-02", "msk", "10.10.0.2", "mikrotik", "mt-api", I("routeros", "7.23.7", "7lt", "ok"), []),
+  H("msk-sw-01", "msk", "10.10.0.11", "mikrotik", "mt-api", I("routeros", "7.24.4", "7s", "ok"), []),
+  H("msk-sw-02", "msk", "10.10.0.12", "mikrotik", "mt-api", I("routeros", "7.24.4", "7s", "ok"), []),
+  H("msk-ap-01", "msk", "10.10.0.21", "mikrotik", "mt-api", I("routeros", "6.49.22", "6lt", "ok"), []),
+  H("msk-ap-02", "msk", "10.10.0.22", "mikrotik", "mt-api", I("routeros", "6.49.22", "6lt", "ok"), []),
+  H("msk-pve-01", "msk", "10.10.3.1", "proxmox", "pve-token", I("pve", "9.2.20", "9", "ok"), []),
+  H("msk-pve-02", "msk", "10.10.3.2", "proxmox", "pve-token", I("pve", "9.2.20", "9", "ok"), []),
+  H("msk-pve-03", "msk", "10.10.3.3", "proxmox", "pve-token", I("pve", "9.2.17", "9", "update", { n: 3 }), []),
+  H("msk-pbs-01", "msk", "10.10.3.10", "proxmox", "pbs-token", I("pbs", "4.2.6", "4", "ok"), []),
+  H("kzn-app-01", "kzn", "10.20.1.11", "linux", "linux-ssh", I("debian", "12.12", "12", "update", { n: 3 }), [I("docker", "29.7.2", "29", "update", { n: 2 }), I("zabbix", "7.0.29", "7.0", "update", { n: 2, label: "Zabbix proxy" })]),
+  H("kzn-srv-01", "kzn", "10.20.1.12", "linux", "linux-ssh", I("debian", "12.15", "12", "ok"), []),
+  H("kzn-1c-01", "kzn", "10.20.2.21", "windows", "win-ro", I("windows", "20348.5499", "2022", "critical", { cvss: 9.8, cves: 61, kev: 1 }), []),
+  H("kzn-ts-01", "kzn", "10.20.2.31", "windows", "win-ro", I("windows", "17763.9121", "2019", "critical", { cvss: 9.8, cves: 59, kev: 1 }), []),
+  H("kzn-fs-01", "kzn", "10.20.2.41", "windows", "win-ro", I("windows", "20348.5386", "2022", "critical", { cvss: 9.8 }), [], { poll: "denied", since: "25.09.2026", hist: [["25.09.2026", "Отказ в доступе: истёк пароль учётки профиля «Windows RO»"]] }),
+  H("kzn-gw-01", "kzn", "10.20.0.1", "mikrotik", "mt-api", I("routeros", "7.23.4", "7lt", "update", { n: 3 }), []),
+  H("kzn-gw-02", "kzn", "10.20.0.2", "mikrotik", "mt-api", I("routeros", "7.23.4", "7lt", "update", { n: 3 }), [], { poll: "timeout", since: "26.09.2026 14:10", hist: [["26.09.2026 14:10", "Перестал отвечать"]] }),
+  H("kzn-ap-01", "kzn", "10.20.0.21", "mikrotik", "mt-api", I("routeros", "6.49.19", "6lt", "update", { n: 3 }), []),
+  H("kzn-sw-01", "kzn", "10.20.0.11", "mikrotik", "mt-api", I("routeros", "7.23.7", "7lt", "ok"), [])
+];
+
+var INSTR = {
+  linux: { title: "Как завести учётку на Linux", lead: "Отдельный пользователь без sudo. Ключ VersionDrift может выполнить только одну команду — скрипт, который читает версии пакетов.", steps: [
+    ["Создайте системного пользователя без sudo:", "sudo useradd --system --create-home --shell /bin/sh versiondrift"],
+    ["Положите скрипт сбора версий (кнопка «Скачать скрипт» ниже). Он только читает версии:", "sudo install -m 755 versiondrift-inventory /usr/local/bin/versiondrift-inventory"],
+    ["Разрешите ключу этого экземпляра только эту команду:", "sudo install -d -m 700 -o versiondrift ~versiondrift/.ssh\necho 'restrict,command=\"/usr/local/bin/versiondrift-inventory\" ssh-ed25519 AAAA… versiondrift' \\\n  | sudo tee ~versiondrift/.ssh/authorized_keys"]
+  ], note: "Публичный ключ VersionDrift сгенерировал сам — он будет на следующем шаге с кнопкой «Копировать»." },
+  windows: { title: "Как завести учётку на Windows Server", lead: "Обычный локальный пользователь, не администратор. Подходит OpenSSH или WinRM.", steps: [
+    ["Создайте пользователя (пароль будет запрошен):", "net user versiondrift * /add"],
+    ["Для WinRM добавьте его в группу Remote Management Users:", "net localgroup \"Remote Management Users\" versiondrift /add"],
+    ["Отключите срок действия пароля, иначе опрос однажды получит отказ в доступе:", "Set-LocalUser -Name versiondrift -PasswordNeverExpires $true"]
+  ], note: "Не добавляйте учётку в Administrators — VersionDrift это не нужно. У локальных учёток пароль задаётся на каждом хосте отдельно." },
+  mikrotik: { title: "Как завести учётку на MikroTik", lead: "Группа только с правами read и api, вход только с адреса VersionDrift.", steps: [
+    ["Создайте группу, которая может только читать:", "/user group add name=vd-read policy=read,api"],
+    ["Создайте пользователя и разрешите вход только с адреса VersionDrift:", "/user add name=versiondrift group=vd-read address=10.10.5.20/32 password=…"],
+    ["Убедитесь, что включён API-SSL (порт 8729), и нажмите «Проверить на хосте» на следующем шаге.", ""]
+  ], note: "10.10.5.20 — адрес этого экземпляра VersionDrift, подставлен автоматически." },
+  pve: { title: "Как завести токен в Proxmox VE", lead: "API-токен с ролью PVEAuditor — только чтение.", steps: [
+    ["Создайте пользователя:", "pveum user add versiondrift@pve --comment \"VersionDrift, read-only\""],
+    ["Выдайте роль PVEAuditor на весь кластер:", "pveum acl modify / --users versiondrift@pve --roles PVEAuditor"],
+    ["Создайте токен и скопируйте его секрет:", "pveum user token add versiondrift@pve vd --privsep 0"]
+  ], note: "Секрет токена показывается один раз — вставьте его на следующем шаге." },
+  pbs: { title: "Как завести токен в Proxmox Backup Server", lead: "API-токен с ролью Audit — только чтение.", steps: [
+    ["Создайте пользователя:", "proxmox-backup-manager user create versiondrift@pbs"],
+    ["Создайте токен и скопируйте его секрет:", "proxmox-backup-manager user generate-token versiondrift@pbs vd"],
+    ["Выдайте токену роль Audit:", "proxmox-backup-manager acl update / Audit --auth-id 'versiondrift@pbs!vd'"]
+  ], note: "Секрет токена показывается один раз — вставьте его на следующем шаге." }
+};
+var WTYPES = [
+  { id: "linux", label: "Linux", sub: "SSH по ключу", prof: "linux-ssh", name: "Linux SSH (только чтение)", user: "versiondrift", secret: "" },
+  { id: "windows", label: "Windows", sub: "OpenSSH или WinRM", prof: "win-ro", name: "Windows RO", user: "versiondrift", secret: "Пароль" },
+  { id: "mikrotik", label: "MikroTik", sub: "API-SSL", prof: "mt-api", name: "MikroTik API (read)", user: "versiondrift", secret: "Пароль" },
+  { id: "pve", label: "Proxmox VE", sub: "API-токен", prof: "pve-token", name: "Proxmox VE (PVEAuditor)", user: "versiondrift@pve!vd", secret: "Секрет токена" },
+  { id: "pbs", label: "Proxmox Backup", sub: "API-токен", prof: "pbs-token", name: "Proxmox Backup (Audit)", user: "versiondrift@pbs!vd", secret: "Секрет токена" }
+];
+
+var RANK = { critical: 0, eol: 1, update: 2, ok: 3, stale: 4, pending: 5 };
+var STY = {
+  critical: { fg: "var(--critical)", bg: "var(--critical-bg)", bd: "var(--critical-border)", bs: "solid", dot: "currentColor" },
+  eol: { fg: "var(--eol)", bg: "var(--eol-bg)", bd: "var(--eol-border)", bs: "solid", dot: "currentColor" },
+  update: { fg: "var(--update)", bg: "var(--update-bg)", bd: "var(--update-border)", bs: "solid", dot: "currentColor" },
+  ok: { fg: "var(--ok)", bg: "var(--ok-bg)", bd: "var(--ok-border)", bs: "solid", dot: "currentColor" },
+  stale: { fg: "var(--stale)", bg: "transparent", bd: "var(--stale-border)", bs: "dashed", dot: "transparent" },
+  pending: { fg: "var(--stale)", bg: "transparent", bd: "var(--stale-border)", bs: "dashed", dot: "transparent" }
+};
+var SEG_LABEL = { critical: "критично", eol: "EOL", update: "отстают", ok: "актуально", stale: "без связи", pending: "ждут опроса" };
+
+function segLabel(k, n) { if (k === "update") { return (n % 10 === 1 && n % 100 !== 11) ? "отстаёт" : "отстают"; } if (k === "pending") { return (n % 10 === 1 && n % 100 !== 11) ? "ждёт опроса" : "ждут опроса"; } return SEG_LABEL[k]; }
+function plural(n, a, b, c) { var m10 = n % 10, m100 = n % 100; if (m10 === 1 && m100 !== 11) { return a; } if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) { return b; } return c; }
+function hostsWord(n) { return n + " " + plural(n, "хост", "хоста", "хостов"); }
+function vcmp(a, b) { var x = a.split("."), y = b.split("."), L = Math.max(x.length, y.length); for (var i = 0; i < L; i++) { var d = parseInt(x[i] || "0", 10) - parseInt(y[i] || "0", 10); if (d) { return d < 0 ? -1 : 1; } } return 0; }
+function chip(kind, label) { var s = STY[kind]; return { label: label, fg: s.fg, bg: s.bg, bd: s.bd, bs: s.bs, dot: s.dot }; }
+function pname(inst) { return inst.label || PRODUCTS[inst.p].short || PRODUCTS[inst.p].name; }
+function lineOf(inst) { return PRODUCTS[inst.p].lines[inst.line]; }
+function stLabel(inst) {
+  if (inst.st === "critical") { return "CVSS " + inst.cvss.toFixed(1); }
+  if (inst.st === "eol") { return "EOL"; }
+  if (inst.st === "update") { return "+" + inst.n + " " + plural(inst.n, "релиз", "релиза", "релизов"); }
+  return "Актуально";
+}
+function instChip(inst) { return chip(inst.st, stLabel(inst)); }
+function osLabel(inst) {
+  if (inst.p === "windows") { return "Windows Server " + inst.line + " · " + inst.v; }
+  if (inst.p === "routeros") { return "RouterOS " + inst.v + " · " + (inst.line === "7s" ? "stable" : "long-term"); }
+  if (inst.p === "pve") { return "Proxmox VE " + inst.v; }
+  if (inst.p === "pbs") { return "Proxmox Backup Server " + inst.v; }
+  return pname(inst) + " " + inst.v;
+}
+function relList(v, latest, n) {
+  var a = v.split("."), b = latest.split(".");
+  if (a.length !== b.length) { return []; }
+  for (var i = 0; i < a.length - 1; i++) { if (a[i] !== b[i]) { return []; } }
+  var from = parseInt(a[a.length - 1], 10), to = parseInt(b[b.length - 1], 10);
+  if (to - from !== n) { return []; }
+  var out = [], head = a.slice(0, a.length - 1).join(".");
+  for (var k = from + 1; k <= to; k++) { out.push(head + "." + k); }
+  return out;
+}
+function segsOf(c) {
+  return ["critical", "eol", "update", "ok", "stale", "pending"].filter(function (k) { return c[k] > 0; }).map(function (k) {
+    var hollow = k === "stale" || k === "pending";
+    return { n: c[k], bg: hollow ? "transparent" : STY[k].fg, border: hollow ? "1px dashed var(--stale-border)" : "0" };
+  });
+}
+function summaryOf(c) {
+  var parts = [];
+  ["critical", "eol", "update", "stale", "pending", "ok"].forEach(function (k) { if (c[k]) { parts.push(c[k] + " " + segLabel(k, c[k])); } });
+  return parts.join(" · ");
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var start = props.start || "board";
+    var empty = start === "firstrun";
+    var screen = start === "add" ? "board" : start;
+    this.state = {
+      screen: screen, site: "all", sitesOpen: props.sites === "open",
+      prod: props.product || "debian", verOpen: "", verAll: {}, boardFilter: "",
+      hq: "", hStatus: "all", hPoll: props.poll === "problem" ? "problem" : "all", hKind: "all", grouped: true, collapsed: {},
+      sel: {}, cf: null, cfText: "", cfOpt: "",
+      host: props.host || "kzn-fs-01", polling: {}, polledNow: {},
+      addOpen: start === "add", addTab: props.addtab || "one", csv: props.addtab === "csv",
+      fName: "", fAddr: "", fSite: "kzn", fProfile: "linux-ssh", fState: "idle",
+      toast: "", profSel: "win-ro", replacing: false,
+      wType: props.ptype || "mikrotik", wStep: props.pstep ? parseInt(props.pstep, 10) : 1, wHost: "", wCheck: "idle", wName: "", wMode: "normal",
+      empty: empty, frProf: false, frHosts: false, fresh: false, polled: 31, bannerClosed: false
+    };
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.tt); clearInterval(this.pt); clearTimeout(this.ft); clearTimeout(this.wt); clearTimeout(this.pollT);
+  }
+
+  notify(msg) {
+    var self = this;
+    this.setState({ toast: msg });
+    clearTimeout(this.tt);
+    this.tt = setTimeout(function () { self.setState({ toast: "" }); }, 3200);
+  }
+
+  has() { return !(this.state.empty && !this.state.frHosts); }
+  pending(i) { return this.state.fresh && i >= this.state.polled; }
+  insts(h, i) {
+    if (this.pending(i)) { return []; }
+    if (this.state.fresh && h.poll !== "ok") { return []; }
+    return [h.os].concat(h.apps);
+  }
+  hostStat(h, i) {
+    if (this.pending(i)) { return { kind: "pending", chip: chip("pending", "Ожидает опроса") }; }
+    var list = this.insts(h, i);
+    var badLabel = h.poll === "timeout" ? "Нет связи" : "Нет доступа";
+    if (!list.length) { return { kind: "stale", chip: chip("stale", badLabel) }; }
+    var worst = list.slice().sort(function (a, b) { return (RANK[a.st] - RANK[b.st]) || ((b.cvss || 0) - (a.cvss || 0)) || ((b.n || 0) - (a.n || 0)); })[0];
+    if (h.poll !== "ok" && worst.st !== "critical") { return { kind: "stale", chip: chip("stale", badLabel), worst: worst }; }
+    return { kind: worst.st, chip: instChip(worst), worst: worst };
+  }
+  visible() {
+    var s = this.state, out = [];
+    if (!this.has()) { return out; }
+    HOSTS.forEach(function (h, i) { if (s.site === "all" || h.site === s.site) { out.push({ h: h, i: i }); } });
+    return out;
+  }
+  agg(pid, vis) {
+    var self = this, entries = [];
+    vis.forEach(function (x) {
+      self.insts(x.h, x.i).forEach(function (inst) {
+        if (inst.p === pid) { entries.push({ h: x.h, i: x.i, inst: inst, kind: (x.h.poll !== "ok" && inst.st !== "critical") ? "stale" : inst.st }); }
+      });
+    });
+    if (!entries.length) { return null; }
+    var c = { critical: 0, eol: 0, update: 0, ok: 0, stale: 0, pending: 0 };
+    entries.forEach(function (e) { c[e.kind]++; });
+    var worst = ["critical", "eol", "update", "ok"].filter(function (k) { return c[k] > 0; })[0] || "stale";
+    return { pid: pid, entries: entries, c: c, worst: worst };
+  }
+  pollHosts(ids) {
+    var self = this, s = this.state, p = {};
+    for (var k in s.polling) { p[k] = s.polling[k]; }
+    ids.forEach(function (id) { p[id] = true; });
+    this.setState({ polling: p });
+    clearTimeout(this.pollT);
+    this.pollT = setTimeout(function () {
+      var np = {}, done = {};
+      for (var k2 in self.state.polledNow) { done[k2] = true; }
+      var bad = [];
+      ids.forEach(function (id) {
+        done[id] = true;
+        var h = HOSTS.filter(function (x) { return x.id === id; })[0];
+        if (h && h.poll !== "ok") { bad.push(h.id + (h.poll === "timeout" ? " не ответил" : ": отказ в доступе")); }
+      });
+      self.setState({ polling: np, polledNow: done });
+      if (ids.length === 1) {
+        self.notify(bad.length ? "Опрос: " + bad[0] + "." : ids[0] + " опрошен: версии не изменились.");
+      } else {
+        self.notify("Опрошено " + hostsWord(ids.length) + ". Изменений версий нет" + (bad.length ? "; ошибки: " + bad.join(", ") + "." : "."));
+      }
+    }, 1400);
+  }
+  startFirstPoll() {
+    var self = this;
+    this.setState({ fresh: true, polled: 0, frHosts: true, empty: false, screen: "board", addOpen: false, csv: false, bannerClosed: false, prod: "debian" });
+    clearInterval(this.pt);
+    this.pt = setInterval(function () {
+      var n = self.state.polled + 1;
+      if (n >= 31) { clearInterval(self.pt); self.setState({ polled: 31 }); } else { self.setState({ polled: n }); }
+    }, 280);
+  }
+  openHost(id) { this.setState({ screen: "host", host: id, sitesOpen: false }); }
+
+  renderVals() {
+    var self = this, s = this.state, has = this.has();
+    var vis = this.visible();
+    var theme = this.props.theme === "light" ? "light" : "dark";
+
+    /* ---------- header ---------- */
+    var scr = s.screen;
+    var navDefs = [
+      { k: "board", label: "Доска", on: scr === "board" || scr === "firstrun" },
+      { k: "hosts", label: "Хосты", on: scr === "hosts" || scr === "host", count: has ? String(HOSTS.length) : "" },
+      { k: "week", label: "Эта неделя", on: scr === "week" },
+      { k: "profiles", label: "Профили доступа", on: scr === "profiles" || scr === "profileNew" }
+    ];
+    var nav = navDefs.map(function (n) {
+      return { label: n.label, count: n.count || "", hasCount: !!n.count, fg: n.on ? "var(--text)" : "var(--muted)", bg: n.on ? "var(--surface-3)" : "transparent",
+        pick: function () { var t = n.k; if (t === "board" && !self.has()) { t = "firstrun"; } self.setState({ screen: t, sitesOpen: false }); } };
+    });
+    var siteCards = [{ id: "all", name: "Все площадки" }, { id: "msk", name: SITES.msk }, { id: "kzn", name: SITES.kzn }].map(function (sd) {
+      var c = { critical: 0, eol: 0, update: 0, ok: 0, stale: 0, pending: 0 }, n = 0;
+      if (has) { HOSTS.forEach(function (h, i) { if (sd.id === "all" || h.site === sd.id) { n++; c[self.hostStat(h, i).kind]++; } }); }
+      return { name: sd.name, n: hostsWord(n), segs: segsOf(c), summary: n ? summaryOf(c) : "Хостов пока нет", bd: s.site === sd.id ? "var(--link)" : "var(--border)",
+        pick: function () { self.setState({ site: sd.id, sitesOpen: false }); } };
+    });
+
+    /* ---------- first poll banner ---------- */
+    var showProgress = s.fresh && s.polled < 31;
+    var answered = 0, denied = 0, timeout = 0;
+    HOSTS.forEach(function (h) { if (h.poll === "ok") { answered++; } else if (h.poll === "denied") { denied++; } else { timeout++; } });
+    var showResult = s.fresh && s.polled >= 31 && !s.bannerClosed && (scr === "board");
+    var resultText = answered + " ответили · " + denied + " отказ в доступе · " + timeout + " не отвечает";
+
+    /* ---------- board ---------- */
+    var aggs = PORDER.map(function (pid) { return self.agg(pid, vis); }).filter(function (a) { return a; });
+    var statDefs = [
+      { k: "critical", label: "Критично" }, { k: "eol", label: "EOL" }, { k: "update", label: "Обновления" }, { k: "ok", label: "Актуально" }
+    ];
+    var stats = statDefs.map(function (sd) {
+      var n = aggs.filter(function (a) { return a.worst === sd.k; }).length, on = s.boardFilter === sd.k;
+      return { label: sd.label, n: n, unit: plural(n, "продукт", "продукта", "продуктов"), dot: STY[sd.k].fg, on: on,
+        bd: on ? STY[sd.k].fg : "var(--border)", pick: function () { self.setState({ boardFilter: on ? "" : sd.k }); } };
+    });
+    var pollProblems = vis.filter(function (x) { return !self.pending(x.i) && x.h.poll !== "ok"; }).length;
+
+    var tiles = aggs.filter(function (a) { return !s.boardFilter || a.worst === s.boardFilter; }).map(function (a) {
+      var P = PRODUCTS[a.pid], n = a.entries.length;
+      var worstEntries = a.entries.filter(function (e) { return e.kind === a.worst; });
+      var tchip;
+      if (a.worst === "critical") { tchip = chip("critical", "CVSS " + Math.max.apply(null, worstEntries.map(function (e) { return e.inst.cvss; })).toFixed(1)); }
+      else if (a.worst === "eol") { tchip = chip("eol", "EOL"); }
+      else if (a.worst === "update") { tchip = chip("update", "Обновления"); }
+      else if (a.worst === "ok") { tchip = chip("ok", "Актуально"); }
+      else { tchip = chip("stale", "Нет связи"); }
+      var subParts = [hostsWord(n)];
+      if (a.c.critical) { subParts.push(a.c.critical + " критично"); }
+      if (a.c.update) { subParts.push(a.c.update + " " + segLabel("update", a.c.update)); }
+      if (a.c.eol) { subParts.push(a.c.eol + " EOL"); }
+      var legend = ["critical", "eol", "update", "ok", "stale"].filter(function (k) { return a.c[k]; }).map(function (k) {
+        return { n: a.c[k], label: segLabel(k, a.c[k]), fg: STY[k].fg };
+      });
+      var lines = Object.keys(P.lines).filter(function (lk) { return a.entries.some(function (e) { return e.inst.line === lk; }); }).map(function (lk) {
+        var L = P.lines[lk], es = a.entries.filter(function (e) { return e.inst.line === lk; });
+        var vs = es.map(function (e) { return e.inst.v; }).sort(vcmp), min = vs[0], max = vs[vs.length - 1];
+        var range = min === max ? min : min + "–" + max, text, fg;
+        if (L.eol) { text = range + " · EOL"; fg = "var(--eol)"; }
+        else if (vcmp(min, L.latest) === 0) { text = L.latest + " · последняя"; fg = "var(--ok)"; }
+        else { text = range + " → " + L.latest; fg = es.some(function (e) { return e.inst.st === "critical"; }) ? "var(--critical)" : "var(--update)"; }
+        return { label: L.label, text: text, fg: fg, n: es.length };
+      });
+      var foot = "", staleNames = a.entries.filter(function (e) { return e.h.poll !== "ok"; }).map(function (e) { return e.h.id; });
+      if (a.pid === "windows") {
+        var mx = 0; a.entries.forEach(function (e) { if ((e.inst.cves || 0) > mx) { mx = e.inst.cves; } });
+        if (mx) { foot = mx + " CVE в пропущенных обновлениях"; }
+      }
+      if (staleNames.length) { foot = (foot ? foot + " · " : "") + staleNames.join(", ") + (staleNames.length === 1 ? " не опрашивается" : " не опрашиваются"); }
+      var sel = s.prod === a.pid;
+      return { name: P.name, sub: P.cat + " · " + subParts.join(" · "), chip: tchip,
+        bd: a.worst === "ok" ? "var(--border)" : STY[a.worst].bd, ring: sel ? "0 0 0 2px var(--link)" : "none",
+        segs: segsOf(a.c), barLabel: summaryOf(a.c), legend: legend, lines: lines, foot: foot, hasFoot: !!foot,
+        pick: function () { self.setState({ prod: a.pid, verOpen: "" }); } };
+    });
+
+    /* ---------- product detail ---------- */
+    var da = aggs.filter(function (a) { return a.pid === s.prod; })[0] || aggs[0];
+    var d = { none: !da, some: !!da, name: "", sub: "", chip: chip("stale", ""), notes: [], groups: [] };
+    if (da) {
+      var DP = PRODUCTS[da.pid];
+      d.name = DP.name;
+      d.sub = DP.cat + " · " + hostsWord(da.entries.length) + (s.site === "all" ? " на всех площадках" : " · " + SITES[s.site]);
+      d.chip = tiles.filter(function (t) { return t.name === DP.name; })[0] ? tiles.filter(function (t) { return t.name === DP.name; })[0].chip : chip(da.worst === "stale" ? "stale" : da.worst, da.worst);
+      var lineKeys = Object.keys(DP.lines).filter(function (lk) { return da.entries.some(function (e) { return e.inst.line === lk; }); });
+      if (lineKeys.length > 1) {
+        d.notes.push({ fg: "var(--link)", text: "Последняя версия считается внутри своей линейки: " + lineKeys.map(function (lk) { return DP.lines[lk].label + " → " + DP.lines[lk].latest; }).join(", ") + "." });
+      }
+      lineKeys.forEach(function (lk) {
+        var L = DP.lines[lk];
+        if (L.eolSoon) {
+          var who = da.entries.filter(function (e) { return e.inst.line === lk; }).map(function (e) { return e.h.id; }).join(", ");
+          d.notes.push({ fg: "var(--update)", text: DP.name + " " + L.label + ": " + L.eolSoon + " (" + who + "). Сейчас актуально, но переход пора планировать." });
+        }
+      });
+      var stale = da.entries.filter(function (e) { return e.h.poll !== "ok"; });
+      stale.forEach(function (e) {
+        d.notes.push({ fg: "var(--stale)", text: e.h.id + (e.h.poll === "timeout" ? " не отвечает с " : " — отказ в доступе с ") + e.h.since + ". Учтена последняя известная версия " + e.inst.v + "." });
+      });
+      var gmap = {}, gkeys = [];
+      da.entries.forEach(function (e) {
+        var key = e.inst.line + "|" + e.inst.v;
+        if (!gmap[key]) { gmap[key] = { inst: e.inst, list: [] }; gkeys.push(key); }
+        gmap[key].list.push(e);
+      });
+      var lorder = Object.keys(DP.lines);
+      gkeys.sort(function (a, b) {
+        var ga = gmap[a].inst, gb = gmap[b].inst;
+        return (lorder.indexOf(ga.line) - lorder.indexOf(gb.line)) || -vcmp(ga.v, gb.v);
+      });
+      d.groups = gkeys.map(function (key) {
+        var g = gmap[key], inst = g.inst, L = DP.lines[inst.line], showAll = !!s.verAll[da.pid + key];
+        var LIMIT = 3, list = g.list, shown = showAll ? list : list.slice(0, LIMIT);
+        var names = list.map(function (e) { return e.h.id; });
+        var open = s.verOpen === da.pid + key;
+        var cTitle = "", cText = "", rel = [];
+        if (inst.st === "update") {
+          cTitle = "Что изменилось: " + inst.v + " → " + L.latest;
+          rel = relList(inst.v, L.latest, inst.n);
+          cText = inst.n + " " + plural(inst.n, "релиз", "релиза", "релизов") + " в линейке " + L.label + (rel.length ? ":" : " до " + L.latest + ".");
+        } else if (inst.st === "critical") {
+          cTitle = "Что пропущено: сборка " + inst.v + " → " + L.latest;
+          cText = inst.cves ? inst.cves + " CVE в пропущенных обновлениях, " + inst.kev + " из них эксплуатируется (CISA KEV). Максимальный CVSS " + inst.cvss.toFixed(1) + "." : "Максимальный CVSS " + inst.cvss.toFixed(1) + ". Полный список уязвимостей — во вкладке «Уязвимости».";
+        } else if (inst.st === "eol") {
+          cTitle = "Ветка " + L.label + " без поддержки";
+          cText = "Поддержка закончилась " + L.eol + ". Обновлений безопасности больше не будет; переход на следующую ветку — мажорное обновление.";
+        }
+        return {
+          v: inst.p === "windows" ? inst.line + " · " + inst.v : inst.v, line: inst.p === "windows" ? "сборка" : "линейка " + L.label, count: list.length, chip: instChip(inst),
+          hosts: shown.map(function (e) { var bad = e.h.poll !== "ok"; return { name: e.h.id, stale: bad, tag: e.h.poll === "timeout" ? "нет связи" : "нет доступа", bs: bad ? "dashed" : "solid", pick: function () { self.openHost(e.h.id); } }; }),
+          hasMore: list.length > LIMIT, moreText: showAll ? "свернуть" : "ещё " + (list.length - LIMIT) + " · показать все " + list.length,
+          more: function () { var va = {}; for (var k in s.verAll) { va[k] = s.verAll[k]; } va[da.pid + key] = !showAll; self.setState({ verAll: va }); },
+          canChanges: inst.st !== "ok", open: open,
+          changesLabel: inst.st === "eol" ? "Что с поддержкой" : "Что изменилось до " + L.latest,
+          toggle: function () { self.setState({ verOpen: open ? "" : da.pid + key }); },
+          changesTitle: cTitle, changesText: cText, rel: rel, hasRel: rel.length > 0,
+          copy: function () {
+            try { navigator.clipboard.writeText(names.join("\n")); } catch (err) { }
+            self.notify("Скопировано " + hostsWord(names.length) + ": " + names.join(", "));
+          }
+        };
+      });
+    }
+
+    /* ---------- hosts ---------- */
+    var q = s.hq.trim().toLowerCase();
+    var rowsAll = vis.map(function (x) {
+      var st = self.hostStat(x.h, x.i), pend = self.pending(x.i);
+      return { x: x, st: st, pend: pend };
+    });
+    var matchKind = function (r) { return s.hKind === "all" || r.x.h.kind === s.hKind; };
+    var matchQ = function (r) { return !q || r.x.h.id.indexOf(q) >= 0 || r.x.h.addr.indexOf(q) >= 0; };
+    var matchPoll = function (r) { return s.hPoll === "all" || (!r.pend && r.x.h.poll !== "ok"); };
+    var matchStatus = function (r) { return s.hStatus === "all" || r.st.kind === s.hStatus; };
+    var filtered = rowsAll.filter(function (r) { return matchKind(r) && matchQ(r) && matchPoll(r) && matchStatus(r); });
+    var chipBtn = function (on) { return { bd: on ? "var(--text)" : "var(--border-strong)", bg: on ? "var(--text)" : "transparent", fg: on ? "var(--bg)" : "var(--text-soft)" }; };
+    var fStatus = [["all", "Все"], ["critical", "Критично"], ["eol", "EOL"], ["update", "Отстают"], ["ok", "Актуально"]].map(function (p) {
+      var cnt = rowsAll.filter(function (r) { return matchKind(r) && matchQ(r) && matchPoll(r) && (p[0] === "all" || r.st.kind === p[0]); }).length, on = s.hStatus === p[0], c = chipBtn(on);
+      return { label: p[1] + " " + cnt, on: on, bd: c.bd, bg: c.bg, fg: c.fg, pick: function () { self.setState({ hStatus: p[0] }); } };
+    });
+    var fPoll = [["all", "Любой опрос"], ["problem", "Проблемы опроса"]].map(function (p) {
+      var on = s.hPoll === p[0], c = chipBtn(on), cnt = p[0] === "problem" ? " " + rowsAll.filter(function (r) { return !r.pend && r.x.h.poll !== "ok"; }).length : "";
+      return { label: p[1] + cnt, on: on, bd: c.bd, bg: c.bg, fg: c.fg, pick: function () { self.setState({ hPoll: p[0] }); } };
+    });
+    var fKind = [["all", "Все типы"], ["linux", "Linux"], ["windows", "Windows"], ["mikrotik", "MikroTik"], ["proxmox", "Proxmox"]].map(function (p) {
+      var on = s.hKind === p[0], c = chipBtn(on);
+      return { label: p[1], on: on, bd: c.bd, bg: c.bg, fg: c.fg, pick: function () { self.setState({ hKind: p[0] }); } };
+    });
+    var sortRows = function (a, b) { return (RANK[a.st.kind] - RANK[b.st.kind]) || (a.x.h.id < b.x.h.id ? -1 : 1); };
+    var mkRow = function (r) {
+      var h = r.x.h, checked = !!s.sel[h.id], inst = self.insts(h, r.x.i), problem = "", probFg = "var(--muted)";
+      if (r.pend) { problem = "ожидает первого опроса"; }
+      else if (h.poll === "timeout") { problem = "Не отвечает с " + h.since; probFg = "var(--text)"; }
+      else if (h.poll === "denied") { problem = "Отказ в доступе с " + h.since; probFg = "var(--text)"; }
+      else { problem = "—"; }
+      var last = r.pend ? "—" : (s.polling[h.id] ? "опрашивается…" : (s.polledNow[h.id] ? "только что" : "сегодня 12:00"));
+      var osText = inst.length ? osLabel(h.os) : (r.pend ? "—" : "последняя известная: " + osLabel(h.os));
+      if (!inst.length && s.fresh && !r.pend) { osText = "нет данных"; }
+      return { id: h.id, name: h.id, addr: h.addr, site: SITES[h.site].split(",")[0], os: osText,
+        prod: inst.length ? inst.length + " " + plural(inst.length, "продукт", "продукта", "продуктов") : "—",
+        last: last, problem: problem, probFg: probFg, chip: r.st.chip, checked: checked, bg: checked ? "var(--link-bg)" : "transparent",
+        toggle: function () { var ns = {}; for (var k in s.sel) { if (s.sel[k]) { ns[k] = true; } } if (checked) { delete ns[h.id]; } else { ns[h.id] = true; } self.setState({ sel: ns }); },
+        open: function () { self.openHost(h.id); } };
+    };
+    var groups;
+    if (s.grouped) {
+      groups = SITE_ORDER.map(function (sid) {
+        var rs = filtered.filter(function (r) { return r.x.h.site === sid; }).sort(sortRows);
+        if (!rs.length) { return null; }
+        var c = { critical: 0, eol: 0, update: 0, ok: 0, stale: 0, pending: 0 };
+        rs.forEach(function (r) { c[r.st.kind]++; });
+        var open = !s.collapsed[sid];
+        return { hasHead: true, name: SITES[sid], count: hostsWord(rs.length), summary: summaryOf(c), open: open, rot: open ? "rotate(90deg)" : "none",
+          toggle: function () { var cc = {}; for (var k in s.collapsed) { cc[k] = s.collapsed[k]; } cc[sid] = open; self.setState({ collapsed: cc }); },
+          rows: rs.map(mkRow) };
+      }).filter(function (g) { return g; });
+    } else {
+      groups = filtered.length ? [{ hasHead: false, name: "", count: "", summary: "", open: true, rot: "none", toggle: function () { }, rows: filtered.slice().sort(sortRows).map(mkRow) }] : [];
+    }
+    var visIds = filtered.map(function (r) { return r.x.h.id; });
+    var selIds = Object.keys(s.sel).filter(function (k) { return s.sel[k]; });
+    var hiddenSel = selIds.filter(function (id) { return visIds.indexOf(id) < 0; }).length;
+    var allChecked = visIds.length > 0 && visIds.every(function (id) { return s.sel[id]; });
+
+    var openConfirm = function (type) { self.setState({ cf: type, cfText: "", cfOpt: "" }); };
+
+    /* ---------- host card ---------- */
+    var hi = 0; HOSTS.forEach(function (x, i) { if (x.id === s.host) { hi = i; } });
+    var hh = HOSTS[hi], hst = this.hostStat(hh, hi), hinst = this.insts(hh, hi);
+    var hprof = PROFILES.filter(function (p) { return p.id === hh.profile; })[0];
+    var hpolling = !!s.polling[hh.id];
+    var h = {
+      name: hh.id, addr: hh.addr, site: SITES[hh.site], kind: KIND[hh.kind], profile: hprof.name, chip: hst.chip,
+      openProfile: function () { self.setState({ screen: "profiles", profSel: hh.profile }); },
+      poll: function () { self.pollHosts([hh.id]); }, pollBtn: hpolling ? "Опрашиваем…" : "Опросить сейчас",
+      polledText: s.polledNow[hh.id] ? "Опрошен только что" : (hh.poll === "ok" ? "Опрошен сегодня в 12:00 · следующий в 18:00" : "Последняя попытка сегодня в 12:00 — ошибка"),
+      pollChip: hpolling ? chip("stale", "Опрашивается…") : (hh.poll === "ok" ? chip("ok", "Опрос работает") : chip("stale", hh.poll === "timeout" ? "Нет связи" : "Отказ в доступе")),
+      hasError: hh.poll !== "ok" && !this.pending(hi), errTitle: "", errText: "", errAct: "", errFn: function () { }, lastKnown: "",
+      prodCount: hinst.length ? hinst.length + " " + plural(hinst.length, "продукт", "продукта", "продуктов") : "",
+      products: hinst.map(function (inst) {
+        var L = lineOf(inst);
+        return { name: pname(inst), line: inst.p === "windows" ? "Windows Server " + inst.line : "линейка " + L.label, v: inst.v, latest: L.latest, chip: instChip(inst),
+          src: hh.poll === "ok" ? "найдено автоматически" : "последние известные данные",
+          open: function () { self.setState({ screen: "board", prod: inst.p, verOpen: "" }); } };
+      }),
+      noProducts: hinst.length === 0, noProductsText: this.pending(hi) ? "Хост ещё не опрошен." : "Версии не получены: опрос не удался ни разу. Исправьте доступ или введите версии вручную.",
+      addManual: function () { self.notify("Продукт, введённый вручную, помечается «введено вручную» — опрос его не перезаписывает."); },
+      hist: hh.hist.map(function (e) { return { d: e[0], t: e[1] }; }), noHist: hh.hist.length === 0
+    };
+    if (hh.poll === "timeout") {
+      h.errTitle = "Не отвечает с " + hh.since;
+      h.errText = "API-SSL (порт 8729) не принимает подключения. Проверьте, что устройство включено и доступно с адреса VersionDrift 10.10.5.20, а сервис api-ssl не отключён (/ip service print).";
+      h.errAct = "Опросить сейчас"; h.errFn = function () { self.pollHosts([hh.id]); };
+    } else if (hh.poll === "denied") {
+      h.errTitle = "Отказ в доступе с " + hh.since;
+      h.errText = "Истёк пароль учётки профиля «" + hprof.name + "» на этом хосте. У локальных учёток Windows срок пароля свой на каждом хосте, поэтому остальные хосты профиля работают. Задайте новый пароль на " + hh.id + " и отключите срок действия пароля для этой учётки.";
+      h.errAct = "Открыть профиль «" + hprof.name + "»"; h.errFn = function () { self.setState({ screen: "profiles", profSel: hh.profile }); };
+    }
+    if (hh.poll !== "ok" && hinst.length) {
+      h.lastKnown = hst.kind === "critical"
+        ? "Показаны последние известные версии. По ним хост критичный — эту оценку не снимаем, пока нет свежих данных."
+        : "Показаны последние известные версии. Пока связи нет, хост помечен «" + hst.chip.label + "», а не «отстаёт»: свежих данных о версиях нет.";
+    }
+
+    /* ---------- profiles ---------- */
+    var profHosts = function (pid) { return HOSTS.filter(function (x) { return x.profile === pid; }); };
+    var profiles = PROFILES.map(function (p) {
+      var hs = profHosts(p.id), bad = hs.filter(function (x) { return x.poll === "denied"; }).length, on = s.profSel === p.id;
+      return { name: p.name, type: p.typeLabel, user: p.user, hosts: hostsWord(hs.length), on: on, bg: on ? "var(--surface-3)" : "transparent",
+        chip: bad ? chip("critical", bad + " " + plural(bad, "отказ", "отказа", "отказов")) : chip("ok", "Работает"),
+        pick: function () { self.setState({ profSel: p.id, replacing: false }); } };
+    });
+    var P0 = PROFILES.filter(function (p) { return p.id === s.profSel; })[0] || PROFILES[0];
+    var phs = profHosts(P0.id), pbad = phs.filter(function (x) { return x.poll === "denied"; });
+    var pr = { name: P0.name, type: P0.typeLabel, user: P0.user, rights: P0.rights, replacing: s.replacing, notReplacing: !s.replacing,
+      replace: function () { self.setState({ replacing: true }); }, saveSecret: function () { self.setState({ replacing: false }); self.notify("Секрет заменён. Хосты профиля будут опрошены заново."); },
+      hasErr: pbad.length > 0,
+      errTitle: pbad.length ? "Отказ на " + pbad.length + " из " + phs.length + " хостов: " + pbad.map(function (x) { return x.id; }).join(", ") : "",
+      errText: pbad.length ? (pbad.length === phs.length ? "Отказывают все хосты профиля — проблема в самом профиле: проверьте пароль или ключ." : "Остальные хосты профиля работают, значит проблема на стороне конкретного хоста, а не профиля: скорее всего там истёк пароль локальной учётки. Если откажут все хосты, мы подсветим профиль целиком.") : "",
+      hostsN: hostsWord(phs.length),
+      hosts: phs.map(function (x) { var bad = x.poll !== "ok"; return { name: x.id, bad: bad, bs: bad ? "dashed" : "solid", tag: x.poll === "timeout" ? "нет связи" : "отказ", pick: function () { self.openHost(x.id); } }; })
+    };
+
+    /* ---------- wizard ---------- */
+    var WT = WTYPES.filter(function (t) { return t.id === s.wType; })[0] || WTYPES[2];
+    var kindOfType = { linux: "linux", windows: "windows", mikrotik: "mikrotik", pve: "proxmox", pbs: "proxmox" };
+    var candidates = HOSTS.filter(function (x) { return x.profile === WT.prof; });
+    var checkList = candidates.slice(0, 4);
+    candidates.forEach(function (x) { if (x.poll !== "ok" && checkList.indexOf(x) < 0) { checkList.push(x); } });
+    var wHost = s.wHost && candidates.some(function (x) { return x.id === s.wHost; }) ? s.wHost : (checkList[0] ? checkList[0].id : "");
+    var wHostObj = HOSTS.filter(function (x) { return x.id === wHost; })[0];
+    var wResult = "", resKind = "ok";
+    if (s.wCheck === "done" && wHostObj) {
+      if (wHostObj.poll === "timeout") { wResult = wHostObj.id + " не отвечает: порт недоступен. Сам профиль это не проверяет — выберите другой хост."; resKind = "stale"; }
+      else if (wHostObj.poll === "denied") { wResult = wHostObj.id + ": отказ в доступе. Проверьте пароль учётки на этом хосте."; resKind = "critical"; }
+      else { wResult = "Подключение к " + wHostObj.id + " успешно. Найдено: " + [wHostObj.os].concat(wHostObj.apps).map(osLabel).join(", ") + "."; resKind = "ok"; }
+    }
+    var I2 = INSTR[WT.id];
+    var wz = {
+      is1: s.wStep === 1, is2: s.wStep === 2, is3: s.wStep === 3, canBack: s.wStep > 1,
+      stepper: [[1, "Тип"], [2, "Как завести учётку"], [3, "Данные и проверка"]].map(function (p) {
+        var on = s.wStep === p[0], done = s.wStep > p[0];
+        return { n: done ? "✓" : String(p[0]), label: p[1], bd: on ? "var(--text)" : "var(--border)", fg: on || done ? "var(--text)" : "var(--muted)",
+          numBg: on ? "var(--text)" : (done ? "var(--ok)" : "var(--surface-3)"), numFg: on || done ? "var(--bg)" : "var(--muted)" };
+      }),
+      types: WTYPES.map(function (t) {
+        var on = t.id === s.wType, n = HOSTS.filter(function (x) { return x.profile === t.prof; }).length;
+        return { label: t.label, sub: t.sub, hosts: s.empty ? "" : "в брифе: " + hostsWord(n), on: on, bd: on ? "var(--link)" : "var(--border)", ring: on ? "0 0 0 1px var(--link)" : "none",
+          pick: function () { self.setState({ wType: t.id, wHost: "", wCheck: "idle" }); } };
+      }),
+      title: I2.title, lead: I2.lead, note: I2.note,
+      instr: I2.steps.map(function (st, k) {
+        return { n: k + 1, text: st[0], cmd: st[1], hasCmd: !!st[1],
+          copy: function () { try { navigator.clipboard.writeText(st[1]); } catch (err) { } self.notify("Команда скопирована"); } };
+      }),
+      name: s.wName || WT.name, onName: function (e) { self.setState({ wName: e.target.value }); },
+      user: WT.user, isKey: WT.id === "linux", isSecret: WT.id !== "linux", secretLabel: WT.secret,
+      copyKey: function () { self.notify("Публичный ключ скопирован"); },
+      checkHosts: checkList.map(function (x) { var on = x.id === wHost; return { name: x.id, on: on, bd: on ? "var(--link)" : "var(--border-strong)", bg: on ? "var(--link-bg)" : "transparent", pick: function () { self.setState({ wHost: x.id, wCheck: "idle" }); } }; }),
+      check: function () { self.setState({ wCheck: "checking", wHost: wHost }); clearTimeout(self.wt); self.wt = setTimeout(function () { self.setState({ wCheck: "done" }); }, 1200); },
+      checkBtn: s.wCheck === "checking" ? "Проверяем…" : "Проверить на " + (wHost || "хосте"),
+      hasResult: s.wCheck === "done", result: wResult, resBd: STY[resKind].bd, resBs: STY[resKind].bs, resBg: resKind === "stale" ? "var(--surface-2)" : STY[resKind].bg,
+      back: function () { self.setState({ wStep: Math.max(1, s.wStep - 1) }); },
+      cancel: function () { self.setState({ screen: s.wMode === "firstrun" ? "firstrun" : "profiles", wStep: 1, wCheck: "idle" }); },
+      nextLabel: s.wStep === 3 ? "Сохранить профиль" : "Далее",
+      next: function () {
+        if (s.wStep < 3) { self.setState({ wStep: s.wStep + 1 }); return; }
+        if (s.wMode === "firstrun") { self.setState({ screen: "firstrun", frProf: true, wStep: 1, wCheck: "idle" }); self.notify("Профиль «" + (s.wName || WT.name) + "» сохранён."); }
+        else { self.setState({ screen: "profiles", profSel: WT.prof, wStep: 1, wCheck: "idle" }); self.notify("Профиль «" + (s.wName || WT.name) + "» сохранён."); }
+      }
+    };
+
+    /* ---------- first run ---------- */
+    var fr = [
+      { num: s.frProf ? "✓" : "1", title: "Создайте профиль доступа", desc: s.frProf ? "Готово. В прототипе считаем созданными все пять профилей из брифа: Linux, Windows, MikroTik, Proxmox VE, PBS." : "Одна учётка только на чтение для хостов одного типа. VersionDrift покажет, как её завести с минимальными правами.",
+        state: s.frProf ? "done" : "active", hasAct: !s.frProf, actLabel: "Создать профиль", hasAlt: false, altLabel: "",
+        act: function () { self.setState({ screen: "profileNew", wMode: "firstrun", wStep: 1, wType: "linux", wCheck: "idle" }); }, alt: function () { } },
+      { num: "2", title: "Добавьте хосты", desc: "По одному через форму или списком из CSV: name, address, site, profile. После добавления сразу проверим связь.",
+        state: s.frProf ? "active" : "todo", hasAct: s.frProf, actLabel: "Загрузить CSV", hasAlt: true, altLabel: "Добавить один",
+        act: function () { self.setState({ addOpen: true, addTab: "csv", csv: false }); }, alt: function () { self.setState({ addOpen: true, addTab: "one" }); } },
+      { num: "3", title: "Дождитесь первого опроса", desc: "Около минуты на 30 хостов. Доска наполняется по мере опроса — ждать окончания не нужно.",
+        state: "todo", hasAct: false, actLabel: "", hasAlt: false, altLabel: "", act: function () { }, alt: function () { } }
+    ].map(function (f) {
+      return { num: f.num, title: f.title, desc: f.desc, hasAct: f.hasAct, actLabel: f.actLabel, act: f.act, hasAlt: f.hasAlt, altLabel: f.altLabel, alt: f.alt,
+        bd: f.state === "active" ? "var(--link)" : "var(--border)", op: f.state === "todo" ? "0.6" : "1",
+        numBg: f.state === "done" ? "var(--ok)" : (f.state === "active" ? "var(--text)" : "var(--surface-3)"), numFg: f.state === "todo" ? "var(--muted)" : "var(--bg)" };
+    });
+
+    /* ---------- add hosts ---------- */
+    var addTabs = [["one", "Один хост"], ["csv", "Списком из CSV"]].map(function (p) {
+      var on = s.addTab === p[0];
+      return { label: p[1], on: on, fg: on ? "var(--text)" : "var(--muted)", line: on ? "var(--text)" : "transparent", pick: function () { self.setState({ addTab: p[0] }); } };
+    });
+    var fMsg = "", fBd = "var(--border)", fBg = "transparent";
+    if (s.fState === "invalid") { fMsg = "Укажите имя и адрес хоста."; fBd = "var(--critical-border)"; fBg = "var(--critical-bg)"; }
+    if (s.fState === "checking") { fMsg = "Проверяем связь с " + s.fAddr + "…"; fBd = "var(--border-strong)"; fBg = "var(--surface-2)"; }
+    if (s.fState === "done") {
+      var fp = PROFILES.filter(function (p) { return p.id === s.fProfile; })[0];
+      fMsg = s.fProfile === "none" ? "Хост " + s.fName + " добавлен без профиля — версии для него вводятся вручную." : "Связь есть, профиль «" + fp.name + "» принят. Хост " + s.fName + " появится в списке со статусом «Ожидает опроса»; первый опрос — в течение минуты.";
+      fBd = "var(--ok-border)"; fBg = "var(--ok-bg)";
+    }
+    var profNameById = {}; PROFILES.forEach(function (p) { profNameById[p.id] = p.name; });
+    var csvRows = HOSTS.map(function (x, k) {
+      return { n: k + 2, name: x.id, addr: x.addr, site: SITES[x.site], profile: profNameById[x.profile], st: self.has() ? "уже есть" : "новый", fg: self.has() ? "var(--muted)" : "var(--ok)", bg: "transparent" };
+    });
+    csvRows.push({ n: 33, name: "msk-app-01", addr: "10.10.1.11", site: SITES.msk, profile: profNameById["linux-ssh"], st: "дубликат строки 2", fg: "var(--critical)", bg: "var(--critical-bg)" });
+    csvRows.push({ n: 34, name: "msk-gw-02", addr: "10.10.0.256", site: SITES.msk, profile: profNameById["mt-api"], st: "некорректный адрес", fg: "var(--critical)", bg: "var(--critical-bg)" });
+    var newCount = this.has() ? 0 : 31;
+    var csvSummary = [
+      newCount ? { label: "31 новый", fg: "var(--ok)", bd: "var(--ok-border)", bg: "var(--ok-bg)" } : { label: "31 уже есть — без изменений", fg: "var(--text-soft)", bd: "var(--border-strong)", bg: "transparent" },
+      { label: "2 ошибки", fg: "var(--critical)", bd: "var(--critical-border)", bg: "var(--critical-bg)" }
+    ];
+
+    /* ---------- confirm ---------- */
+    var cf = { title: "", lead: "", names: "", hasOpts: false, opts: [], needType: false, typeLabel: "", okLabel: "", disabled: false, btnBg: "var(--primary-bg)", btnFg: "var(--primary-fg)", cancel: function () { self.setState({ cf: null }); }, ok: function () { } };
+    if (s.cf) {
+      var n = selIds.length, nm = selIds.slice(0, 8).join(", ") + (n > 8 ? " и ещё " + (n - 8) : "");
+      cf.names = nm;
+      var finish = function (msg) { self.setState({ cf: null, sel: {}, cfText: "", cfOpt: "" }); self.notify(msg); };
+      if (s.cf === "profile") {
+        cf.title = "Сменить профиль доступа"; cf.lead = "Профиль будет заменён у " + hostsWord(n) + ". После смены хосты опрашиваются заново.";
+        cf.hasOpts = true;
+        cf.opts = PROFILES.map(function (p) { var on = s.cfOpt === p.id; return { label: p.name, on: on, bd: on ? "var(--link)" : "var(--border-strong)", bg: on ? "var(--link-bg)" : "transparent", dot: on ? "var(--link)" : "transparent", pick: function () { self.setState({ cfOpt: p.id }); } }; });
+        cf.okLabel = "Сменить у " + hostsWord(n); cf.disabled = !s.cfOpt;
+        cf.ok = function () { if (!s.cfOpt) { return; } finish("Профиль «" + profNameById[s.cfOpt] + "» назначен: " + hostsWord(n) + "."); };
+      } else if (s.cf === "move") {
+        cf.title = "Перенести на другую площадку"; cf.lead = "Выберите площадку для " + hostsWord(n) + ".";
+        cf.hasOpts = true;
+        cf.opts = SITE_ORDER.map(function (sid) { var on = s.cfOpt === sid; return { label: SITES[sid], on: on, bd: on ? "var(--link)" : "var(--border-strong)", bg: on ? "var(--link-bg)" : "transparent", dot: on ? "var(--link)" : "transparent", pick: function () { self.setState({ cfOpt: sid }); } }; });
+        cf.okLabel = "Перенести " + hostsWord(n); cf.disabled = !s.cfOpt;
+        cf.ok = function () { if (!s.cfOpt) { return; } finish(hostsWord(n) + " → «" + SITES[s.cfOpt] + "»."); };
+      } else {
+        cf.title = "Удалить " + hostsWord(n) + " из VersionDrift";
+        cf.lead = "История опросов этих хостов будет удалена. На самих хостах ничего не меняется, учётки остаются.";
+        cf.needType = n > 10; cf.typeLabel = "Это больше 10 хостов. Введите " + n + ", чтобы подтвердить";
+        cf.disabled = cf.needType && s.cfText.trim() !== String(n);
+        cf.okLabel = "Удалить " + hostsWord(n);
+        cf.ok = function () { if (cf.disabled) { return; } finish("Удалено " + hostsWord(n) + " (в прототипе хосты остаются на месте)."); };
+      }
+      if (s.cf === "delete") { cf.btnBg = cf.disabled ? "var(--surface-3)" : "var(--critical)"; cf.btnFg = cf.disabled ? "var(--muted)" : "#ffffff"; }
+      else if (cf.disabled) { cf.btnBg = "var(--surface-3)"; cf.btnFg = "var(--muted)"; }
+    }
+
+    return {
+      themeClass: theme,
+      nav: nav, siteLabel: s.site === "all" ? "Все площадки" : SITES[s.site], sitesOpen: s.sitesOpen, siteCards: siteCards,
+      toggleSites: function () { self.setState({ sitesOpen: !s.sitesOpen }); },
+      openAdd: function () { self.setState({ addOpen: true, sitesOpen: false, fState: "idle" }); },
+      isBoard: scr === "board", isHosts: scr === "hosts", isHost: scr === "host", isWeek: scr === "week",
+      isProfiles: scr === "profiles", isProfileNew: scr === "profileNew", isFirstRun: scr === "firstrun",
+      showProgress: showProgress, polled: s.polled, pollPct: Math.round(s.polled / 31 * 100) + "%",
+      showResult: showResult, resultText: resultText,
+      showProblems: function () { self.setState({ screen: "hosts", hPoll: "problem", hStatus: "all" }); },
+      closeBanner: function () { self.setState({ bannerClosed: true }); },
+      stats: stats, pollProblemsN: pollProblems, pollProblemsUnit: plural(pollProblems, "хост", "хоста", "хостов"),
+      goPollProblems: function () { self.setState({ screen: "hosts", hPoll: "problem", hStatus: "all" }); },
+      tiles: tiles, noTiles: tiles.length === 0, noTilesText: aggs.length ? "Под фильтр ничего не попало." : "Первые результаты появятся, как только ответит первый хост.",
+      openChanges: function () { self.notify("Откроется существующая вкладка «Изменения с моей версии» для выбранной версии."); },
+      d: d,
+      hostsTotalText: hostsWord(vis.length) + (s.site === "all" ? " на 2 площадках" : " · " + SITES[s.site]),
+      hq: s.hq, onSearch: function (e) { self.setState({ hq: e.target.value }); },
+      grouped: s.grouped, groupLabel: s.grouped ? "По площадкам" : "Одним списком",
+      toggleGroup: function () { self.setState({ grouped: !s.grouped }); },
+      fStatus: fStatus, fPoll: fPoll, fKind: fKind,
+      groups: groups, noRows: groups.length === 0, noRowsText: has ? "Под фильтр ничего не попало." : "Хостов пока нет. Добавьте их по одному или из CSV.",
+      hasSel: selIds.length > 0, selText: "Выбрано " + hostsWord(selIds.length),
+      hasHiddenSel: hiddenSel > 0, hiddenSelText: "из них " + hiddenSel + " скрыто фильтром",
+      allChecked: allChecked, selectAllLabel: allChecked ? "Снять выбор с видимых" : "Выбрать все " + visIds.length + " по текущему фильтру",
+      selectAll: function () { var ns = {}; for (var k in s.sel) { if (s.sel[k]) { ns[k] = true; } } visIds.forEach(function (id) { if (allChecked) { delete ns[id]; } else { ns[id] = true; } }); self.setState({ sel: ns }); },
+      clearSel: function () { self.setState({ sel: {} }); },
+      bulkPoll: function () { self.pollHosts(selIds); },
+      bulkProfile: function () { openConfirm("profile"); }, bulkMove: function () { openConfirm("move"); }, bulkDelete: function () { openConfirm("delete"); },
+      h: h, backToHosts: function () { self.setState({ screen: "hosts" }); },
+      profiles: profiles, pr: pr, newProfile: function () { self.setState({ screen: "profileNew", wMode: "normal", wStep: 1, wCheck: "idle", wName: "" }); },
+      wz: wz, fr: fr, manualEntry: function () { self.notify("Ручной ввод версий работает как в облачной версии: продукт → «Моя версия»."); },
+      addOpen: s.addOpen, closeAdd: function () { self.setState({ addOpen: false, fState: "idle" }); },
+      addTabs: addTabs, isAddOne: s.addTab === "one", isAddCsv: s.addTab === "csv",
+      fName: s.fName, fAddr: s.fAddr, fSite: s.fSite, fProfile: s.fProfile,
+      onFName: function (e) { self.setState({ fName: e.target.value, fState: "idle" }); },
+      onFAddr: function (e) { self.setState({ fAddr: e.target.value, fState: "idle" }); },
+      onFSite: function (e) { self.setState({ fSite: e.target.value }); },
+      onFProfile: function (e) { self.setState({ fProfile: e.target.value }); },
+      fHasMsg: !!fMsg, fMsg: fMsg, fMsgBd: fBd, fMsgBg: fBg,
+      saveOneLabel: s.fState === "done" ? "Добавить ещё" : "Сохранить и проверить связь",
+      saveOne: function () {
+        if (s.fState === "done") { self.setState({ fName: "", fAddr: "", fState: "idle" }); return; }
+        if (!s.fName.trim() || !s.fAddr.trim()) { self.setState({ fState: "invalid" }); return; }
+        self.setState({ fState: "checking" }); clearTimeout(self.ft); self.ft = setTimeout(function () { self.setState({ fState: "done" }); }, 1200);
+      },
+      csvEmpty: !s.csv, csvLoaded: s.csv, loadCsv: function () { self.setState({ csv: true }); }, resetCsv: function () { self.setState({ csv: false }); },
+      csvRows: csvRows, csvSummary: csvSummary,
+      csvHint: newCount ? "Сразу после добавления проверим связь с каждым хостом." : "Все хосты из файла уже есть — добавлять нечего.",
+      csvDisabled: !newCount, csvBtn: newCount ? "Добавить 31 хост" : "Новых хостов нет",
+      csvBtnBg: newCount ? "var(--primary-bg)" : "var(--surface-3)", csvBtnFg: newCount ? "var(--primary-fg)" : "var(--muted)",
+      importCsv: function () { if (newCount) { self.startFirstPoll(); } },
+      cfOpen: !!s.cf, cf: cf, cfText: s.cfText, onCfText: function (e) { self.setState({ cfText: e.target.value }); },
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+/* VersionDrift — fleet UI colour tokens (from the Fleet brief, 28.09.2026).
+   Pair = text/border colour of a status + its background. Map onto the app's existing tokens. */
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121316;
+  --surface: #1f2125;
+  --surface-2: #1a1b1f;
+  --surface-3: #2a2d33;
+  --border: #2e3136;
+  --border-strong: #3a3d43;
+  --text: #eceae4;
+  --text-soft: #cfccc5;
+  --muted: #a3a09a;
+  --link: #7cb7ff;
+  --link-bg: #16233a;
+  --critical: #ff6b61; --critical-bg: #35181a; --critical-border: #8c2f2a;
+  --update: #f5a524;   --update-bg: #2a2417;   --update-border: #6e5320;
+  --ok: #3dd68c;       --ok-bg: #17261e;       --ok-border: #2c5a41;
+  --eol: #d9d2c3;      --eol-bg: #29251e;      --eol-border: #7a6f5c;
+  --stale: #a3a09a;    --stale-border: #5a5d64; /* dashed, no fill */
+  --type-feature: #7cb7ff;
+  --type-deprecated: #c4a7ff;
+  --code-bg: #0e0f11;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface-2: #f0eee8;
+  --surface-3: #e7e4dc;
+  --border: #d9d6ce;
+  --border-strong: #c3c0b7;
+  --text: #1b1c1f;
+  --text-soft: #3d3c39;
+  --muted: #5f5d58;
+  --link: #1f5fbf;
+  --link-bg: #e6eefb;
+  --critical: #c62f25; --critical-bg: #fde8e6; --critical-border: #e8a39d;
+  --update: #9a5b00;   --update-bg: #fdf1dc;   --update-border: #e4c286;
+  --ok: #16794a;       --ok-bg: #e3f5ec;       --ok-border: #9fd6b9;
+  --eol: #4d4638;      --eol-bg: #eee9df;      --eol-border: #b9ad97;
+  --stale: #6b6964;    --stale-border: #a8a59e;
+  --code-bg: #f0eee8;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f7f6f2; --surface: #ffffff; --surface-2: #f0eee8; --surface-3: #e7e4dc;
+    --border: #d9d6ce; --border-strong: #c3c0b7;
+    --text: #1b1c1f; --text-soft: #3d3c39; --muted: #5f5d58;
+    --link: #1f5fbf; --link-bg: #e6eefb;
+    --critical: #c62f25; --critical-bg: #fde8e6; --critical-border: #e8a39d;
+    --update: #9a5b00; --update-bg: #fdf1dc; --update-border: #e4c286;
+    --ok: #16794a; --ok-bg: #e3f5ec; --ok-border: #9fd6b9;
+    --eol: #4d4638; --eol-bg: #eee9df; --eol-border: #b9ad97;
+    --stale: #6b6964; --stale-border: #a8a59e;
+    --code-bg: #f0eee8;
+  }
+}
+
+:root {
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --radius-control: 10px;
+  --radius-panel: 14px;
+}

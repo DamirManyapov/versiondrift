@@ -16,3 +16,6 @@ coverage/
 .cache/
 test-results/
 playwright-report/
+
+# Design handoff archives dropped into the repo root
+/*.zip

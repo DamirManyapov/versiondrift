@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Состояния флота хостов</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.st .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+</style>
+</helmet>
+
+<div class="st" style="width: 1440px; height: 1200px; box-sizing: border-box; padding: 40px 48px; background: #121316; color: #eceae4; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 14px; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; align-items: baseline; gap: 16px">
+    <h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.01em">Состояния</h1>
+    <span style="font-size: 14px; color: #a3a09a">Как каждый особый случай выглядит на доске, в таблице хостов и в карточке</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px">
+
+    <section style="padding: 20px; border-radius: 14px; background: #1a1b1f; border: 1px solid #2e3136; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 600">Первый опрос идёт <span style="font-weight: 400; color: #a3a09a">· доска, хосты</span></h2>
+      <div style="padding: 12px 14px; border-radius: 12px; background: #1f2125; border: 1px solid #7cb7ff; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13.5px"><b>Первый опрос идёт</b> <span class="mono">опрошено 12 из 31</span> <span style="color: #a3a09a">· результаты появляются по мере опроса</span></span>
+        <div style="height: 6px; border-radius: 3px; background: #2a2d33"><div style="width: 39%; height: 6px; border-radius: 3px; background: #7cb7ff"></div></div>
+      </div>
+      <div style="display: grid; grid-template-columns: 150px 150px minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; background: #1f2125; border: 1px solid #2e3136">
+        <span style="justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 5px 9px; border-radius: 999px; border: 1px dashed #5a5d64; color: #a3a09a"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor"></span>Ожидает опроса</span>
+        <span class="mono" style="font-weight: 600; color: #7cb7ff">kzn-sw-01</span>
+        <span style="font-size: 13px; color: #a3a09a">ОС и продукты — «—», строка не участвует в сводке, пока хост не ответит</span>
+      </div>
+    </section>
+
+    <section style="padding: 20px; border-radius: 14px; background: #1a1b1f; border: 1px solid #2e3136; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 600">«Отстал» против «не отвечает» <span style="font-weight: 400; color: #a3a09a">· одна версия, два разных случая</span></h2>
+      <div style="display: grid; grid-template-columns: 130px 110px minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; background: #1f2125; border: 1px solid #2e3136">
+        <span style="justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 5px 9px; border-radius: 999px; border: 1px solid #6e5320; background: #2a2417; color: #f5a524"><span style="width: 7px; height: 7px; border-radius: 50%; background: currentColor"></span>+3 релиза</span>
+        <span class="mono" style="font-weight: 600">kzn-gw-01</span>
+        <span class="mono" style="font-size: 12.5px; color: #cfccc5">RouterOS 7.23.4 · опрошен в 12:00</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 130px 110px minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; background: #1f2125; border: 1px dashed #5a5d64">
+        <span style="justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 5px 9px; border-radius: 999px; border: 1px dashed #5a5d64; color: #a3a09a"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor"></span>Нет связи</span>
+        <span class="mono" style="font-weight: 600">kzn-gw-02</span>
+        <span style="font-size: 12.5px; color: #cfccc5">не отвечает с 26.09 14:10 · последняя известная <span class="mono">7.23.4</span></span>
+      </div>
+      <span style="font-size: 13px; line-height: 1.5; color: #a3a09a">Правило: пока данных нет, хост с некритичной версией показываем как «Нет связи» — нейтрально и пунктиром. Если по последним данным хост критичный (kzn-fs-01), он остаётся красным, а проблема опроса видна отдельной колонкой.</span>
+    </section>
+
+    <section style="padding: 20px; border-radius: 14px; background: #1a1b1f; border: 1px solid #2e3136; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 600">Отказ в доступе: хост или профиль <span style="font-weight: 400; color: #a3a09a">· профиль доступа</span></h2>
+      <div style="padding: 12px 14px; border-radius: 10px; background: #1f2125; border: 1px dashed #5a5d64; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-weight: 600">Отказ на 1 из 7 хостов: kzn-fs-01</span>
+        <span style="font-size: 13px; line-height: 1.5; color: #cfccc5">Остальные хосты профиля работают — проблема на конкретном хосте. Профиль в списке помечен «1 отказ», но не красится целиком.</span>
+      </div>
+      <div style="padding: 12px 14px; border-radius: 10px; background: #35181a; border: 1px solid #8c2f2a; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-weight: 600; color: #ff6b61">Отказывают все 7 хостов профиля «Windows RO»</span>
+        <span style="font-size: 13px; line-height: 1.5; color: #eceae4">Проблема в самом профиле: проверьте пароль или ключ. Такой профиль поднимается в начало списка, а на карточках хостов ошибка ссылается на него. <span style="color: #a3a09a">(гипотетический пример)</span></span>
+      </div>
+    </section>
+
+    <section style="padding: 20px; border-radius: 14px; background: #1a1b1f; border: 1px solid #2e3136; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 600">Версия не распознана <span style="font-weight: 400; color: #a3a09a">· карточка хоста</span></h2>
+      <div style="display: grid; grid-template-columns: 170px minmax(0, 1fr) 160px; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; background: #1f2125; border: 1px solid #2e3136">
+        <span style="font-weight: 600">Windows Server</span>
+        <span class="mono" style="font-size: 12.5px; color: #cfccc5">10.0.20348 · ревизия ?</span>
+        <span style="justify-self: end; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 5px 9px; border-radius: 999px; border: 1px dashed #5a5d64; color: #a3a09a"><span style="width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor"></span>Статус неизвестен</span>
+      </div>
+      <span style="font-size: 13px; line-height: 1.5; color: #cfccc5">Прочитали «Windows 10.0.20348, без ревизии обновления». Без номера ревизии (UBR) нельзя сравнить с последней сборкой 20348.5631, поэтому статус не присваиваем. Действие: «Показать, что прочитано» и «Указать версию вручную».</span>
+    </section>
+
+    <section style="padding: 20px; border-radius: 14px; background: #1a1b1f; border: 1px solid #2e3136; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 600">Хосты на разных линейках <span style="font-weight: 400; color: #a3a09a">· плитка продукта</span></h2>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 10px; background: #1f2125; border: 1px solid #2e3136">
+        <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr) 40px; gap: 8px; font-size: 13px"><span style="color: #a3a09a">13 trixie</span><span class="mono" style="color: #3dd68c">13.7 · последняя</span><span class="mono" style="color: #a3a09a; text-align: right">×2</span></div>
+        <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr) 40px; gap: 8px; font-size: 13px"><span style="color: #a3a09a">12 bookworm</span><span class="mono" style="color: #f5a524">12.12–12.15 → 12.15</span><span class="mono" style="color: #a3a09a; text-align: right">×7</span></div>
+        <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr) 40px; gap: 8px; font-size: 13px"><span style="color: #a3a09a">11 bullseye</span><span class="mono" style="color: #d9d2c3">11.11 · EOL</span><span class="mono" style="color: #a3a09a; text-align: right">×1</span></div>
+      </div>
+      <span style="font-size: 13px; line-height: 1.5; color: #a3a09a">«Последняя» у каждой линейки своя: Debian 12.15 — актуально, хотя вышла 13.7. Одна строка на линейку, не больше трёх; остальные — в панели деталей.</span>
+    </section>
+
+    <section style="padding: 20px; border-radius: 14px; background: #1a1b1f; border: 1px solid #2e3136; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 600">Введено вручную <span style="font-weight: 400; color: #a3a09a">· продукт на хосте</span></h2>
+      <div style="display: grid; grid-template-columns: 170px minmax(0, 1fr) 150px; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; background: #1f2125; border: 1px solid #2e3136">
+        <span style="font-weight: 600">[Продукт]</span>
+        <span class="mono" style="font-size: 12.5px; color: #cfccc5">[версия] → [последняя]</span>
+        <span style="justify-self: end; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 8px; border-radius: 6px; background: #2a2d33; color: #cfccc5">
+          <svg viewBox="0 0 24 24" width="13" height="13" style="fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg>введено вручную
+        </span>
+      </div>
+      <span style="font-size: 13px; line-height: 1.5; color: #a3a09a">Метка вместо «найдено автоматически». Опрос такую запись не перезаписывает; если опрос нашёл тот же продукт с другой версией, показываем обе и просим выбрать.</span>
+    </section>
+
+    <section style="padding: 20px; border-radius: 14px; background: #1a1b1f; border: 1px solid #2e3136; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 600">Пусто <span style="font-weight: 400; color: #a3a09a">· хосты, профили</span></h2>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+        <div style="padding: 18px; border-radius: 10px; border: 1.5px dashed #3a3d43; display: flex; flex-direction: column; gap: 8px; align-items: flex-start">
+          <span style="font-weight: 600">Хостов пока нет</span>
+          <span style="font-size: 13px; line-height: 1.5; color: #a3a09a">Сначала профиль доступа, потом хосты — по одному или из CSV.</span>
+          <span style="margin-top: 4px; height: 36px; padding: 0 12px; border-radius: 9px; background: #eceae4; color: #121316; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center">Добавить хосты</span>
+        </div>
+        <div style="padding: 18px; border-radius: 10px; border: 1.5px dashed #3a3d43; display: flex; flex-direction: column; gap: 8px; align-items: flex-start">
+          <span style="font-weight: 600">Профилей пока нет</span>
+          <span style="font-size: 13px; line-height: 1.5; color: #a3a09a">Один профиль — одна учётка только на чтение для хостов одного типа.</span>
+          <span style="margin-top: 4px; height: 36px; padding: 0 12px; border-radius: 9px; background: #eceae4; color: #121316; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center">Новый профиль</span>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding: 20px; border-radius: 14px; background: #1a1b1f; border: 1px solid #2e3136; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 600">Много хостов <span style="font-weight: 400; color: #a3a09a">· 300 хостов, 40 на одной версии</span></h2>
+      <div style="padding: 12px 14px; border-radius: 10px; background: #1f2125; border: 1px solid #2e3136; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span class="mono" style="font-size: 16px; font-weight: 600">12.15</span><span style="font-size: 12.5px; color: #a3a09a">линейка 12 bookworm</span><span class="mono" style="font-size: 13px; color: #cfccc5">×40</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <span class="mono" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #3a3d43; font-size: 12.5px; display: inline-flex; align-items: center">[хост]</span>
+          <span class="mono" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #3a3d43; font-size: 12.5px; display: inline-flex; align-items: center">[хост]</span>
+          <span class="mono" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #3a3d43; font-size: 12.5px; display: inline-flex; align-items: center">[хост]</span>
+          <span style="height: 30px; padding: 0 10px; font-size: 12.5px; color: #7cb7ff; display: inline-flex; align-items: center">ещё 37 · показать все 40</span>
+        </div>
+      </div>
+      <span style="font-size: 13px; line-height: 1.5; color: #a3a09a">В разбивке по версиям — первые три хоста и «показать все». В таблице хостов — группы по площадкам сворачиваются, внутри сначала проблемные; «Копировать хосты для тикета» берёт весь список, а не видимые три.</span>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
