@@ -553,4 +553,16 @@ export const en = {
   deleteProfileConfirm: 'Delete “{name}”: its hosts keep their versions and wait for another profile',
   showPublicKey: 'Public key',
   profileDeleted: 'Profile deleted.',
+  pollExplain_host_key_mismatch:
+    'The host answered with a different SSH key than the one trusted on the first poll. If the host was reinstalled, trust the new key; otherwise check who answers at this address.',
+  pollExplain_tls_mismatch:
+    'The host answered with a different TLS certificate than the one trusted on the first poll. If the certificate was renewed, trust the new one; otherwise check who answers at this address.',
+  pollExplain_refused:
+    'The host refused the connection: the SSH service (or the API port) is off or firewalled.',
+  pollExplain_auth_denied:
+    'The host refused the profile’s login. Check the user and the secret (or that the key is in authorized_keys), then poll again.',
+  pollExplain_unrecognized_version:
+    'The host answered, but no version could be read from it. Enter the version by hand or check what the detector read.',
+  pollExplain_not_found: 'The address does not resolve. Check the host’s address.',
+  trustNewKey: 'Trust the new key',
 };

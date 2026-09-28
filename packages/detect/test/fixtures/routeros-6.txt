@@ -1,0 +1,5 @@
+                   uptime: 41w2d
+                  version: 6.49.22 (long-term)
+               build-time: Sep/21/2026 08:02:11
+               board-name: hAP ac^2
+                 platform: MikroTik

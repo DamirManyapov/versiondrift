@@ -112,12 +112,13 @@ accounts shows the fleet by product ("Debian · 10 hosts: 3 behind"), by host an
 host appears after the next poll with its history; an unreachable host or a rejected login is shown as such, and the
 last detected versions stay.
 
-- S6-T1 Data model: sites, access profiles (secrets sealed with the instance key), hosts, polls; `instances.host_id`;
+- S6-T1 ✅ Data model: sites, access profiles (secrets sealed with the instance key), hosts, polls; `instances.host_id`;
   migration; `inventory.yaml` gains `sites` and `hosts`; CSV import of hosts.
-- S6-T2 Poller: schedule (6 h default) and "Poll now", bounded concurrency and timeouts, diff against the last poll →
+- S6-T2 ✅ Poller: schedule (6 h default) and "Poll now", bounded concurrency and timeouts, diff against the last poll →
   history, host states (`ok`, `unreachable`, `auth-failed`, `unknown`); runs in the web process or as
   `command: detector`.
-- S6-T3 Detectors v1 with recorded outputs as fixtures: `ssh-linux` (os-release, debian_version, dpkg/rpm → products),
+- S6-T3 ✅ Detectors v1 with recorded outputs as fixtures (`packages/detect`, tested against in-process SSH and HTTPS
+  servers; host keys and certificates pinned on first use): `ssh-linux` (os-release, debian_version, dpkg/rpm → products),
   `routeros` (SSH), `windows` (SSH to OpenSSH, CurrentBuild + UBR; no WinRM), `proxmox` (API token, PVE and PBS;
   a self-signed certificate is pinned on first contact).
 - S6-T4 Module `detect` v2: detector kinds, package → product mapping (`postgresql-16` → postgresql), least-privilege

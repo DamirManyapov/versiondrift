@@ -3,6 +3,7 @@
 // history). Jobs are kept in memory so the UI can follow "Poll now" (GET /api/poll/jobs/:id).
 import { Cron } from 'croner';
 import type { FleetStore, HostRecord, PollResult } from '@versiondrift/db';
+import { detect as detectHost } from '@versiondrift/detect';
 import { env } from '$env/dynamic/private';
 import { selfHostedStorage } from './storage';
 
@@ -15,7 +16,11 @@ export interface PollJob {
 }
 
 type Detection =
-  | { ok: true; found: Extract<PollResult, { ok: true }>['found'] }
+  | {
+      ok: true;
+      found: Extract<PollResult, { ok: true }>['found'];
+      pins?: Extract<PollResult, { ok: true }>['pins'];
+    }
   | Omit<Extract<PollResult, { ok: false }>, 'at'>;
 
 const jobs = new Map<string, PollJob>();
@@ -30,10 +35,11 @@ export const pollIntervalHours = (): number => {
 export const nextPollAt = (): string | null => schedule?.nextRun()?.toISOString() ?? null;
 
 /**
- * The demo (VD_DEMO=1) answers from what the store already holds: hosts with a poll problem keep failing, the
- * others report the versions they have. Real detectors come with S6-T3; until then a host reads as "unknown".
+ * The detector of the host's kind with its profile's credentials (@versiondrift/detect). The demo (VD_DEMO=1)
+ * answers from what the store already holds instead: hosts with a poll problem keep failing, the others report the
+ * versions they have.
  */
-function detect(host: HostRecord): Promise<Detection> {
+function detect(host: HostRecord, profileId = host.profileId): Promise<Detection> {
   if (env.VD_DEMO === '1') {
     if (host.poll.state === 'auth-failed' || host.poll.state === 'unreachable')
       return Promise.resolve({
@@ -54,12 +60,14 @@ function detect(host: HostRecord): Promise<Detection> {
         })),
     });
   }
-  return Promise.resolve({
-    ok: false,
-    state: 'unknown',
-    code: 'not_implemented',
-    message: `No detector for ${host.kind} hosts yet (S6-T3).`,
-  });
+  if (profileId === null)
+    return Promise.resolve({ ok: false, state: 'unknown', code: 'no_profile', message: 'No access profile' });
+  const credentials = selfHostedStorage().fleet.profileCredentials(profileId);
+  return detectHost(
+    { name: host.name, address: host.address, port: host.port, kind: host.kind },
+    credentials,
+    host.pins,
+  );
 }
 
 async function pollOne(fleet: FleetStore, host: HostRecord, job: PollJob): Promise<void> {
@@ -132,7 +140,7 @@ export async function testProfile(profileId: number, hostId: number): Promise<De
       message: `Profile "${profile.name}" is for ${profile.kind} hosts, ${host.name} is ${host.kind}`,
     };
   try {
-    return await detect(host);
+    return await detect(host, profileId);
   } catch (error) {
     return { ok: false, state: 'unreachable', code: 'error', message: (error as Error).message };
   }

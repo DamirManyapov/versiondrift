@@ -12,6 +12,8 @@ test('boards live on the server: create one, add a product, find it through the 
   await page.getByRole('button', { name: '+ New board' }).click();
   await page.getByRole('textbox', { name: 'Board name' }).fill(name);
   await page.getByRole('button', { name: 'Create' }).click();
+  // "Main" is empty too: wait for the new board itself before leaving the page.
+  await expect(page.getByLabel('Board', { exact: true }).locator('option:checked')).toHaveText(name);
   await expect(page.getByRole('heading', { name: 'Your board is empty' })).toBeVisible();
 
   await page.goto('/p/debian');

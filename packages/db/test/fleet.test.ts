@@ -168,3 +168,23 @@ describe('SSH key profiles', () => {
     expect(JSON.stringify(storage.fleet.profiles())).not.toContain('PRIVATE');
   });
 });
+
+describe('pins (trust on first use)', () => {
+  it('stores the first host key and keeps it; a reset forgets it', () => {
+    const storage = openStorage(':memory:');
+    const site = storage.store.defaultBoard().id;
+    const host = storage.fleet.createHost({ name: 'h1', address: '10.0.0.1', kind: 'windows', siteId: site });
+    const poll = (hostKey: string) =>
+      storage.fleet.recordPoll(host.id, {
+        ok: true,
+        at: '2026-09-28T10:00:00Z',
+        found: [],
+        pins: { hostKey },
+      });
+    poll('SHA256:first');
+    poll('SHA256:second');
+    expect(storage.fleet.host(host.id)!.pins).toEqual({ hostKey: 'SHA256:first', tlsFingerprint: null });
+    storage.fleet.resetPins(host.id);
+    expect(storage.fleet.host(host.id)!.pins.hostKey).toBeNull();
+  });
+});

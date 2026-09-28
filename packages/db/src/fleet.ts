@@ -55,6 +55,8 @@ export interface HostRecord {
     errorCode: string | null;
     errorMessage: string | null;
   };
+  /** What the first contact pinned (trust on first use); null until then. */
+  pins: { hostKey: string | null; tlsFingerprint: string | null };
   instances: HostInstance[];
 }
 
@@ -89,6 +91,8 @@ export type PollResult =
         label?: string;
         readRaw?: string;
       }[];
+      /** Pins seen on this contact; stored when the host has none yet. */
+      pins?: { hostKey?: string | null; tlsFingerprint?: string | null };
     }
   | {
       ok: false;
@@ -238,6 +242,7 @@ export class FleetStore {
         errorCode: h.pollErrorCode,
         errorMessage: h.pollErrorMessage,
       },
+      pins: { hostKey: h.hostKey, tlsFingerprint: h.tlsFingerprint },
       instances: byHost.get(h.id) ?? [],
     }));
   }
@@ -292,6 +297,16 @@ export class FleetStore {
     const result = this.db
       .update(schema.hosts)
       .set({ address: address.trim(), updatedAt: new Date().toISOString() })
+      .where(eq(schema.hosts.id, id))
+      .run();
+    if (result.changes === 0) throw new StoreError(`no host ${id}`);
+  }
+
+  /** Forgets the pinned host key and certificate (a host was reinstalled): the next contact pins them again. */
+  resetPins(id: number): void {
+    const result = this.db
+      .update(schema.hosts)
+      .set({ hostKey: null, tlsFingerprint: null })
       .where(eq(schema.hosts.id, id))
       .run();
     if (result.changes === 0) throw new StoreError(`no host ${id}`);
@@ -367,6 +382,10 @@ export class FleetStore {
           ...(result.ok && { lastSuccessAt: result.at }),
           pollErrorCode: result.ok ? null : result.code,
           pollErrorMessage: result.ok ? null : result.message,
+          ...(result.ok && !host.hostKey && result.pins?.hostKey && { hostKey: result.pins.hostKey }),
+          ...(result.ok &&
+            !host.tlsFingerprint &&
+            result.pins?.tlsFingerprint && { tlsFingerprint: result.pins.tlsFingerprint }),
           updatedAt: result.at,
         })
         .where(eq(schema.hosts.id, hostId))

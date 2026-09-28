@@ -262,9 +262,14 @@ created) and polls what it added. Access profiles are made with a wizard (`/acce
 account, commands to copy → details, save, test on a host); `POST /api/access-profiles` (Linux profiles get an
 ed25519 key pair from the instance: the private key sealed, the public key shown as an authorized_keys line with the
 forced command), `PATCH /api/access-profiles/:id {secret}`, `DELETE`, and `POST /api/access-profiles/:id/test
-{hostId}` (runs the detector, stores nothing). The Linux inventory script is `apps/web/static/downloads/versiondrift-inventory`. Until the detectors of S6-T3 exist a poll
-reads as "unknown"; with `VD_DEMO=1` a demo detector answers from the stored data (hosts with a poll problem keep
-failing).
+{hostId}` (runs the detector, stores nothing). The Linux inventory script is `apps/web/static/downloads/versiondrift-inventory`. Detectors live in `packages/detect`: Linux runs
+`versiondrift-inventory` (the forced command) and maps OS release and packages to products, Windows runs
+`cmd /c ver`, RouterOS `/system resource print` (the update channel becomes the track), all over SSH; Proxmox reads
+`/api2/json/version` with the token (VE on 8006, Backup Server on 8007 when the token user is `…@pbs!…`). The SSH host
+key and the Proxmox TLS certificate are pinned on the first successful contact (`hosts.host_key`,
+`hosts.tls_fingerprint`); a change is refused (`host_key_mismatch`, `tls_mismatch`) until an admin trusts the new one
+from the host card (`POST /api/hosts/:id/reset-pins`). With `VD_DEMO=1` a demo detector answers from the stored data
+instead (hosts with a poll problem keep failing).
 
 **Polling**: every 6 hours by default (`VD_DETECT_INTERVAL`), and "Poll now" per host, site or profile. Timeouts and
 concurrency are bounded (default 8 hosts at a time). A failed poll keeps the last detected versions and marks the

@@ -15,6 +15,9 @@ const MESSAGES: Record<Locale, Messages> = { en, ru };
 
 export const isLocale = (value: unknown): value is Locale => LOCALES.includes(value as Locale);
 
+/** For keys built at run time ("pollExplain_" + an error code). */
+export const isMessageKey = (key: string): key is MessageKey => key in en;
+
 /** Picks a locale from an Accept-Language header ("ru-RU,ru;q=0.9,en;q=0.8" → ru). */
 export function localeFromHeader(header: string | null): Locale {
   if (!header) return DEFAULT_LOCALE;

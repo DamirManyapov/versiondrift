@@ -60,6 +60,9 @@ export const hosts = sqliteTable(
     lastSuccessAt: text('last_success_at'),
     pollErrorCode: text('poll_error_code'),
     pollErrorMessage: text('poll_error_message'),
+    /** Trusted on first use: the SSH host key (SHA256:…) and the TLS certificate (SHA-256) of the first contact. */
+    hostKey: text('host_key'),
+    tlsFingerprint: text('tls_fingerprint'),
     createdAt: text('created_at').notNull().default(now),
     updatedAt: text('updated_at').notNull().default(now),
   },

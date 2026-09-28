@@ -14,7 +14,7 @@
   import { fleet, pollNow } from '$lib/fleet/state.svelte';
   import Toast from '$lib/components/Toast.svelte';
   import { i18n } from '$lib/i18n/context';
-  import type { MessageKey } from '$lib/i18n';
+  import { isMessageKey, type MessageKey } from '$lib/i18n';
 
   const { t, locale } = $derived(i18n());
   $effect(() => {
@@ -54,6 +54,11 @@
       polling = false;
     }
   }
+  async function trustNewKey() {
+    if (!host) return;
+    await fetch(`/api/hosts/${host.id}/reset-pins`, { method: 'POST' });
+    await poll();
+  }
   const canPoll = $derived(host?.record.profileId !== null && page.data.account?.role !== 'viewer');
 
   const broken = $derived(host ? pollBroken(host.poll.state) : false);
@@ -68,8 +73,8 @@
   );
   const explanation = $derived.by(() => {
     const code = host?.record.poll.errorCode;
-    const key = `pollExplain_${code}` as MessageKey;
-    if (code && key in (t as unknown as object)) return t(key);
+    const key = `pollExplain_${code}`;
+    if (code && isMessageKey(key)) return t(key);
     if (host?.poll.state === 'auth-failed')
       return code === 'password_expired' ? t('pollExplain_password_expired') : t('pollExplain_auth');
     if (host?.poll.state === 'unreachable') return t('pollExplain_timeout');
@@ -153,11 +158,17 @@
     <section class="problem" aria-labelledby="problem-title">
       <h2 id="problem-title">{errorTitle}</h2>
       <p>{explanation}</p>
+      {#if host.record.poll.errorMessage}<p class="detail mono">{host.record.poll.errorMessage}</p>{/if}
       <p class="muted">
         {host.status.status === 'critical' ? t('lastKnownCritical') : t('lastKnown', { when: lastSuccess })}
       </p>
       {#if profile && host.poll.state === 'auth-failed'}
         <a class="button" href={resolve('/access-profiles')}>{t('openProfile')}</a>
+      {/if}
+      {#if canPoll && (host.record.poll.errorCode === 'host_key_mismatch' || host.record.poll.errorCode === 'tls_mismatch')}
+        <button class="button" onclick={() => void trustNewKey()} disabled={polling}
+          >{t('trustNewKey')}</button
+        >
       {/if}
     </section>
   {/if}
@@ -276,6 +287,11 @@
   }
   .problem p {
     margin: 0 0 8px;
+  }
+  .detail {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    word-break: break-word;
   }
   .button {
     display: inline-block;

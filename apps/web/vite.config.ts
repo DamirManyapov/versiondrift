@@ -41,7 +41,8 @@ export default defineConfig({
   plugins: [localFeed(), sveltekit()],
   // better-sqlite3 finds its native binary next to its own files, so it can't be bundled; the Node image ships it
   // in node_modules (it's a direct dependency for that reason).
-  ssr: { external: ['better-sqlite3'] },
+  // ssh2 (host detection) requires an optional native binding at run time: the same, it stays in node_modules.
+  ssr: { external: ['better-sqlite3', 'ssh2'] },
   resolve: {
     // Workers have no SQLite: the Cloudflare build gets a stub instead of the self-hosted store (better-sqlite3).
     // The same for the other self-hosted-only packages that Workers can't load (mail, scheduling).

@@ -134,3 +134,8 @@ Found on the way: with the live feed the engine disagrees with the fixture's `ex
 Transport decisions (owner, 2026-09-28): Windows over SSH only (no WinRM); RouterOS over SSH in v1, API-SSL later
 (S6-T8). The prototype's instruction drafts that mention WinRM and API-SSL are adjusted when the texts move into the
 modules (S6-T4).
+
+Detectors (S6-T3, 2026-09-28): `packages/detect` reads Linux (inventory script), Windows (`ver`), RouterOS
+(`/system resource print`) over SSH and Proxmox VE / Backup Server over the API; the host card explains the new
+error codes (`host_key_mismatch`, `tls_mismatch`, `refused`, `auth_denied`, `unrecognized_version`) and offers
+«Доверять новому ключу».

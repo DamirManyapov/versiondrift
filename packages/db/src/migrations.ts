@@ -40,5 +40,12 @@ export const MIGRATIONS: readonly { tag: string; statements: readonly string[] }
       "ALTER TABLE `instances` ADD `read_raw` text;",
       "CREATE INDEX `instances_host` ON `instances` (`host_id`);"
     ]
+  },
+  {
+    "tag": "0004_host_pins",
+    "statements": [
+      "ALTER TABLE `hosts` ADD `host_key` text;",
+      "ALTER TABLE `hosts` ADD `tls_fingerprint` text;"
+    ]
   }
 ];
