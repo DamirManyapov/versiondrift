@@ -1,0 +1,18 @@
+# VersionDrift, self-hosted (docs/07): `docker compose up -d`, then open http://localhost:8080 and sign in as admin
+# (the password is VD_ADMIN_PASSWORD, or the one printed once in `docker compose logs versiondrift`).
+# Until a release publishes the image (ghcr.io/damirmanyapov/versiondrift), this builds it from the source.
+services:
+  versiondrift:
+    build: .
+    # image: ghcr.io/damirmanyapov/versiondrift:latest
+    ports: ['8080:8080']
+    volumes: ['vd-data:/data']
+    environment:
+      VD_AUTH: password # none (trusted LAN only) | password | oidc | header
+      VD_ADMIN_PASSWORD: ${VD_ADMIN_PASSWORD:-} # first start only, 8+ characters; empty = generated and logged
+      VD_TZ: ${VD_TZ:-UTC}
+      # VD_DEMO: '1' # try the fleet screens on the demo data (31 hosts)
+    restart: unless-stopped
+
+volumes:
+  vd-data: # the database, the secret key (back it up) and the feed copy

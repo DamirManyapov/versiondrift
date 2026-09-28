@@ -27,3 +27,10 @@
 5. **Monetisation** (after S8): teams tier on the hosted version, sponsorships (GitHub Sponsors, Open Collective),
    or none.
 6. **Name** (S0): confirm VersionDrift, check trademarks (EUIPO/USPTO/Rospatent quick search).
+7. **Delivery where hosts are blocked** (idea from the owner, 2026-09-28, to think about): in Russia some of the
+   places we publish to (Cloudflare for the feed, ghcr.io / Docker Hub for the image) may be slow or unreachable.
+   What already helps: a self-hosted instance never talks to vendors, only to the feed, and the feed is signed, so it
+   can travel over any channel like antivirus bases; `VD_FEED_URL` points at any mirror, and an instance's `/feed/`
+   is itself a mirror for others. Options: a second mirror in Russia (S3-compatible storage the collector also
+   publishes to), an offline update bundle (one signed archive to download anywhere and import through the UI or a
+   folder, for closed networks), and the image as a `docker save` archive or on a second registry.

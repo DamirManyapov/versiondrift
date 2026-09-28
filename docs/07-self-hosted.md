@@ -5,6 +5,10 @@ background scheduler. Same UI as the public site, `VD_MODE=selfhosted`.
 
 ## Quick start
 
+`git clone` the repository and run `docker compose up -d`: `compose.yaml` builds the image from the source (until a
+release tag publishes `ghcr.io/damirmanyapov/versiondrift`), keeps the data in the `vd-data` volume and serves
+http://localhost:8080. The published image will be used the same way:
+
 ```yaml
 # docker-compose.yml
 services:
