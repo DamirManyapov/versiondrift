@@ -335,6 +335,7 @@ export const ru: Messages = {
   boardLabel: 'Доска',
   boardsTitle: 'Доски',
   newBoard: 'Новая доска',
+  lastBoardHint: 'Это единственная доска. Сначала создайте другую, потом удалите эту.',
   boardName: 'Название доски',
   create: 'Создать',
   rename: 'Переименовать',

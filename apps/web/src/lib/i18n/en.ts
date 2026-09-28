@@ -268,6 +268,7 @@ export const en = {
   boardLabel: 'Board',
   boardsTitle: 'Boards',
   newBoard: 'New board',
+  lastBoardHint: 'This is the only board. Create another one first, then delete this one.',
   boardName: 'Board name',
   create: 'Create',
   rename: 'Rename',

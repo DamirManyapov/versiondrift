@@ -194,8 +194,8 @@ image needs no compiler.
 
 With `VD_MODE=selfhosted` the web app reads and writes boards through a small JSON API (404 on the public site):
 `GET/POST /api/boards`, `PATCH/DELETE /api/boards/:id`, `GET/PUT /api/boards/:id/inventory` (the browser's inventory
-format). The board page gets a board switcher and "New board"; Settings can rename and delete boards (the last one
-stays). Responses carry `X-Robots-Tag: noindex`.
+format). The board page gets a board switcher with "Rename", "Delete board" (asks once more, inline) and "New board";
+Settings lists all boards with the same actions. The last board stays, and the switcher says so when asked to delete it. Responses carry `X-Robots-Tag: noindex`.
 
 Draft for the rest:
 

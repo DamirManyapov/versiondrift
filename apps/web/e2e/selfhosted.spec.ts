@@ -30,6 +30,25 @@ test('boards live on the server: create one, add a product, find it through the 
   expect(inventory.items).toEqual([{ p: 'debian' }]);
 });
 
+test('a board is renamed and deleted from the board switcher', async ({ page }) => {
+  const name = `Lab ${Date.now()}`;
+  await page.goto('/');
+  await page.getByRole('button', { name: '+ New board' }).click();
+  await page.getByRole('textbox', { name: 'Board name' }).fill(name);
+  await page.getByRole('button', { name: 'Create' }).click();
+  const current = page.getByLabel('Board', { exact: true }).locator('option:checked');
+  await expect(current).toHaveText(name);
+
+  await page.getByRole('button', { name: 'Rename' }).click();
+  await page.getByRole('textbox', { name: 'Board name' }).fill(`${name} 2`);
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(current).toHaveText(`${name} 2`);
+
+  await page.getByRole('button', { name: 'Delete board' }).click();
+  await page.getByRole('button', { name: `Delete “${name} 2” and everything on it` }).click();
+  await expect(page.getByLabel('Board', { exact: true }).locator('option', { hasText: name })).toHaveCount(0);
+});
+
 test('settings offer boards and notification channels; the feed copy is served locally', async ({
   page,
   request,
