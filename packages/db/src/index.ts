@@ -23,6 +23,14 @@ export {
   type PollStateName,
 } from './fleet.ts';
 export { seedFleetDemo, type FleetDemo } from './demo.ts';
+export {
+  applyImport,
+  importRows,
+  parseCsv,
+  planImport,
+  type ImportPlanRow,
+  type ImportRow,
+} from './fleet-import.ts';
 export { AuthStore, hashPassword, verifyPassword, type Role, type User } from './auth.ts';
 export {
   ALERT_EVENTS,

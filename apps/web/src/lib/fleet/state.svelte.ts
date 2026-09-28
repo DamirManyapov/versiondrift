@@ -52,13 +52,17 @@ export function rememberSite(id: number | undefined): void {
   }
 }
 
-/** Polls hosts now and waits for the job (checking once a second), then reloads the fleet. */
-export async function pollNow(ids?: number[]): Promise<PollJob> {
-  let job = await fleetApi.poll(ids);
+/** Follows a poll job (checking once a second) until it is done, then reloads the fleet. */
+export async function followJob(start: PollJob, onProgress?: (job: PollJob) => void): Promise<PollJob> {
+  let job = start;
   while (!job.finished) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     job = await fleetApi.job(job.id);
+    onProgress?.(job);
   }
   await fleet.load();
   return job;
 }
+
+/** Polls hosts now and waits for the result. */
+export const pollNow = async (ids?: number[]): Promise<PollJob> => followJob(await fleetApi.poll(ids));

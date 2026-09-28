@@ -282,6 +282,16 @@ export class FleetStore {
     return this.hosts().find((h) => h.id === row.id)!;
   }
 
+  setAddress(id: number, address: string): void {
+    if (address.trim() === '') throw new StoreError('a host needs an address');
+    const result = this.db
+      .update(schema.hosts)
+      .set({ address: address.trim(), updatedAt: new Date().toISOString() })
+      .where(eq(schema.hosts.id, id))
+      .run();
+    if (result.changes === 0) throw new StoreError(`no host ${id}`);
+  }
+
   deleteHosts(ids: number[]): number {
     if (ids.length === 0) return 0;
     return this.db.delete(schema.hosts).where(inArray(schema.hosts.id, ids)).run().changes;

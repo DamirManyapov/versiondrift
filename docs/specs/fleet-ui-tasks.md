@@ -28,7 +28,7 @@ unknown`, detector kinds `ssh-linux / windows / routeros / proxmox`).
 | FL-7 ◐ | **Board (A)**: aggregated tiles, summary strip + «Проблемы опроса», detail panel with version breakdown, changes expand, copy hosts. | e2e: demo numbers match spec §5.A |
 | FL-8 ◐ | **Hosts table (B)**: filters with counts, search, grouping, severity sort, selection rules, bulk bar + dialogs (typed confirm >10). Virtualize if >200 rows. | e2e: select-all selects only filtered rows; delete 31 requires typing 31 |
 | FL-9 ◐ | **Host card (C)**: header, poll now, error block with actions, products table, manual product, history. | kzn-fs-01 stays red with «Отказ в доступе»; kzn-gw-02 shows «Нет связи» |
-| FL-10 | **Add hosts (D)**: single form with connection check; CSV dropzone → dry-run preview → import → check progress → summary. | Importing the demo CSV into an empty instance yields 29/1/1 |
+| FL-10 ✅ | **Add hosts (D)**: single form with connection check; CSV dropzone → dry-run preview → import → check progress → summary. | Importing the demo CSV into an empty instance yields 29/1/1 |
 | FL-11 ◐ | **Access profiles (E)**: list, detail (replace secret, host vs profile failure), 3-step wizard with per-type instructions from modules, generated SSH key, test on host. | Wizard works for all 5 types |
 | FL-12 | **First run (G)**: `/setup` flow; live-filling board during first poll; result banner. | Fresh instance → board fills progressively |
 | FL-13 | **States**: unknown version, manual entry conflicts, empty states, 300-host performance. | Each state in `States.dc.html` reproducible via seed flags |
@@ -119,6 +119,8 @@ detail) → FL-6/FL-7 (header, board) → FL-8 (hosts) → FL-9 (host card) → 
 - FL-8 ◐: table, URL filters with counts, search, grouping by site, severity sort, selection (select-all takes the
   filtered rows, hidden ones counted), bulk «Опросить сейчас». Missing: profile / move / delete dialogs.
 - FL-9 ◐: header, poll problem explained, products, history, «Опросить сейчас». Missing: «+ Продукт вручную».
+- FL-10 ✅: dialog over any page (`?add=one|csv`): one host with a connection check, CSV with a line-by-line dry
+  run (errors first), import as an upsert by name, then a connection check with progress.
 - FL-11 ◐: read-only list with failing hosts. Missing: detail, wizard, secret replace.
 - e2e `fleet.spec.ts` on a `VD_DEMO=1` server over the e2e feed (axe clean on the board and the hosts table).
 

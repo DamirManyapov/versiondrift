@@ -9,9 +9,11 @@
   import { LOCALES, type Locale } from '$lib/i18n';
   import { i18n, setI18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
+  import AddHosts from '$lib/components/fleet/AddHosts.svelte';
   import SiteSwitcher from '$lib/components/fleet/SiteSwitcher.svelte';
+  import { goto } from '$app/navigation';
   import { clockTime } from '$lib/fleet/labels';
-  import { fleet } from '$lib/fleet/state.svelte';
+  import { fleet, siteFrom } from '$lib/fleet/state.svelte';
   import type { LayoutData } from './$types';
 
   let { data, children }: { data: LayoutData; children: Snippet } = $props();
@@ -39,6 +41,20 @@
           { href: resolve('/week'), key: 'navWeek', count: undefined },
         ] as const),
   );
+  // "Add hosts" is a dialog over any page: ?add=one or ?add=csv (docs/specs/fleet-ui.md §3).
+  const canAddHosts = $derived(data.mode === 'selfhosted' && data.account?.role !== 'viewer');
+  const addTab = $derived.by(() => {
+    const value = page.url.searchParams.get('add');
+    return canAddHosts && (value === 'one' || value === 'csv') ? value : undefined;
+  });
+  function setAdd(value: 'one' | undefined) {
+    const url = new URL(page.url);
+    if (value) url.searchParams.set('add', value);
+    else url.searchParams.delete('add');
+    // eslint-disable-next-line svelte/no-navigation-without-resolve -- same page, only the query changes
+    void goto(url, { replaceState: !value, keepFocus: true, noScroll: true });
+  }
+
   const current = (href: string) =>
     href === resolve('/') ? page.url.pathname === href : page.url.pathname.startsWith(href);
 
@@ -116,8 +132,14 @@
       >
       {t('refresh')}
     </button>
+    {#if canAddHosts}
+      <button class="primary" onclick={() => setAdd('one')}>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        {t('addHosts')}
+      </button>
+    {/if}
     {#if !fleet.hasHosts}
-      <a class="primary" href={resolve('/catalog')}>
+      <a class={canAddHosts ? 'ghost' : 'primary'} href={resolve('/catalog')}>
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
         {t('addProduct')}
       </a>
@@ -135,6 +157,9 @@
   <main>
     {@render children()}
   </main>
+  {#if addTab}
+    <AddHosts tab={addTab} site={siteFrom(page.url, fleet.data)} onclose={() => setAdd(undefined)} />
+  {/if}
 
   <footer>
     <span>{t('appTagline')}</span>

@@ -2,6 +2,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 // The demo fleet (VD_DEMO=1, fixtures/fleet-demo.json) over the fixed e2e feed: 31 hosts on two sites.
+// One server for the file and the last test adds hosts: run in order.
+test.describe.configure({ mode: 'serial' });
 async function noAxeViolations(page: Page) {
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'best-practice'])
@@ -57,4 +59,30 @@ test('poll now: one host from its card, several from the table; select-all takes
   await page.getByRole('checkbox', { name: 'Select msk-app-02' }).check();
   await page.getByRole('button', { name: 'Poll now' }).click();
   await expect(page.getByRole('status')).toContainText('Polled 2 hosts.');
+});
+
+test('add hosts: one through the form, a list through the CSV dry run', async ({ page }) => {
+  await page.goto('/hosts');
+  await page.getByRole('button', { name: 'Add hosts' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Add hosts' });
+  await dialog.getByLabel('Name').fill('e2e-one');
+  await dialog.getByLabel('Address').fill('10.0.0.5');
+  await dialog.getByRole('button', { name: 'Save and check the connection' }).click();
+  await expect(dialog.getByRole('status')).toContainText('e2e-one added. e2e-one polled');
+
+  await dialog.getByRole('tab', { name: 'From a CSV list' }).click();
+  await dialog
+    .getByLabel('List')
+    .fill(
+      'name,address,site,profile\ne2e-two,10.0.0.6,Lab,Windows RO\nbad name,10.0.0.7,Lab,Windows RO\ne2e-one,10.0.0.5,"Москва, ЦОД",Linux SSH (только чтение)',
+    );
+  await dialog.getByRole('button', { name: 'Check the list' }).click();
+  await expect(dialog.getByText('1 new')).toBeVisible();
+  await expect(dialog.getByText('1 already there')).toBeVisible();
+  await expect(dialog.getByText('1 error')).toBeVisible();
+  await dialog.getByRole('button', { name: 'Add 1 host' }).click();
+  await expect(dialog.getByRole('status').last()).toContainText('1 host added or changed.');
+  await dialog.getByRole('button', { name: 'Close' }).click();
+  await expect(page).not.toHaveURL(/add=/);
+  await expect(page.locator('tbody tr:not(.site)')).toHaveCount(33);
 });

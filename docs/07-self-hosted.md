@@ -255,7 +255,10 @@ poll problem and shows the products and history; `/access-profiles` lists profil
 comes from `GET /api/fleet` (sites, profiles without secrets, hosts with poll state and products) and
 `GET /api/hosts/:id` (history); statuses are computed in the browser by `packages/core` (`fleet.ts`). "Poll now" (host
 card, or the selected rows of the hosts table) posts `POST /api/hosts/poll {ids}` and follows
-`GET /api/poll/jobs/:id` once a second; the poller runs 8 hosts at a time. Until the detectors of S6-T3 exist a poll
+`GET /api/poll/jobs/:id` once a second; the poller runs 8 hosts at a time. «Добавить хосты» (header, `?add=one|csv`)
+adds one host (`POST /api/hosts`) or a CSV list: `POST /api/hosts/import?dryRun=1` answers per line (new, already
+there, will change, error with the reason), `POST /api/hosts/import` writes it (an upsert by name; new sites are
+created) and polls what it added. Until the detectors of S6-T3 exist a poll
 reads as "unknown"; with `VD_DEMO=1` a demo detector answers from the stored data (hosts with a poll problem keep
 failing).
 
