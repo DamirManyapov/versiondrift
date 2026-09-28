@@ -118,7 +118,8 @@ last detected versions stay.
   history, host states (`ok`, `unreachable`, `auth-failed`, `unknown`); runs in the web process or as
   `command: detector`.
 - S6-T3 Detectors v1 with recorded outputs as fixtures: `ssh-linux` (os-release, debian_version, dpkg/rpm → products),
-  `routeros` (API-SSL/SSH), `windows` (OpenSSH/WinRM, CurrentBuild + UBR), `proxmox` (API token, PVE and PBS).
+  `routeros` (SSH), `windows` (SSH to OpenSSH, CurrentBuild + UBR; no WinRM), `proxmox` (API token, PVE and PBS;
+  a self-signed certificate is pinned on first contact).
 - S6-T4 Module `detect` v2: detector kinds, package → product mapping (`postgresql-16` → postgresql), least-privilege
   setup text (en/ru) per detector; docs pages generated from it.
 - S6-T5 UI, fleet: product tiles aggregate hosts with a version breakdown; Hosts view (filters by site and state, host
@@ -127,7 +128,8 @@ last detected versions stay.
   errors and "Poll now".
 - S6-T7 Alerts from detection through the existing channels: a host fell behind or reached critical, a host updated,
   a host stopped answering.
-- S6-T8 More detectors: vSphere `about`, module `http` rules, `sql`, Docker via a read-only socket proxy, SNMP v3.
+- S6-T8 More detectors: RouterOS API-SSL (8729) as an alternative to SSH, vSphere `about`, module `http` rules,
+  `sql`, Docker via a read-only socket proxy, SNMP v3.
 - S6-T9 Later: Zabbix and vCenter host-list import, Ansible facts, Debian security by detected packages, private
   modules directory.
 - S6-T10 Helm chart ✅ (`charts/versiondrift`, linted and rendered in CI), Proxmox helper script.

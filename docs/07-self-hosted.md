@@ -225,7 +225,7 @@ SNMP, with read-only credentials shared by many hosts. Nothing about hosts leave
 | Entity | Fields | Notes |
 |---|---|---|
 | Site | name | free grouping of hosts ("Moscow DC", "Branch 2"); filters every view |
-| Access profile | name, kind (`ssh`, `winrm`, `routeros-api`, `proxmox-token`, `snmp`), user, secret (sealed) | one profile for many hosts; the secret is write-only in the UI |
+| Access profile | name, kind (`ssh-linux`, `windows`, `routeros`, `proxmox`: the detector it serves), user, secret (sealed) | one profile for many hosts; the secret is write-only in the UI |
 | Host | name, address, port?, site, access profile, detectors, last poll, last error | added by hand or from a CSV (`name,address,site,profile`) |
 | Instance | product, version, track, host?, source (`detector` / `manual` / `import`) | detected instances update on every poll; manual ones stay as typed |
 | Poll | host, time, result (`ok` / `unreachable` / `auth-failed` / `unknown`), changes | history: "srv-03: Debian 12.11 → 12.12" |
@@ -235,8 +235,8 @@ SNMP, with read-only credentials shared by many hosts. Nothing about hosts leave
 | Detector | Reads | Least privilege |
 |---|---|---|
 | `ssh-linux` | `/etc/os-release`, `/etc/debian_version`, `dpkg-query -W` (or `rpm -qa`) → OS point release and packages mapped to products (`postgresql-16`, `nginx`, `docker-ce`, …) | a dedicated user without sudo; key restricted in `authorized_keys` (`restrict,command="/usr/local/bin/versiondrift-inventory"`) |
-| `routeros` | API-SSL (8729) or SSH: `/system resource`, `/system routerboard` → RouterOS and firmware | a user in a group with only `read` + `api` (or `ssh`) policies |
-| `windows` | OpenSSH (Server 2019+) or WinRM: `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion` `CurrentBuild` + `UBR` → `20348.5622` | a standard local or domain user; WinRM: member of *Remote Management Users* |
+| `routeros` | SSH: `/system resource print`, `/system routerboard print` → RouterOS and firmware (RouterOS 6 and 7 alike) | a user in a group with only the `read` and `ssh` policies, login allowed only from the instance's address |
+| `windows` | SSH to the built-in OpenSSH server (Server 2019+; 2016 needs the OpenSSH package): `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion` `CurrentBuild` + `UBR` → `20348.5622` | a standard local or domain user, not an administrator |
 | `proxmox` | API token: `/version`, `/nodes/{node}/apt/versions` → PVE / PBS per node | token with role `PVEAuditor` (PBS: `Audit`), privilege separation on |
 | `http` (module rules) | unauthenticated version endpoints: Grafana `/api/health`, Elasticsearch `/`, … | none, or an API key with a monitoring-only role |
 

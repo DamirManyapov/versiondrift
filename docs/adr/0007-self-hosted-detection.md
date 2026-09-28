@@ -29,8 +29,10 @@ Options considered:
 4. **Detectors v1**, each reading exact versions:
    - `ssh-linux`: `/etc/os-release`, `/etc/debian_version`, `dpkg-query -W` / `rpm -qa` (OS point release plus
      packages that map to products, e.g. `postgresql-16`, `nginx`, `docker-ce`);
-   - `routeros`: API-SSL or SSH, `/system resource` and `/system routerboard` (RouterOS and firmware);
-   - `windows`: OpenSSH (Server 2019+) or WinRM, registry `CurrentBuild` + `UBR` → `20348.5622`;
+   - `routeros`: SSH, `/system resource` and `/system routerboard` (RouterOS and firmware); SSH works on RouterOS 6
+     and 7 alike, the API-SSL client comes later (S6-T8);
+   - `windows`: SSH to the built-in OpenSSH server (Server 2019+), registry `CurrentBuild` + `UBR` → `20348.5622`;
+     no WinRM (NTLM/Kerberos clients are heavy and brittle; decided 2026-09-28);
    - `proxmox`: API token, `/version` and per-node package versions (PVE and PBS).
    Unauthenticated HTTP version endpoints (`http` rules in modules) and the vSphere `about` info come next.
 5. **Least privilege, documented next to the detector.** Each module's `detect` rule carries setup instructions
@@ -49,5 +51,5 @@ Options considered:
 + Instructions and detectors come with modules, so contributors extend detection the same way they add products.
 − The instance holds read-only credentials to many hosts: sealing, audit of profile use, and clear guidance to
   create read-only accounts are part of the feature, not extras.
-− SSH/WinRM/API clients add weight to the image; libraries are chosen for pure JS where possible.
+− SSH and HTTPS clients add weight to the image; one pure-JS SSH client serves Linux, Windows and RouterOS.
 − Zabbix, vCenter inventory and Ansible remain manual imports until the host model has proven itself.

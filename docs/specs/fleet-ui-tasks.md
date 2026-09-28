@@ -125,3 +125,7 @@ detail) → FL-6/FL-7 (header, board) → FL-8 (hosts) → FL-9 (host card) → 
 Found on the way: with the live feed the engine disagrees with the fixture's `expected` in 9 places — Docker Engine
 (a GitHub range bug, fixed in `parseRangeExpression`) and RouterOS 6.49 / 7.23.4 (NVD ranges "before 7.5", "before
 7.20" cover v6 too). The fixture stays the design's oracle for the aggregation; the live statuses are the engine's.
+
+Transport decisions (owner, 2026-09-28): Windows over SSH only (no WinRM); RouterOS over SSH in v1, API-SSL later
+(S6-T8). The prototype's instruction drafts that mention WinRM and API-SSL are adjusted when the texts move into the
+modules (S6-T4).
