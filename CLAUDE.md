@@ -138,4 +138,4 @@ docker build -t versiondrift .     # self-hosted image
 | How to contribute a module | `docs/10-contributing-modules.md` |
 | Launch, growth, naming | `docs/11-launch-and-growth.md` |
 | Risks, open questions | `docs/12-risks-and-open-questions.md` |
-| Decisions | `docs/adr/*.md` (incl. ADR-0006 i18n) |
+| Decisions | `docs/adr/*.md` (incl. ADR-0006 i18n, ADR-0007 self-hosted detection) |

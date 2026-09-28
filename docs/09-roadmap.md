@@ -101,13 +101,36 @@ Goal: red tiles are real.
 - S5-T5 ✅ Notifications: Telegram, e-mail, ntfy, Gotify, webhook; rules (per-channel subscriptions); weekly digest.
 - S5-T6 ✅ `inventory.yaml` watch/import; docs for compose + reverse proxy.
 
-## S6 — Detection & integrations
+## S6 — Detection (self-hosted, ADR-0007)
 
-- S6-T1 `apps/detector` with `http`, `docker`, `sql`, `snmp`, `ssh`+`command`/`file`/`dpkg`.
-- S6-T2 Zabbix integration; Proxmox VE integration; Ansible facts import.
-- S6-T3 Instances UI: "2 of 5 affected", per-host list, last detected.
-- S6-T4 Private modules directory; Debian security by detected packages.
-- S6-T5 Helm chart ✅ (`charts/versiondrift`, linted and rendered in CI), Proxmox helper script.
+Agentless polling from the self-hosted instance, inside the customer's network, with read-only access profiles.
+The UI is designed first: a brief for the screens below went to the designer on 2026-09-28; the prototype lands in
+`design/` before S6-T5 starts.
+
+**Done when:** an instance polling a lab of Debian, Windows Server, MikroTik and Proxmox hosts with read-only
+accounts shows the fleet by product ("Debian · 10 hosts: 3 behind"), by host and by site; a version change on a
+host appears after the next poll with its history; an unreachable host or a rejected login is shown as such, and the
+last detected versions stay.
+
+- S6-T1 Data model: sites, access profiles (secrets sealed with the instance key), hosts, polls; `instances.host_id`;
+  migration; `inventory.yaml` gains `sites` and `hosts`; CSV import of hosts.
+- S6-T2 Poller: schedule (6 h default) and "Poll now", bounded concurrency and timeouts, diff against the last poll →
+  history, host states (`ok`, `unreachable`, `auth-failed`, `unknown`); runs in the web process or as
+  `command: detector`.
+- S6-T3 Detectors v1 with recorded outputs as fixtures: `ssh-linux` (os-release, debian_version, dpkg/rpm → products),
+  `routeros` (API-SSL/SSH), `windows` (OpenSSH/WinRM, CurrentBuild + UBR), `proxmox` (API token, PVE and PBS).
+- S6-T4 Module `detect` v2: detector kinds, package → product mapping (`postgresql-16` → postgresql), least-privilege
+  setup text (en/ru) per detector; docs pages generated from it.
+- S6-T5 UI, fleet: product tiles aggregate hosts with a version breakdown; Hosts view (filters by site and state, host
+  card with products and history); site switch.
+- S6-T6 UI, setup: add hosts (form, CSV), access profiles (create, test connection, instructions to copy), poll
+  errors and "Poll now".
+- S6-T7 Alerts from detection through the existing channels: a host fell behind or reached critical, a host updated,
+  a host stopped answering.
+- S6-T8 More detectors: vSphere `about`, module `http` rules, `sql`, Docker via a read-only socket proxy, SNMP v3.
+- S6-T9 Later: Zabbix and vCenter host-list import, Ansible facts, Debian security by detected packages, private
+  modules directory.
+- S6-T10 Helm chart ✅ (`charts/versiondrift`, linted and rendered in CI), Proxmox helper script.
 
 ## S7 — Accounts on the public site
 

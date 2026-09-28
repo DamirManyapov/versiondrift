@@ -213,37 +213,59 @@ events(id, board_id, product_id, instance_id?, kind, payload_json, created_at, n
 feed_state(key, etag, fetched_at, verified)
 ```
 
-## Version detection (Sprint 6)
+## Version detection (Sprint 6, ADR-0007)
 
-Module `detect` rules, run by `apps/detector`:
+The instance reads versions itself, from inside the customer's network: agentless polling over SSH, vendor APIs and
+SNMP, with read-only credentials shared by many hosts. Nothing about hosts leaves the instance.
 
-| Kind | Config | Notes |
+**Model**
+
+| Entity | Fields | Notes |
 |---|---|---|
-| `http` | url (or host+`defaultPort`+path), `jsonPath` or `regex`, headers, TLS verify | Grafana `/api/health`, Elasticsearch `/`, Kibana `/api/status` |
-| `command` | `run`, `regex` | executed over SSH (below), never locally unless `local: true` |
-| `ssh` | host, user, key (encrypted), then any `command` rule | key-based only |
-| `docker` | image name → tag of running container | via Docker socket (read-only mount) or remote API |
-| `snmp` | oid, community/v3 creds | MikroTik RouterOS, network gear |
-| `sql` | DSN, query | `SELECT VERSION()` for MySQL/Percona/PostgreSQL |
-| `file` | path (over SSH) | `/etc/debian_version` |
-| `dpkg` | over SSH | installed Debian packages → feeds Debian security matching |
+| Site | name | free grouping of hosts ("Moscow DC", "Branch 2"); filters every view |
+| Access profile | name, kind (`ssh`, `winrm`, `routeros-api`, `proxmox-token`, `snmp`), user, secret (sealed) | one profile for many hosts; the secret is write-only in the UI |
+| Host | name, address, port?, site, access profile, detectors, last poll, last error | added by hand or from a CSV (`name,address,site,profile`) |
+| Instance | product, version, track, host?, source (`detector` / `manual` / `import`) | detected instances update on every poll; manual ones stay as typed |
+| Poll | host, time, result (`ok` / `unreachable` / `auth-failed` / `unknown`), changes | history: "srv-03: Debian 12.11 → 12.12" |
 
-**Integrations** — preferred at scale (no per-host credentials in VersionDrift):
-- **Zabbix**: API token → items with keys like `agent.version`, `system.sw.os`, templates' version items, host inventory
-  fields (`software`, `os`). Map by rules (`item key → product`).
-- **Proxmox VE**: API token → `GET /version` per node; also enumerate VMs/CTs (names/tags) for labels.
-- **Ansible**: import `ansible -m setup` facts JSON / a facts cache directory → OS + package versions.
-- **NetBox** (later): custom fields → instances.
-- **Inventory file**: `inventory.yaml` in `/data` watched for changes (GitOps-friendly).
+**Detectors v1**
+
+| Detector | Reads | Least privilege |
+|---|---|---|
+| `ssh-linux` | `/etc/os-release`, `/etc/debian_version`, `dpkg-query -W` (or `rpm -qa`) → OS point release and packages mapped to products (`postgresql-16`, `nginx`, `docker-ce`, …) | a dedicated user without sudo; key restricted in `authorized_keys` (`restrict,command="/usr/local/bin/versiondrift-inventory"`) |
+| `routeros` | API-SSL (8729) or SSH: `/system resource`, `/system routerboard` → RouterOS and firmware | a user in a group with only `read` + `api` (or `ssh`) policies |
+| `windows` | OpenSSH (Server 2019+) or WinRM: `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion` `CurrentBuild` + `UBR` → `20348.5622` | a standard local or domain user; WinRM: member of *Remote Management Users* |
+| `proxmox` | API token: `/version`, `/nodes/{node}/apt/versions` → PVE / PBS per node | token with role `PVEAuditor` (PBS: `Audit`), privilege separation on |
+| `http` (module rules) | unauthenticated version endpoints: Grafana `/api/health`, Elasticsearch `/`, … | none, or an API key with a monitoring-only role |
+
+Next: vSphere `about` (ESXi/vCenter version and build, no login needed), `sql` (`SELECT version()` with a user without
+grants), Docker through a read-only socket proxy, SNMP v3 read-only.
+
+**Instructions live with the detector.** A module's `detect` rule carries a short setup text for its least-privilege
+account (commands to copy). The UI shows it when an access profile of that kind is created; the docs site renders
+the same text per product.
+
+**Polling**: every 6 hours by default (`VD_DETECT_INTERVAL`), and "Poll now" per host, site or profile. Timeouts and
+concurrency are bounded (default 8 hosts at a time). A failed poll keeps the last detected versions and marks the
+host (`unreachable`, `auth-failed`) instead of clearing them.
+
+**Where the poller runs**: inside the web container by default. For segmented networks the same image runs as a
+second compose service (`command: detector`) in the server segment; it shares the SQLite volume.
+
+**Integrations** (later, ADR-0007): Zabbix and vCenter as *host list* imports (names, addresses, groups → sites);
+Ansible facts import; NetBox. Stock Zabbix templates report the OS family, not the patch level, so they do not
+replace the detectors.
 
 ```yaml
-# /data/inventory.yaml
+# /data/inventory.yaml (import / GitOps). sites/hosts come with S6; profiles by name, secrets never in this file
+sites: [Moscow DC, Branch 2]
+hosts:
+  - { name: srv-app-01, address: 10.0.1.11, site: Moscow DC, profile: ssh-linux-ro }
+  - { name: gw-branch2, address: 10.2.0.1, site: Branch 2, profile: mikrotik-ro }
 boards:
   prod:
     products:
-      grafana:        [{ version: 11.3.1, host: mon-01 }, { version: 12.1.1, host: mon-02 }]
-      poste-io:       [{ version: 2.4.5, host: mail-01 }]
-      percona-xtradb-cluster: [{ version: 5.7.44, label: legacy-cluster }]
+      percona-xtradb-cluster: [{ version: 5.7.44, label: legacy-cluster }]   # manual, no detector
 ```
 
 ## Notifications
