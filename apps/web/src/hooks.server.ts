@@ -6,6 +6,7 @@ import { bootstrapAdmin, crossSite, currentUser, isOpenPath } from '$lib/server/
 import { runAlerts } from '$lib/server/alerts';
 import { seedDemoFleet } from '$lib/server/fleet-demo';
 import { startFeedSync } from '$lib/server/feed-sync';
+import { startPolling } from '$lib/server/poller';
 import { watchInventoryFile } from '$lib/server/inventory-file';
 import { mode, selfHostedStore } from '$lib/server/storage';
 
@@ -18,6 +19,7 @@ export const init: ServerInit = async () => {
   await bootstrapAdmin();
   watchInventoryFile();
   startFeedSync(() => runAlerts());
+  startPolling();
 };
 
 // Language: the vd_lang cookie (set in the footer), else Accept-Language. Theme: the vd_theme cookie, else auto.

@@ -176,6 +176,7 @@ https without `ORIGIN`, which would refuse every form post on a plain-http LAN i
 | `VD_TRUST_PROXY_HEADER` | | e.g. `Remote-User` for forward-auth setups |
 | `VD_BASE_URL` | | for links in notifications |
 | `VD_SECRET_KEY` | generated | encrypts stored credentials (notification channels, access profiles; later integrations); without it a random key is kept in `/data/secret.key` — back it up with the database |
+| `VD_DETECT_INTERVAL` | 6 | hours between fleet polls (cron at the top of the hour, in `VD_TZ`) |
 | `VD_DEMO` | | `1`: an instance without hosts starts with the demo fleet (31 hosts on two sites, `fixtures/fleet-demo.json`); for trying the fleet screens, never for production |
 
 ## SQLite schema (Drizzle)
@@ -252,7 +253,11 @@ the hosts of the chosen site (tiles with a status bar and per-line ranges, a pan
 `/hosts` lists hosts with filters (status, poll problems, type), search and grouping by site; `/hosts/:id` explains a
 poll problem and shows the products and history; `/access-profiles` lists profiles and which hosts fail. The data
 comes from `GET /api/fleet` (sites, profiles without secrets, hosts with poll state and products) and
-`GET /api/hosts/:id` (history); statuses are computed in the browser by `packages/core` (`fleet.ts`).
+`GET /api/hosts/:id` (history); statuses are computed in the browser by `packages/core` (`fleet.ts`). "Poll now" (host
+card, or the selected rows of the hosts table) posts `POST /api/hosts/poll {ids}` and follows
+`GET /api/poll/jobs/:id` once a second; the poller runs 8 hosts at a time. Until the detectors of S6-T3 exist a poll
+reads as "unknown"; with `VD_DEMO=1` a demo detector answers from the stored data (hosts with a poll problem keep
+failing).
 
 **Polling**: every 6 hours by default (`VD_DETECT_INTERVAL`), and "Poll now" per host, site or profile. Timeouts and
 concurrency are bounded (default 8 hosts at a time). A failed poll keeps the last detected versions and marks the

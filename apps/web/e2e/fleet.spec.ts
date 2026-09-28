@@ -41,3 +41,20 @@ test('a site filter narrows every screen and is kept in the URL', async ({ page 
   await expect(page).toHaveURL(/site=\d+/);
   await expect(page.locator('tbody tr:not(.site)')).toHaveCount(9);
 });
+
+test('poll now: one host from its card, several from the table; select-all takes only filtered rows', async ({
+  page,
+}) => {
+  await page.goto('/hosts?poll=problem');
+  await page.getByRole('checkbox', { name: 'Select all 2 shown' }).check();
+  await expect(page.getByRole('region', { name: '2 hosts selected' })).toBeVisible();
+  await page.getByRole('link', { name: 'kzn-fs-01' }).click();
+  await page.getByRole('button', { name: 'Poll now' }).click();
+  await expect(page.getByRole('status')).toContainText('Poll of kzn-fs-01: no access.');
+
+  await page.goto('/hosts');
+  await page.getByRole('checkbox', { name: 'Select msk-app-01' }).check();
+  await page.getByRole('checkbox', { name: 'Select msk-app-02' }).check();
+  await page.getByRole('button', { name: 'Poll now' }).click();
+  await expect(page.getByRole('status')).toContainText('Polled 2 hosts.');
+});

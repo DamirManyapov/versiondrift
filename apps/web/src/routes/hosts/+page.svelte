@@ -10,9 +10,10 @@
   import FleetChip from '$lib/components/fleet/FleetChip.svelte';
   import { productCache } from '$lib/board/products.svelte';
   import { feed } from '$lib/feed/state.svelte';
-  import { dateTime, hostLabel, summaryText } from '$lib/fleet/labels';
+  import { dateTime, hostLabel, pollSummary, summaryText } from '$lib/fleet/labels';
   import { fleetProductIds, fleetView, type FleetHostView } from '$lib/fleet/model';
-  import { fleet, siteFrom } from '$lib/fleet/state.svelte';
+  import { fleet, pollNow, siteFrom } from '$lib/fleet/state.svelte';
+  import Toast from '$lib/components/Toast.svelte';
   import { i18n } from '$lib/i18n/context';
   import type { MessageKey } from '$lib/i18n';
 
@@ -66,6 +67,32 @@
           .filter((g) => g.hosts.length > 0)
       : [{ site: undefined, hosts: visible }],
   );
+
+  // Selection: the header box takes only the rows the filters show; the bar says when some are hidden.
+  let selected = $state<number[]>([]);
+  let polling = $state(false);
+  let toast = $state<string | undefined>();
+  const visibleIds = $derived(visible.map((h) => h.record.id));
+  const allVisible = $derived(visibleIds.length > 0 && visibleIds.every((id) => selected.includes(id)));
+  const hiddenSelected = $derived(selected.filter((id) => !visibleIds.includes(id)).length);
+  const canEdit = $derived(page.data.account?.role !== 'viewer');
+  const toggle = (id: number) =>
+    (selected = selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
+  const toggleVisible = () =>
+    (selected = allVisible
+      ? selected.filter((id) => !visibleIds.includes(id))
+      : [...new Set([...selected, ...visibleIds])]);
+
+  async function pollSelected() {
+    polling = true;
+    try {
+      toast = pollSummary(t, await pollNow(selected));
+    } catch (error) {
+      toast = (error as Error).message;
+    } finally {
+      polling = false;
+    }
+  }
 
   function setParam(key: string, value: string, fallback: string) {
     const url = new URL(page.url);
@@ -174,6 +201,18 @@
     </div>
   </div>
 
+  {#if selected.length > 0}
+    <div class="bulk" role="region" aria-label={t('selectedHosts', { n: selected.length })}>
+      <strong>{t('selectedHosts', { n: selected.length })}</strong>
+      {#if hiddenSelected > 0}<span class="muted">{t('hiddenSelected', { n: hiddenSelected })}</span>{/if}
+      <span class="grow"></span>
+      <button class="primary" onclick={() => void pollSelected()} disabled={polling}
+        >{polling ? t('polling') : t('pollNow')}</button
+      >
+      <button onclick={() => (selected = [])}>{t('clearSelection')}</button>
+    </div>
+  {/if}
+
   {#if visible.length === 0}
     <p class="muted">{t('noHostsMatch')}</p>
   {:else}
@@ -181,6 +220,16 @@
       <table>
         <thead>
           <tr>
+            {#if canEdit}
+              <th class="check">
+                <input
+                  type="checkbox"
+                  checked={allVisible}
+                  onchange={toggleVisible}
+                  aria-label={t('selectVisible', { n: visibleIds.length })}
+                />
+              </th>
+            {/if}
             <th>{t('colStatus')}</th>
             <th>{t('colHost')}</th>
             <th>{t('colSite')}</th>
@@ -194,7 +243,7 @@
           <tbody>
             {#if group.site}
               <tr class="site">
-                <th colspan="7" scope="colgroup"
+                <th colspan={canEdit ? 8 : 7} scope="colgroup"
                   >{group.site.name} · {t('hosts', { n: group.hosts.length })} · {groupSummary(
                     group.hosts,
                   )}</th
@@ -202,7 +251,17 @@
               </tr>
             {/if}
             {#each group.hosts as host (host.id)}
-              <tr>
+              <tr class:picked={selected.includes(host.record.id)}>
+                {#if canEdit}
+                  <td class="check">
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(host.record.id)}
+                      onchange={() => toggle(host.record.id)}
+                      aria-label={t('selectHost', { host: host.record.name })}
+                    />
+                  </td>
+                {/if}
                 <td
                   ><FleetChip
                     status={host.status.status}
@@ -232,6 +291,8 @@
     </div>
   {/if}
 {/if}
+
+{#if toast}<Toast message={toast} onclose={() => (toast = undefined)} />{/if}
 
 <style>
   .top {
@@ -365,5 +426,41 @@
   }
   .error {
     color: var(--critical);
+  }
+  .check {
+    width: 36px;
+  }
+  tr.picked td {
+    background: var(--surface-2);
+  }
+  .bulk {
+    position: sticky;
+    top: 8px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+  }
+  .grow {
+    flex: 1;
+  }
+  .bulk button {
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    color: var(--text-soft);
+  }
+  .bulk .primary {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+    font-weight: 600;
   }
 </style>

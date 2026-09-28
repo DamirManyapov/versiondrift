@@ -10,6 +10,7 @@
   import { i18n, setI18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
   import SiteSwitcher from '$lib/components/fleet/SiteSwitcher.svelte';
+  import { clockTime } from '$lib/fleet/labels';
   import { fleet } from '$lib/fleet/state.svelte';
   import type { LayoutData } from './$types';
 
@@ -96,7 +97,10 @@
     {#if fleet.hasHosts && fleet.data}
       <SiteSwitcher sites={fleet.data.sites} />
       <div class="updated">
-        <span class="muted">{t('pollEvery', { h: 6 })}</span>
+        <span class="muted">{t('pollEvery', { h: fleet.data.schedule.intervalHours })}</span>
+        {#if fleet.data.schedule.next}<span
+            >{t('nextPoll', { time: clockTime(fleet.data.schedule.next, data.locale) })}</span
+          >{/if}
       </div>
     {/if}
 

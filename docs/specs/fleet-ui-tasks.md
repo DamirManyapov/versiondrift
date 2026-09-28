@@ -111,12 +111,14 @@ detail) → FL-6/FL-7 (header, board) → FL-8 (hosts) → FL-9 (host card) → 
 
 - FL-2/FL-3: `packages/core/src/fleet.ts` (host status, aggregates, lines, version breakdown), migration 0003,
   `FleetStore`, `seedFleetDemo`; `VD_DEMO=1` seeds an empty instance.
-- FL-4 ◐: `GET /api/fleet`, `GET /api/hosts/:id`. Missing: create / import / bulk / poll jobs / profile test.
+- FL-4 ◐: `GET /api/fleet`, `GET /api/hosts/:id`, poll jobs (`POST /api/hosts/poll`, `GET /api/poll/jobs/:id`),
+  scheduled polling. Missing: create / import / bulk edit / profile test.
 - FL-6 ◐: tabs, site switcher (a select, not yet the popover of F), poll schedule text. Missing: «Добавить хосты».
 - FL-7 ◐: summary strip with poll problems, aggregated tiles, panel with the version breakdown, «Что изменилось до»
   (the compare page), copy hosts. Missing: inline changes expand, EOL-soon note.
-- FL-8 ◐: table, URL filters with counts, search, grouping by site, severity sort. Missing: selection and bulk actions.
-- FL-9 ◐: header, poll problem explained, products, history. Missing: «Опросить сейчас», «+ Продукт вручную».
+- FL-8 ◐: table, URL filters with counts, search, grouping by site, severity sort, selection (select-all takes the
+  filtered rows, hidden ones counted), bulk «Опросить сейчас». Missing: profile / move / delete dialogs.
+- FL-9 ◐: header, poll problem explained, products, history, «Опросить сейчас». Missing: «+ Продукт вручную».
 - FL-11 ◐: read-only list with failing hosts. Missing: detail, wizard, secret replace.
 - e2e `fleet.spec.ts` on a `VD_DEMO=1` server over the e2e feed (axe clean on the board and the hosts table).
 

@@ -1,4 +1,5 @@
 import { json } from '$lib/server/api';
+import { nextPollAt, pollIntervalHours } from '$lib/server/poller';
 import { selfHostedStorage } from '$lib/server/storage';
 import type { RequestHandler } from './$types';
 
@@ -9,5 +10,10 @@ import type { RequestHandler } from './$types';
 export const GET: RequestHandler = () => {
   const { store, fleet } = selfHostedStorage();
   store.defaultBoard();
-  return json({ sites: store.boards(), profiles: fleet.profiles(), hosts: fleet.hosts() });
+  return json({
+    sites: store.boards(),
+    profiles: fleet.profiles(),
+    hosts: fleet.hosts(),
+    schedule: { intervalHours: pollIntervalHours(), next: nextPollAt() },
+  });
 };

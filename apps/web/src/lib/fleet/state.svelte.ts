@@ -1,6 +1,6 @@
 // Self-hosted fleet data for the board, hosts and host pages; reloaded after changes. The selected site lives in
 // the URL (?site=<id>) and is remembered in this browser.
-import { fleetApi, type FleetData } from './api.ts';
+import { fleetApi, type FleetData, type PollJob } from './api.ts';
 
 const SITE_KEY = 'vd_site';
 
@@ -50,4 +50,15 @@ export function rememberSite(id: number | undefined): void {
   } catch {
     // only a convenience
   }
+}
+
+/** Polls hosts now and waits for the job (checking once a second), then reloads the fleet. */
+export async function pollNow(ids?: number[]): Promise<PollJob> {
+  let job = await fleetApi.poll(ids);
+  while (!job.finished) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    job = await fleetApi.job(job.id);
+  }
+  await fleet.load();
+  return job;
 }

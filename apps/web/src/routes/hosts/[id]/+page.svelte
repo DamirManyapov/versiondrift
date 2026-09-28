@@ -9,9 +9,10 @@
   import { productCache } from '$lib/board/products.svelte';
   import { feed } from '$lib/feed/state.svelte';
   import { fleetApi, type HostEvent } from '$lib/fleet/api';
-  import { dateTime, hostLabel, instanceLabel } from '$lib/fleet/labels';
+  import { dateTime, hostLabel, instanceLabel, pollSummary } from '$lib/fleet/labels';
   import { fleetProductIds, fleetView } from '$lib/fleet/model';
-  import { fleet } from '$lib/fleet/state.svelte';
+  import { fleet, pollNow } from '$lib/fleet/state.svelte';
+  import Toast from '$lib/components/Toast.svelte';
   import { i18n } from '$lib/i18n/context';
   import type { MessageKey } from '$lib/i18n';
 
@@ -28,14 +29,32 @@
   );
   const profile = $derived(fleet.data?.profiles.find((p) => p.id === host?.record.profileId));
   let events = $state<HostEvent[]>([]);
+  let polling = $state(false);
+  let toast = $state<string | undefined>();
+  const loadEvents = (hostId: number) =>
+    fleetApi
+      .host(hostId)
+      .then((h) => (events = h.events))
+      .catch(() => (events = []));
   $effect(() => {
     const hostId = Number(id);
-    if (Number.isInteger(hostId) && hostId > 0)
-      void fleetApi
-        .host(hostId)
-        .then((h) => (events = h.events))
-        .catch(() => (events = []));
+    if (Number.isInteger(hostId) && hostId > 0) void loadEvents(hostId);
   });
+
+  async function poll() {
+    if (!host) return;
+    polling = true;
+    try {
+      const job = await pollNow([Number(host.id)]);
+      toast = pollSummary(t, job);
+      await loadEvents(Number(host.id));
+    } catch (error) {
+      toast = (error as Error).message;
+    } finally {
+      polling = false;
+    }
+  }
+  const canPoll = $derived(host?.record.profileId !== null && page.data.account?.role !== 'viewer');
 
   const broken = $derived(host ? pollBroken(host.poll.state) : false);
   const nameOf = (productId: string) => feed.index?.products[productId]?.name ?? productId;
@@ -120,7 +139,14 @@
         </p>
       {/if}
     </div>
-    <FleetChip status={host.status.status} label={hostLabel(t, host.status, host.poll.state)} size="md" />
+    <div class="side">
+      <FleetChip status={host.status.status} label={hostLabel(t, host.status, host.poll.state)} size="md" />
+      {#if canPoll}
+        <button class="primary" onclick={() => void poll()} disabled={polling}
+          >{polling ? t('polling') : t('pollNow')}</button
+        >
+      {/if}
+    </div>
   </header>
 
   {#if broken || host.poll.state === 'unknown'}
@@ -184,6 +210,8 @@
   </section>
 {/if}
 
+{#if toast}<Toast message={toast} onclose={() => (toast = undefined)} />{/if}
+
 <style>
   .crumbs {
     font-size: 13px;
@@ -197,6 +225,21 @@
   }
   .grow {
     flex: 1;
+  }
+  .side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+  .primary {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: var(--text);
+    color: var(--bg);
+    border: 1px solid var(--text);
   }
   h1 {
     margin: 0 0 10px;

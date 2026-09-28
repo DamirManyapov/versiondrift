@@ -57,3 +57,27 @@ export function summaryText(t: Translate, counts: ProductAggregate['counts']): s
 /** Local date and time of an ISO instant: "26.09.2026, 14:10" / "9/26/2026, 2:10 PM". */
 export const dateTime = (iso: string, locale: string) =>
   new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(iso));
+
+/** The toast after "Poll now": one host in words, several as a count with the problems named. */
+export function pollSummary(
+  t: Translate,
+  job: { results: { name: string; state: string; changed: boolean }[] },
+): string {
+  const problems = job.results.filter((r) => r.state !== 'ok');
+  const problemText = (r: { name: string; state: string }) =>
+    `${r.name}: ${pollLabel(t, r.state as PollState).toLowerCase()}`;
+  if (job.results.length === 1) {
+    const r = job.results[0]!;
+    if (r.state !== 'ok')
+      return t('pollFailed', { host: r.name, problem: pollLabel(t, r.state as PollState).toLowerCase() });
+    return t(r.changed ? 'pollChanged' : 'pollUnchanged', { host: r.name });
+  }
+  const head = t('pollMany', { n: job.results.length });
+  return problems.length
+    ? `${head} ${t('pollErrors', { list: problems.map(problemText).join(', ') })}`
+    : head;
+}
+
+/** "18:00" in the browser's time. */
+export const clockTime = (iso: string, locale: string) =>
+  new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
