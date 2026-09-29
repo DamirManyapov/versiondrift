@@ -13,6 +13,15 @@ export default defineConfig({
     { name: 'public', testMatch: 'public.spec.ts', use: { baseURL: 'http://localhost:4173' } },
     { name: 'selfhosted', testMatch: 'selfhosted.spec.ts', use: { baseURL: 'http://localhost:4174' } },
     { name: 'fleet', testMatch: 'fleet.spec.ts', use: { baseURL: 'http://localhost:4175' } },
+    // The fleet server under a LAN name over plain http: not a secure context, like http://192.168.1.10:8080.
+    {
+      name: 'lan',
+      testMatch: 'lan.spec.ts',
+      use: {
+        baseURL: 'http://lan.test:4175',
+        launchOptions: { args: ['--host-resolver-rules=MAP lan.test 127.0.0.1'] },
+      },
+    },
   ],
   webServer: [
     {

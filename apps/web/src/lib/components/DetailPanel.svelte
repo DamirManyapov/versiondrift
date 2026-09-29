@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { copyText } from '$lib/clipboard';
   import { fixedIn as fixFor, inTrack, isTrack, parse, trackOf } from '@versiondrift/core';
   import { resolve } from '$app/paths';
   import type { ItemType, Release } from '@versiondrift/schema';
@@ -138,7 +139,7 @@
   }
 
   async function copyMarkdown() {
-    await navigator.clipboard.writeText(asMarkdown());
+    await copyText(asMarkdown());
     ontoast(t('copied'));
   }
 

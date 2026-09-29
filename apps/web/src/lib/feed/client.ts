@@ -1,6 +1,7 @@
 // Reads the public feed (docs/03-feed-format.md) from the browser, Workers or Node: conditional requests with
 // ETags, an in-memory cache, and a sha256 check of every product file against the index.
 import { Catalog, FeedIndex, FeedProduct, Health, Versions, WeekDigest } from '@versiondrift/schema';
+import { sha256Hex } from './sha256.ts';
 
 export class FeedError extends Error {
   override name = 'FeedError';
@@ -9,11 +10,6 @@ export class FeedError extends Error {
 interface Cached {
   etag: string | null;
   body: string;
-}
-
-async function sha256Hex(text: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 export class FeedClient {

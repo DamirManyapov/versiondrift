@@ -1,6 +1,7 @@
 <script lang="ts">
   // One product over the fleet (docs/specs/fleet-ui.md §5.A): notes, then the hosts grouped by line and version,
   // each group with its hosts, what changed up to the latest, and a copy of the host names for a ticket.
+  import { copyText } from '$lib/clipboard';
   import { versionBreakdown, type ProductAggregate } from '@versiondrift/core';
   import type { FeedProduct } from '@versiondrift/schema';
   import { resolve } from '$app/paths';
@@ -48,7 +49,7 @@
 
   async function copyHosts(names: string[]) {
     try {
-      await navigator.clipboard.writeText(names.join('\n'));
+      await copyText(names.join('\n'));
       ontoast(t('copiedHosts', { n: names.length }));
     } catch {
       ontoast(names.join(', '));

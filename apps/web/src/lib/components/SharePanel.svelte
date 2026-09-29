@@ -1,5 +1,6 @@
 <script lang="ts">
   // "Share" on the board (S4-T1): a /b#… link that carries the board in its fragment.
+  import { copyText } from '$lib/clipboard';
   import { resolve } from '$app/paths';
   import { i18n } from '$lib/i18n/context';
   import type { InventoryItem } from '$lib/inventory/model';
@@ -29,7 +30,7 @@
   });
 
   async function copy() {
-    await navigator.clipboard.writeText(url);
+    await copyText(url);
     ontoast(t('shareCopied'));
   }
 </script>

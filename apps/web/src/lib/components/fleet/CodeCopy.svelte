@@ -1,5 +1,6 @@
 <script lang="ts">
   // A command to copy: the code, and a button that copies it (or selects it when the clipboard is refused).
+  import { copyText } from '$lib/clipboard';
   import { i18n } from '$lib/i18n/context';
 
   let { code }: { code: string } = $props();
@@ -9,7 +10,7 @@
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(code);
+      await copyText(code);
       copied = true;
       setTimeout(() => (copied = false), 2000);
     } catch {
