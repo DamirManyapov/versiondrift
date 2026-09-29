@@ -7,6 +7,7 @@
   import { pollSummary } from '$lib/fleet/labels';
   import { fleet, followJob } from '$lib/fleet/state.svelte';
   import { i18n } from '$lib/i18n/context';
+  import { boardsApi } from '$lib/inventory/remote';
   import type { MessageKey } from '$lib/i18n';
 
   let {
@@ -34,6 +35,7 @@
   let name = $state('');
   let address = $state('');
   let siteId = $state('');
+  let newSite = $state('');
   // The first profile by default; "no profile" is the last option.
   let profileId = $state(String(fleet.data?.profiles[0]?.id ?? ''));
   let kind = $state('ssh-linux');
@@ -51,6 +53,12 @@
     problem = '';
     message = '';
     try {
+      // "+ New site…": the site is made first, then the host goes there.
+      if (siteId === 'new') {
+        siteId = String((await boardsApi.create(newSite)).id);
+        newSite = '';
+        await fleet.load();
+      }
       const { host, job } = await fleetApi.createHost({
         name,
         address,
@@ -164,8 +172,12 @@
         >{t('siteLabel')}
         <select bind:value={siteId}>
           {#each fleet.data?.sites ?? [] as s (s.id)}<option value={String(s.id)}>{s.name}</option>{/each}
+          <option value="new">{t('newSiteOption')}</option>
         </select>
       </label>
+      {#if siteId === 'new'}
+        <label>{t('newSiteName')}<input bind:value={newSite} required maxlength="60" /></label>
+      {/if}
       <label
         >{t('hostProfile')}
         <select bind:value={profileId}>

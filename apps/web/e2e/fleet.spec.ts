@@ -137,3 +137,22 @@ test('a product the detectors cannot see is added to a host by hand, and removed
   await row.getByRole('button', { name: 'Remove' }).click();
   await expect(row).toHaveCount(0);
 });
+
+test('a new site is made from the site switcher; Settings list sites and keep ones with hosts', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('Site:').selectOption({ label: '+ New site…' });
+  await page.getByRole('textbox', { name: 'Name of the new site' }).fill('Lab 3');
+  await page.getByRole('button', { name: 'Create' }).click();
+  await expect(page).toHaveURL(/site=\d+/);
+  await expect(page.getByLabel('Site:')).toHaveValue(/^\d+$/);
+  await expect(page.getByLabel('Site:').locator('option:checked')).toHaveText('Lab 3');
+
+  await page.goto('/settings');
+  const sites = page.locator('section', { has: page.getByRole('heading', { name: 'Sites' }) });
+  await expect(sites.locator('li', { hasText: 'Lab 3' })).toContainText('0 hosts');
+  const kazan = sites.locator('li', { hasText: 'Казань, филиал' });
+  await expect(kazan).toContainText('has hosts');
+  await expect(kazan.getByRole('button', { name: 'Delete board' })).toHaveCount(0);
+});
