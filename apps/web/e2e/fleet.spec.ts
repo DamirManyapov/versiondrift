@@ -122,3 +122,18 @@ test('a host card edits the address with a port and checks the host again', asyn
   await expect(form).toBeHidden();
   await expect(page.locator('dd', { hasText: '10.20.2.99:2026' })).toBeVisible();
 });
+
+test('a product the detectors cannot see is added to a host by hand, and removed', async ({ page }) => {
+  await page.goto('/hosts');
+  await page.getByRole('link', { name: 'kzn-fs-01' }).click();
+  await page.getByRole('button', { name: 'Add a product by hand' }).click();
+  const form = page.getByRole('form', { name: 'Add a product by hand' });
+  await form.getByLabel('Product').fill('Zabbix');
+  await form.getByLabel('Version').fill('7.0.0');
+  await form.getByRole('button', { name: 'Save' }).click();
+  const row = page.locator('tr', { hasText: 'Zabbix' });
+  await expect(row).toContainText('7.0.0');
+  await expect(row).toContainText('entered by hand');
+  await row.getByRole('button', { name: 'Remove' }).click();
+  await expect(row).toHaveCount(0);
+});

@@ -407,6 +407,49 @@ export class FleetStore {
       .run();
   }
 
+  /**
+   * A product typed by hand on a host (software the detectors can't see, like a container): added, or its version
+   * changed if the host already has it by hand. Polls never overwrite it.
+   */
+  setManual(hostId: number, productId: string, version: string, track?: string): void {
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(productId)) throw new StoreError(`"${productId}" is not a product id`);
+    const value = version.trim().replace(/^v(?=\d)/, '');
+    if (value === '') throw new StoreError('a version is needed');
+    const existing = this.db
+      .select()
+      .from(schema.instances)
+      .where(
+        and(
+          eq(schema.instances.hostId, hostId),
+          eq(schema.instances.productId, productId),
+          eq(schema.instances.source, 'manual'),
+        ),
+      )
+      .get();
+    if (!existing) return this.addManual(hostId, productId, value, track);
+    this.db
+      .update(schema.instances)
+      .set({ version: value, track: track ?? null, updatedAt: new Date().toISOString() })
+      .where(eq(schema.instances.id, existing.id))
+      .run();
+  }
+
+  /** Removes a product typed by hand on a host (detected ones come back with the next poll anyway). */
+  removeManual(hostId: number, productId: string): boolean {
+    return (
+      this.db
+        .delete(schema.instances)
+        .where(
+          and(
+            eq(schema.instances.hostId, hostId),
+            eq(schema.instances.productId, productId),
+            eq(schema.instances.source, 'manual'),
+          ),
+        )
+        .run().changes > 0
+    );
+  }
+
   /** A product typed by hand on a host; polls never overwrite it. */
   addManual(hostId: number, productId: string, version: string, track?: string): void {
     const host = this.db.select().from(schema.hosts).where(eq(schema.hosts.id, hostId)).get();

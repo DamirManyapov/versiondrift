@@ -113,6 +113,11 @@ export const fleetApi = {
   updateHost: (id: number, input: { address?: string; siteId?: number; profileId?: number | null }) =>
     patch<{ host: HostRecord; job?: PollJob }>(`/api/hosts/${id}`, input),
   deleteHosts: (ids: number[]) => send('/api/hosts', 'DELETE', { ids }),
+  /** A product typed by hand on a host (a container, say); the same product again changes its version. */
+  setManualProduct: (hostId: number, input: { productId: string; version: string }) =>
+    post<HostRecord>(`/api/hosts/${hostId}/products`, input),
+  removeManualProduct: (hostId: number, productId: string) =>
+    send(`/api/hosts/${hostId}/products/${encodeURIComponent(productId)}`, 'DELETE'),
   planImport: (csv: string) => postText<{ rows: ImportPlanRow[] }>('/api/hosts/import?dryRun=1', csv),
   runImport: (csv: string) =>
     postText<{ rows: ImportPlanRow[]; created: number; updated: number; job?: PollJob }>(

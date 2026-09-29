@@ -79,6 +79,62 @@
     editProblem = '';
     editing = true;
   }
+  // Products typed by hand (software the detectors can't see, like a container): a product from the feed and a
+  // version, with the product's recent releases as suggestions.
+  let adding = $state(false);
+  let savingManual = $state(false);
+  let manualProblem = $state('');
+  let manual = $state({ product: '', version: '' });
+  const productOptions = $derived(
+    Object.entries(feed.index?.products ?? {})
+      .map(([pid, p]) => ({ id: pid, name: p.name }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  );
+  const chosenId = $derived.by(() => {
+    const q = manual.product.trim().toLowerCase();
+    return productOptions.find((p) => p.name.toLowerCase() === q || p.id === q)?.id;
+  });
+  $effect(() => {
+    if (chosenId) void productCache.ensure([chosenId]);
+  });
+  const versionOptions = $derived(
+    chosenId ? (productCache.products[chosenId]?.releases.slice(0, 20).map((r) => r.version) ?? []) : [],
+  );
+  function startManual() {
+    manual = { product: '', version: '' };
+    manualProblem = '';
+    adding = true;
+  }
+  async function saveManual(event: SubmitEvent) {
+    event.preventDefault();
+    if (!host) return;
+    if (!chosenId) {
+      manualProblem = t('pickFeedProduct');
+      return;
+    }
+    savingManual = true;
+    manualProblem = '';
+    try {
+      await fleetApi.setManualProduct(Number(host.id), { productId: chosenId, version: manual.version });
+      adding = false;
+      await fleet.load();
+      toast = t('manualProductSaved', { product: nameOf(chosenId) });
+    } catch (error) {
+      manualProblem = (error as Error).message;
+    } finally {
+      savingManual = false;
+    }
+  }
+  async function removeManual(productId: string) {
+    if (!host) return;
+    try {
+      await fleetApi.removeManualProduct(Number(host.id), productId);
+      await fleet.load();
+    } catch (error) {
+      toast = (error as Error).message;
+    }
+  }
+
   let confirmingDelete = $state(false);
   async function deleteHost() {
     if (!host) return;
@@ -292,7 +348,7 @@
           >
         </thead>
         <tbody>
-          {#each host.instances as inst (inst.productId + inst.version)}
+          {#each host.instances as inst (`${inst.productId} ${inst.version} ${inst.source}`)}
             <tr>
               <td><a href={resolve('/p/[id]', { id: inst.productId })}>{nameOf(inst.productId)}</a></td>
               <td class="mono"
@@ -305,13 +361,57 @@
                   ? t('sourceManual')
                   : broken
                     ? t('sourceLastKnown')
-                    : t('sourceDetected')}</td
+                    : t('sourceDetected')}{#if inst.source === 'manual' && canEdit}
+                  <button class="link" onclick={() => void removeManual(inst.productId)}
+                    >{t('removeManual')}</button
+                  >{/if}</td
               >
             </tr>
           {/each}
         </tbody>
       </table>
     </div>
+    {#if canEdit}
+      {#if adding}
+        <form class="edit" onsubmit={saveManual} aria-label={t('addManualProduct')}>
+          <label
+            >{t('colProduct')}
+            <input
+              bind:value={manual.product}
+              list="feed-products"
+              required
+              placeholder="Zabbix"
+              autocomplete="off"
+            />
+          </label>
+          <label
+            >{t('colVersion')}
+            <input
+              bind:value={manual.version}
+              list="product-versions"
+              required
+              class="mono"
+              placeholder={versionOptions[0] ?? '7.0.5'}
+              autocomplete="off"
+            />
+          </label>
+          <datalist id="feed-products">
+            {#each productOptions as p (p.id)}<option value={p.name}></option>{/each}
+          </datalist>
+          <datalist id="product-versions">
+            {#each versionOptions as v (v)}<option value={v}></option>{/each}
+          </datalist>
+          <small class="span">{t('manualProductHint')}</small>
+          <div class="actions">
+            <button class="primary" type="submit" disabled={savingManual}>{t('save')}</button>
+            <button class="button" type="button" onclick={() => (adding = false)}>{t('cancel')}</button>
+          </div>
+          {#if manualProblem}<p class="error" role="alert">{manualProblem}</p>{/if}
+        </form>
+      {:else}
+        <p><button class="button" onclick={startManual}>{t('addManualProduct')}</button></p>
+      {/if}
+    {/if}
   </section>
 
   <section aria-labelledby="history-title">
@@ -463,6 +563,17 @@
     grid-column: 1 / -1;
     display: flex;
     gap: 8px;
+  }
+  .edit .span {
+    grid-column: 1 / -1;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .link {
+    margin-left: 8px;
+    font-size: 12px;
+    color: var(--text-soft);
+    text-decoration: underline;
   }
   .edit .error {
     grid-column: 1 / -1;

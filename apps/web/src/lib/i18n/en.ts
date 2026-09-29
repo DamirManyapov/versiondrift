@@ -532,6 +532,12 @@ export const en = {
   confirmDeleteHosts: 'Delete the selected hosts ({n}) with the versions found on them?',
   hostsDeleted: 'Hosts deleted: {n}.',
   chipNotPolled: 'Not polled',
+  addManualProduct: 'Add a product by hand',
+  manualProductHint:
+    'For software the detectors can’t see, such as a container: pick the product from the feed and type the version that runs here. Polls never change it.',
+  manualProductSaved: '{product} added.',
+  pickFeedProduct: 'Pick a product from the list: only products in the feed have statuses.',
+  removeManual: 'Remove',
   editHost: 'Edit',
   hostSaved: 'Saved.',
   noSuccessYet: 'No poll of this host has succeeded yet.',

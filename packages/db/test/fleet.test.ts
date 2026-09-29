@@ -177,6 +177,29 @@ describe('FleetStore', () => {
   });
 });
 
+describe('products typed by hand on a host', () => {
+  it('adds one, changes its version, keeps it through polls and removes it', () => {
+    const storage = seeded();
+    const { id } = byName(storage, 'msk-app-01');
+    const manual = () => byName(storage, 'msk-app-01').instances.filter((i) => i.source === 'manual');
+    storage.fleet.setManual(id, 'zabbix', ' v7.0.5 ');
+    expect(manual()).toMatchObject([{ productId: 'zabbix', version: '7.0.5' }]);
+    storage.fleet.setManual(id, 'zabbix', '7.0.6');
+    expect(manual()).toMatchObject([{ productId: 'zabbix', version: '7.0.6' }]);
+    storage.fleet.recordPoll(id, {
+      ok: true,
+      at: '2026-09-30T10:00:00Z',
+      found: [{ productId: 'debian', version: '12.12' }],
+    });
+    expect(manual()).toHaveLength(1);
+    expect(() => storage.fleet.setManual(id, 'Zabbix Server', '7')).toThrow(/not a product id/);
+    expect(() => storage.fleet.setManual(id, 'zabbix', ' ')).toThrow(/version is needed/);
+    expect(storage.fleet.removeManual(id, 'zabbix')).toBe(true);
+    expect(storage.fleet.removeManual(id, 'zabbix')).toBe(false);
+    expect(manual()).toHaveLength(0);
+  });
+});
+
 describe('host address changes', () => {
   it('re-reads an address stored with its port; a new address forgets the pins and the old problem', () => {
     const storage = seeded();
