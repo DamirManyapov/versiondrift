@@ -298,7 +298,7 @@ key and the Proxmox TLS certificate are pinned on the first successful contact (
 from the host card (`POST /api/hosts/:id/reset-pins`). With `VD_DEMO=1` a demo detector answers from the stored data
 instead (hosts with a poll problem keep failing).
 
-**Polling**: every 6 hours by default (`VD_DETECT_INTERVAL`), and "Poll now" per host, site or profile. Timeouts and
+**Polling**: every 6 hours by default (`VD_DETECT_INTERVAL`; the Hosts page shows the interval and the next run), and "Poll now" per host, site or profile. Timeouts and
 concurrency are bounded (default 8 hosts at a time). A failed poll keeps the last detected versions and marks the
 host (`unreachable`, `auth-failed`) instead of clearing them.
 

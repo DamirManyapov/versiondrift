@@ -11,7 +11,7 @@
   import { productCache } from '$lib/board/products.svelte';
   import { feed } from '$lib/feed/state.svelte';
   import { fleetApi } from '$lib/fleet/api';
-  import { dateTime, hostAddress, hostLabel, pollSummary, summaryText } from '$lib/fleet/labels';
+  import { clockTime, dateTime, hostAddress, hostLabel, pollSummary, summaryText } from '$lib/fleet/labels';
   import { fleetProductIds, fleetView, type FleetHostView } from '$lib/fleet/model';
   import { fleet, pollNow, siteFrom } from '$lib/fleet/state.svelte';
   import Toast from '$lib/components/Toast.svelte';
@@ -184,6 +184,11 @@
       >
     </div>
   </div>
+  <p class="muted schedule">
+    {t('pollEvery', { h: fleet.data.schedule.intervalHours })}{#if fleet.data.schedule.next}, {t('nextPoll', {
+        time: clockTime(fleet.data.schedule.next, locale),
+      })}{/if}
+  </p>
 
   <div class="filters">
     <div class="fgroup" role="group" aria-label={t('filterStatus')}>
@@ -324,7 +329,11 @@
     align-items: center;
     gap: 16px;
     flex-wrap: wrap;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
+  }
+  .schedule {
+    margin: 0 0 16px;
+    font-size: 13px;
   }
   h1 {
     margin: 0;

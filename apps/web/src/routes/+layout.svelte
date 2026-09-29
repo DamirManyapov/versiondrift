@@ -13,7 +13,6 @@
   import SiteSwitcher from '$lib/components/fleet/SiteSwitcher.svelte';
   import UserMenu from '$lib/components/UserMenu.svelte';
   import { goto } from '$app/navigation';
-  import { clockTime } from '$lib/fleet/labels';
   import { fleet, siteFrom } from '$lib/fleet/state.svelte';
   import type { LayoutData } from './$types';
 
@@ -22,6 +21,17 @@
   // Before any page initializes: pages call inventory.init(), which picks the browser or the server store.
   inventory.configure(() => data.mode);
   const { t } = $derived(i18n());
+
+  // The feed's freshness in the footer, a traffic light with words: rebuilt daily at 02:00 UTC, so a day and a half
+  // is on time, up to a week is late, older is out of date.
+  const FRESHNESS = { fresh: 'feedFresh', late: 'feedLate', old: 'feedOld' } as const;
+  const freshness = $derived.by((): keyof typeof FRESHNESS | 'missing' | undefined => {
+    if (feed.error && !feed.index) return 'missing';
+    if (!feed.index) return undefined;
+    const hours = (Date.now() - Date.parse(feed.index.generatedAt)) / 3_600_000;
+    return hours <= 36 ? 'fresh' : hours <= 7 * 24 ? 'late' : 'old';
+  });
+  const freshnessLabel = $derived(freshness && freshness !== 'missing' ? t(FRESHNESS[freshness]) : '');
 
   onMount(() => {
     void feed.load();
@@ -113,26 +123,7 @@
 
     {#if fleet.hasHosts && fleet.data}
       <SiteSwitcher sites={fleet.data.sites} />
-      <div class="updated">
-        <span class="muted">{t('pollEvery', { h: fleet.data.schedule.intervalHours })}</span>
-        {#if fleet.data.schedule.next}<span
-            >{t('nextPoll', { time: clockTime(fleet.data.schedule.next, data.locale) })}</span
-          >{/if}
-      </div>
     {/if}
-
-    {#if feed.index}
-      <div class="updated">
-        <span class="muted">{t('feedUpdated')}</span>
-        <span>{formatUpdated(feed.index.generatedAt, data.locale, t)}</span>
-      </div>
-    {/if}
-    <button class="ghost" onclick={() => feed.load(true)} disabled={feed.loading}>
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
-        ><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg
-      >
-      {t('refresh')}
-    </button>
     {#if canAddHosts}
       <button class="primary" onclick={() => setAdd('one')}>
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
@@ -165,7 +156,19 @@
     <span>{t('appTagline')}</span>
     <span class="muted">{t('footerData')} · {t('footerCode')}</span>
     <a class="muted" href={resolve('/settings')}>{t('settingsTitle')}</a>
-    <a class="muted" href={resolve('/status')}>{t('navStatus')}</a>
+    <a class="muted feed-state" href={resolve('/status')}>
+      {#if freshness === 'missing'}
+        <span class="dot missing" aria-hidden="true"></span>{t('feedMissing')}
+      {:else if freshness && feed.index}
+        <span class="dot {freshness}" aria-hidden="true"></span>{freshnessLabel} · {formatUpdated(
+          feed.index.generatedAt,
+          data.locale,
+          t,
+        )}
+      {:else}
+        {t('navStatus')}
+      {/if}
+    </a>
     <div class="spacer"></div>
     <label>
       <span class="visually-hidden">{t('language')}</span>
@@ -259,12 +262,6 @@
   .spacer {
     flex-grow: 1;
   }
-  .updated {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    font-size: 13px;
-  }
   .muted {
     color: var(--text-muted);
     font-size: 12px;
@@ -301,6 +298,26 @@
     flex-grow: 1;
     padding: 24px 32px;
   }
+  .feed-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .dot.fresh {
+    background: var(--ok);
+  }
+  .dot.late {
+    background: var(--update);
+  }
+  .dot.old,
+  .dot.missing {
+    background: var(--critical);
+  }
   footer {
     padding: 16px 32px;
     border-top: 1px solid var(--border);
@@ -325,9 +342,6 @@
     footer {
       padding-left: 16px;
       padding-right: 16px;
-    }
-    .updated {
-      display: none;
     }
   }
 </style>
