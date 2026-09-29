@@ -1,7 +1,7 @@
-// Adding hosts from a list (docs/specs/fleet-ui.md §5.D): CSV `name,address,site,profile[,kind]`, a dry run that says
+// Adding hosts from a list (docs/specs/fleet-ui.md §5.D): CSV `name,address[:port],site,profile[,kind]`, a dry run that says
 // per line what would happen, then the import. It is an upsert by host name: existing hosts are "unchanged" or
 // "update" (address, site, profile), new sites are created, unknown profiles are errors.
-import type { AccessProfile, FleetStore, HostKind } from './fleet.ts';
+import { joinAddress, splitAddress, type AccessProfile, type FleetStore, type HostKind } from './fleet.ts';
 import * as schema from './schema.ts';
 import { StoreError, type BoardStore } from './store.ts';
 
@@ -87,6 +87,13 @@ export function planImport(
     if (seen.has(row.name.toLowerCase())) return error(`"${row.name}" appears twice in the list`);
     seen.add(row.name.toLowerCase());
     if (!row.address) return error('no address');
+    let address: string;
+    try {
+      const parts = splitAddress(row.address);
+      address = joinAddress(parts.address, parts.port);
+    } catch (e) {
+      return error((e as Error).message);
+    }
     if (!row.site) return error('no site');
     let profile: AccessProfile | undefined;
     if (row.profile) {
@@ -101,7 +108,7 @@ export function planImport(
     const existing = hosts.get(row.name.toLowerCase());
     if (!existing) return { ...row, result: 'new', ...(newSite && { newSite }) };
     const changes: ('address' | 'site' | 'profile')[] = [];
-    if (existing.address !== row.address) changes.push('address');
+    if (joinAddress(existing.address, existing.port) !== address) changes.push('address');
     if (existing.siteId !== siteId) changes.push('site');
     if (existing.profileId !== (profile?.id ?? null)) changes.push('profile');
     if (profile && existing.kind !== profile.kind)

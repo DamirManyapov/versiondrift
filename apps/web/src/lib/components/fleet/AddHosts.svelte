@@ -158,7 +158,7 @@
           required
           class="mono"
           placeholder="10.10.1.11"
-        /></label
+        /><small>{t('addressHint')}</small></label
       >
       <label
         >{t('siteLabel')}
@@ -313,6 +313,9 @@
   }
   .mono {
     font-family: var(--font-mono);
+  }
+  small {
+    font-size: 12px;
   }
   .actions {
     grid-column: 1 / -1;

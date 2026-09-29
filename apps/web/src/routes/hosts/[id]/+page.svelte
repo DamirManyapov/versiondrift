@@ -9,7 +9,7 @@
   import { productCache } from '$lib/board/products.svelte';
   import { feed } from '$lib/feed/state.svelte';
   import { fleetApi, type HostEvent } from '$lib/fleet/api';
-  import { dateTime, hostLabel, instanceLabel, pollSummary } from '$lib/fleet/labels';
+  import { dateTime, hostAddress, hostLabel, instanceLabel, pollSummary } from '$lib/fleet/labels';
   import { fleetProductIds, fleetView } from '$lib/fleet/model';
   import { fleet, pollNow } from '$lib/fleet/state.svelte';
   import Toast from '$lib/components/Toast.svelte';
@@ -121,7 +121,7 @@
       <dl class="facts">
         <div>
           <dt>{t('hostAddress')}</dt>
-          <dd class="mono">{host.record.address}</dd>
+          <dd class="mono">{hostAddress(host.record)}</dd>
         </div>
         <div>
           <dt>{t('siteLabel')}</dt>

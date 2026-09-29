@@ -10,7 +10,7 @@
   import FleetChip from '$lib/components/fleet/FleetChip.svelte';
   import { productCache } from '$lib/board/products.svelte';
   import { feed } from '$lib/feed/state.svelte';
-  import { dateTime, hostLabel, pollSummary, summaryText } from '$lib/fleet/labels';
+  import { dateTime, hostAddress, hostLabel, pollSummary, summaryText } from '$lib/fleet/labels';
   import { fleetProductIds, fleetView, type FleetHostView } from '$lib/fleet/model';
   import { fleet, pollNow, siteFrom } from '$lib/fleet/state.svelte';
   import Toast from '$lib/components/Toast.svelte';
@@ -49,7 +49,7 @@
     all.filter((h) => {
       const q = query.trim().toLowerCase();
       return (
-        q === '' || h.record.name.toLowerCase().includes(q) || h.record.address.toLowerCase().includes(q)
+        q === '' || h.record.name.toLowerCase().includes(q) || hostAddress(h.record).toLowerCase().includes(q)
       );
     }),
   );
@@ -270,7 +270,7 @@
                 >
                 <td>
                   <a class="name mono" href={resolve('/hosts/[id]', { id: host.id })}>{host.record.name}</a>
-                  <span class="addr mono">{host.record.address}</span>
+                  <span class="addr mono">{hostAddress(host.record)}</span>
                 </td>
                 <td>{host.siteName}</td>
                 <td class="mono">{osOf(host)}</td>

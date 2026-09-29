@@ -20,7 +20,7 @@ async function read(target: Target, credentials: Credentials, pins: Pins, timeou
       ? `PBSAPIToken=${credentials.username}:${credentials.secret ?? ''}`
       : `PVEAPIToken=${credentials.username}=${credentials.secret ?? ''}`;
     const { body, fingerprint } = await httpsJson(
-      `https://${target.address}:${port}/api2/json/version`,
+      `https://${target.address.includes(':') ? `[${target.address}]` : target.address}:${port}/api2/json/version`,
       { authorization: auth, accept: 'application/json' },
       { fingerprint: pins.tlsFingerprint ?? null, ...(timeoutMs && { timeoutMs }) },
     );

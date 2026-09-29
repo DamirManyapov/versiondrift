@@ -1,7 +1,14 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { openStorage, seedFleetDemo, type FleetDemo, type Storage } from '../src/index.ts';
+import {
+  joinAddress,
+  openStorage,
+  seedFleetDemo,
+  splitAddress,
+  type FleetDemo,
+  type Storage,
+} from '../src/index.ts';
 
 const demo = JSON.parse(
   readFileSync(path.join(import.meta.dirname, '../../../fixtures/fleet-demo.json'), 'utf8'),
@@ -148,6 +155,38 @@ describe('FleetStore', () => {
       siteId: site,
     });
     expect(created.poll.state).toBe('none');
+  });
+
+  it('takes a non-standard port with the address, and drops it when the address comes without one', () => {
+    const storage = seeded();
+    const site = storage.store.boards()[0]!.id;
+    const host = storage.fleet.createHost({
+      name: 'app-07',
+      address: ' 10.20.30.40:2026 ',
+      kind: 'ssh-linux',
+      siteId: site,
+    });
+    expect(host).toMatchObject({ address: '10.20.30.40', port: 2026 });
+    storage.fleet.setAddress(host.id, 'app-07.lan');
+    expect(byName(storage, 'app-07')).toMatchObject({ address: 'app-07.lan', port: null });
+    expect(() =>
+      storage.fleet.createHost({ name: 'p-1', address: 'x:70000', kind: 'ssh-linux', siteId: site }),
+    ).toThrow(/out of range/);
+  });
+});
+
+describe('host addresses', () => {
+  it('split "host:port", bracketed and bare IPv6, and join back', () => {
+    expect(splitAddress('10.0.0.5')).toEqual({ address: '10.0.0.5', port: null });
+    expect(splitAddress('pve.lan:8006')).toEqual({ address: 'pve.lan', port: 8006 });
+    expect(splitAddress('[fe80::1]:2222')).toEqual({ address: 'fe80::1', port: 2222 });
+    expect(splitAddress('[fe80::1]')).toEqual({ address: 'fe80::1', port: null });
+    expect(splitAddress('fe80::1')).toEqual({ address: 'fe80::1', port: null });
+    expect(() => splitAddress('host:ssh')).toThrow(/must be a number/);
+    expect(() => splitAddress('host:0')).toThrow(/out of range/);
+    expect(joinAddress('10.0.0.5', null)).toBe('10.0.0.5');
+    expect(joinAddress('10.0.0.5', 2026)).toBe('10.0.0.5:2026');
+    expect(joinAddress('fe80::1', 2222)).toBe('[fe80::1]:2222');
   });
 });
 

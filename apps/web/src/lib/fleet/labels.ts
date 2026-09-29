@@ -18,6 +18,12 @@ export function instanceLabel(t: Translate, i: FleetInstance): string {
   return t('chipUnknown');
 }
 
+/** A host's address as typed: "10.0.0.5", "10.0.0.5:2026", "[fe80::1]:2026" (no port: the detector's default). */
+export const hostAddress = (record: { address: string; port: number | null }): string =>
+  record.port === null
+    ? record.address
+    : `${record.address.includes(':') ? `[${record.address}]` : record.address}:${record.port}`;
+
 /** What a host without usable versions shows, by poll state. */
 export function pollLabel(t: Translate, state: PollState): string {
   if (state === 'auth-failed') return t('chipNoAccess');

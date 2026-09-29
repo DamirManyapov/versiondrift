@@ -7,8 +7,9 @@ import type { RequestHandler } from './$types';
 const KINDS = ['ssh-linux', 'windows', 'routeros', 'proxmox'] as const;
 
 /**
- * Adds one host: `{ name, address, siteId, profileId? , kind? }` (the kind comes from the profile, or is given for a
- * host without one). A host with a profile is polled at once; the answer carries that job.
+ * Adds one host: `{ name, address, siteId, profileId? , kind?, port? }` (the kind comes from the profile, or is given for
+ * a host without one; the address may carry the port, "10.0.0.5:2026"). A host with a profile is polled at once; the
+ * answer carries that job.
  */
 export const POST: RequestHandler = async ({ request }) => {
   const { store, fleet } = selfHostedStorage();
@@ -21,7 +22,14 @@ export const POST: RequestHandler = async ({ request }) => {
   if (!kind) error(400, `a host without a profile needs a type: ${KINDS.join(', ')}`);
   const siteId = typeof input.siteId === 'number' ? input.siteId : store.defaultBoard().id;
   const host = attempt(() =>
-    fleet.createHost({ name: text('name'), address: text('address'), siteId, kind, profileId }),
+    fleet.createHost({
+      name: text('name'),
+      address: text('address'),
+      siteId,
+      kind,
+      profileId,
+      ...(typeof input.port === 'number' && { port: input.port }),
+    }),
   );
   const job = profileId === null ? undefined : startPoll([host.id]);
   return json({ host, ...(job && { job }) }, { status: 201 });

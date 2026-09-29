@@ -12,6 +12,8 @@ export {
 export { MIGRATIONS } from './migrations.ts';
 export {
   FleetStore,
+  joinAddress,
+  splitAddress,
   type AccessProfile,
   type AccessProfileInput,
   type HostEvent,

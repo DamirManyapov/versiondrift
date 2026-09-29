@@ -104,6 +104,27 @@ export type PollResult =
 
 const NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,62}$/;
 
+/**
+ * What people type as a host's address: "host", "host:2026", "[fe80::1]:2026" or a bare IPv6 address. A missing port
+ * (null) means the detector's default (SSH 22, Proxmox VE 8006, Backup Server 8007).
+ */
+export function splitAddress(text: string): { address: string; port: number | null } {
+  const value = text.trim();
+  const match = /^\[([^\]]+)\](?::(\d+))?$/.exec(value) ?? /^([^:\s]+):(\d+)$/.exec(value);
+  if (!match) {
+    if (/^[^:]*:[^:]*$/.test(value)) throw new StoreError(`"${value}": the port after ":" must be a number`);
+    return { address: value, port: null };
+  }
+  const port = match[2] === undefined ? null : Number(match[2]);
+  if (port !== null && (port < 1 || port > 65535))
+    throw new StoreError(`"${value}": port ${port} is out of range (1–65535)`);
+  return { address: match[1]!, port };
+}
+
+/** The address as people type it back: "host", "host:2026", "[fe80::1]:2026". */
+export const joinAddress = (address: string, port: number | null): string =>
+  port === null ? address : `${address.includes(':') ? `[${address}]` : address}:${port}`;
+
 export class FleetStore {
   private readonly db: Db;
   private readonly sealer: Sealer;
@@ -271,7 +292,11 @@ export class FleetStore {
   createHost(input: HostInput): HostRecord {
     const name = input.name.trim();
     if (!NAME.test(name)) throw new StoreError(`"${name}" is not a host name (letters, digits, . _ -)`);
-    if (input.address.trim() === '') throw new StoreError('a host needs an address');
+    const { address, port } =
+      input.port === undefined
+        ? splitAddress(input.address)
+        : { address: input.address.trim(), port: input.port };
+    if (address === '') throw new StoreError('a host needs an address');
     this.checkSite(input.siteId);
     if (input.profileId != null) this.checkProfile(input.profileId, input.kind);
     if (this.db.select().from(schema.hosts).where(eq(schema.hosts.name, name)).get())
@@ -280,8 +305,8 @@ export class FleetStore {
       .insert(schema.hosts)
       .values({
         name,
-        address: input.address.trim(),
-        port: input.port ?? null,
+        address,
+        port,
         kind: input.kind,
         boardId: input.siteId,
         accessProfileId: input.profileId ?? null,
@@ -292,11 +317,13 @@ export class FleetStore {
     return this.hosts().find((h) => h.id === row.id)!;
   }
 
-  setAddress(id: number, address: string): void {
-    if (address.trim() === '') throw new StoreError('a host needs an address');
+  /** "host" or "host:port" (see splitAddress); an address without a port goes back to the default port. */
+  setAddress(id: number, text: string): void {
+    const { address, port } = splitAddress(text);
+    if (address === '') throw new StoreError('a host needs an address');
     const result = this.db
       .update(schema.hosts)
-      .set({ address: address.trim(), updatedAt: new Date().toISOString() })
+      .set({ address, port, updatedAt: new Date().toISOString() })
       .where(eq(schema.hosts.id, id))
       .run();
     if (result.changes === 0) throw new StoreError(`no host ${id}`);

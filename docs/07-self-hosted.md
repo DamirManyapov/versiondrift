@@ -253,7 +253,7 @@ SNMP, with read-only credentials shared by many hosts. Nothing about hosts leave
 |---|---|---|
 | Site | name | free grouping of hosts ("Moscow DC", "Branch 2"); filters every view |
 | Access profile | name, kind (`ssh-linux`, `windows`, `routeros`, `proxmox`: the detector it serves), user, secret (sealed) | one profile for many hosts; the secret is write-only in the UI |
-| Host | name, address, port?, site, access profile, detectors, last poll, last error | added by hand or from a CSV (`name,address,site,profile`) |
+| Host | name, address, port?, site, access profile, detectors, last poll, last error | added by hand or from a CSV (`name,address,site,profile`); a non-standard port is typed with the address (`10.0.0.5:2026`, `[fe80::1]:2026`), none means the detector's default (SSH 22, Proxmox 8006/8007) |
 | Instance | product, version, track, host?, source (`detector` / `manual` / `import`) | detected instances update on every poll; manual ones stay as typed |
 | Poll | host, time, result (`ok` / `unreachable` / `auth-failed` / `unknown`), changes | history: "srv-03: Debian 12.11 → 12.12" |
 

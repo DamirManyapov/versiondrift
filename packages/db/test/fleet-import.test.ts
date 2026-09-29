@@ -68,6 +68,22 @@ describe('host import', () => {
     expect(s.fleet.hosts().find((h) => h.name === 'msk-app-01')!.address).toBe('10.10.1.99');
   });
 
+  it('takes a port with the address; a changed port is an address change', () => {
+    const s = storage();
+    applyImport(s, planImport(s, importRows('srv-01,10.0.0.1:2026,"Москва, ЦОД",Linux SSH')));
+    expect(s.fleet.hosts()[0]).toMatchObject({ address: '10.0.0.1', port: 2026 });
+    const plan = planImport(
+      s,
+      importRows('srv-01,10.0.0.1:2026,"Москва, ЦОД",Linux SSH\nsrv-02,10.0.0.2:ssh,Lab,Linux SSH'),
+    );
+    expect(plan.map((r) => r.result)).toEqual(['unchanged', 'error']);
+    expect(plan[1]!.reason).toMatch(/port .* must be a number/);
+    const [changed] = planImport(s, importRows('srv-01,10.0.0.1,"Москва, ЦОД",Linux SSH'));
+    expect(changed).toMatchObject({ result: 'update', changes: ['address'] });
+    applyImport(s, [changed!]);
+    expect(s.fleet.hosts()[0]).toMatchObject({ address: '10.0.0.1', port: null });
+  });
+
   it('refuses a profile of another kind than the host', () => {
     const s = storage();
     applyImport(s, planImport(s, importRows('srv-01,10.0.0.1,"Москва, ЦОД",Linux SSH')));
