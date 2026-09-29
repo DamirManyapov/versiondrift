@@ -29,6 +29,7 @@ export function pollLabel(t: Translate, state: PollState): string {
   if (state === 'auth-failed') return t('chipNoAccess');
   if (state === 'unreachable') return t('chipNoConnection');
   if (state === 'unknown') return t('chipUnknown');
+  if (state === 'none') return t('chipNotPolled');
   return t('chipPending');
 }
 

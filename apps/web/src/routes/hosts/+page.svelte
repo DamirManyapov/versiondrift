@@ -10,6 +10,7 @@
   import FleetChip from '$lib/components/fleet/FleetChip.svelte';
   import { productCache } from '$lib/board/products.svelte';
   import { feed } from '$lib/feed/state.svelte';
+  import { fleetApi } from '$lib/fleet/api';
   import { dateTime, hostAddress, hostLabel, pollSummary, summaryText } from '$lib/fleet/labels';
   import { fleetProductIds, fleetView, type FleetHostView } from '$lib/fleet/model';
   import { fleet, pollNow, siteFrom } from '$lib/fleet/state.svelte';
@@ -91,6 +92,20 @@
       toast = (error as Error).message;
     } finally {
       polling = false;
+    }
+  }
+
+  let confirmingDelete = $state(false);
+  async function deleteSelected() {
+    const n = selected.length;
+    try {
+      await fleetApi.deleteHosts(selected);
+      selected = [];
+      confirmingDelete = false;
+      await fleet.load();
+      toast = t('hostsDeleted', { n });
+    } catch (error) {
+      toast = (error as Error).message;
     }
   }
 
@@ -209,7 +224,16 @@
       <button class="primary" onclick={() => void pollSelected()} disabled={polling}
         >{polling ? t('polling') : t('pollNow')}</button
       >
-      <button onclick={() => (selected = [])}>{t('clearSelection')}</button>
+      {#if canEdit}
+        {#if confirmingDelete}
+          <span>{t('confirmDeleteHosts', { n: selected.length })}</span>
+          <button class="danger" onclick={() => void deleteSelected()}>{t('deleteSelected')}</button>
+          <button onclick={() => (confirmingDelete = false)}>{t('cancel')}</button>
+        {:else}
+          <button class="danger" onclick={() => (confirmingDelete = true)}>{t('deleteSelected')}</button>
+        {/if}
+      {/if}
+      <button onclick={() => ((selected = []), (confirmingDelete = false))}>{t('clearSelection')}</button>
     </div>
   {/if}
 
@@ -456,6 +480,10 @@
     border-radius: 8px;
     border: 1px solid var(--border-strong);
     color: var(--text-soft);
+  }
+  .bulk .danger {
+    color: var(--critical);
+    border-color: var(--critical-border);
   }
   .bulk .primary {
     background: var(--text);

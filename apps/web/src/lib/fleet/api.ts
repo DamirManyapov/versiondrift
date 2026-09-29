@@ -112,6 +112,7 @@ export const fleetApi = {
   /** Address ("10.0.0.5:2026"), site or profile from the host card; a new address or profile is checked at once. */
   updateHost: (id: number, input: { address?: string; siteId?: number; profileId?: number | null }) =>
     patch<{ host: HostRecord; job?: PollJob }>(`/api/hosts/${id}`, input),
+  deleteHosts: (ids: number[]) => send('/api/hosts', 'DELETE', { ids }),
   planImport: (csv: string) => postText<{ rows: ImportPlanRow[] }>('/api/hosts/import?dryRun=1', csv),
   runImport: (csv: string) =>
     postText<{ rows: ImportPlanRow[]; created: number; updated: number; job?: PollJob }>(

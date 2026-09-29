@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { attempt, body, json } from '$lib/server/api';
+import { attempt, body, json, noContent } from '$lib/server/api';
 import { startPoll } from '$lib/server/poller';
 import { selfHostedStorage } from '$lib/server/storage';
 import type { RequestHandler } from './$types';
@@ -33,4 +33,14 @@ export const POST: RequestHandler = async ({ request }) => {
   );
   const job = profileId === null ? undefined : startPoll([host.id]);
   return json({ host, ...(job && { job }) }, { status: 201 });
+};
+
+/** Deletes hosts `{ ids }` with the versions found on them and their history. */
+export const DELETE: RequestHandler = async ({ request }) => {
+  const { fleet } = selfHostedStorage();
+  const { ids } = (await body(request)) as { ids?: unknown };
+  if (!Array.isArray(ids) || !ids.every((id) => Number.isInteger(id)))
+    error(400, 'Expected { ids: [host ids] }');
+  fleet.deleteHosts(ids as number[]);
+  return noContent();
 };

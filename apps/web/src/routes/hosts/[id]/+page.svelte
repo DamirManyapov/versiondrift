@@ -2,6 +2,7 @@
   // Host card (docs/specs/fleet-ui.md §5.C): status, where it is and how it's reached, the poll problem explained,
   // the products found on it and its history.
   import { pollBroken } from '@versiondrift/core';
+  import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import Meta from '$lib/components/Meta.svelte';
@@ -78,6 +79,18 @@
     editProblem = '';
     editing = true;
   }
+  let confirmingDelete = $state(false);
+  async function deleteHost() {
+    if (!host) return;
+    try {
+      await fleetApi.deleteHosts([Number(host.id)]);
+      await fleet.load();
+      await goto(resolve('/hosts'));
+    } catch (error) {
+      toast = (error as Error).message;
+    }
+  }
+
   async function saveEdit(event: SubmitEvent) {
     event.preventDefault();
     if (!host) return;
@@ -200,8 +213,19 @@
       {#if canEdit && !editing}
         <button class="button" onclick={startEdit}>{t('editHost')}</button>
       {/if}
+      {#if canEdit && !confirmingDelete}
+        <button class="button danger" onclick={() => (confirmingDelete = true)}>{t('deleteHost')}</button>
+      {/if}
     </div>
   </header>
+
+  {#if confirmingDelete}
+    <div class="confirm" role="alert">
+      <span>{t('confirmDeleteHost', { host: host.record.name })}</span>
+      <button class="button danger" onclick={() => void deleteHost()}>{t('deleteHost')}</button>
+      <button class="button" onclick={() => (confirmingDelete = false)}>{t('cancel')}</button>
+    </div>
+  {/if}
 
   {#if editing}
     <form class="edit" onsubmit={saveEdit} aria-label={t('editHost')}>
@@ -384,6 +408,23 @@
     border: 1px solid var(--border-strong);
     color: var(--text-soft);
     text-decoration: none;
+  }
+  .danger {
+    color: var(--critical);
+    border-color: var(--critical-border);
+  }
+  .confirm {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border: 1px solid var(--critical-border);
+    border-radius: 12px;
+  }
+  .confirm span {
+    flex: 1;
   }
   .edit {
     display: grid;
