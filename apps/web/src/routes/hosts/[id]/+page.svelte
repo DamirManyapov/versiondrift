@@ -11,7 +11,7 @@
   import { fleetApi, type HostEvent } from '$lib/fleet/api';
   import { dateTime, hostAddress, hostLabel, instanceLabel, pollSummary } from '$lib/fleet/labels';
   import { fleetProductIds, fleetView } from '$lib/fleet/model';
-  import { fleet, pollNow } from '$lib/fleet/state.svelte';
+  import { fleet, followJob, pollNow } from '$lib/fleet/state.svelte';
   import Toast from '$lib/components/Toast.svelte';
   import { i18n } from '$lib/i18n/context';
   import { isMessageKey, type MessageKey } from '$lib/i18n';
@@ -60,6 +60,52 @@
     await poll();
   }
   const canPoll = $derived(host?.record.profileId !== null && page.data.account?.role !== 'viewer');
+
+  // Editing: address (with a port), site, profile of the same kind.
+  const canEdit = $derived(page.data.account?.role !== 'viewer');
+  const kindProfiles = $derived(fleet.data?.profiles.filter((p) => p.kind === host?.record.kind) ?? []);
+  let editing = $state(false);
+  let saving = $state(false);
+  let editProblem = $state('');
+  let edit = $state({ address: '', site: '', profile: '' });
+  function startEdit() {
+    if (!host) return;
+    edit = {
+      address: hostAddress(host.record),
+      site: String(host.record.siteId),
+      profile: host.record.profileId === null ? '' : String(host.record.profileId),
+    };
+    editProblem = '';
+    editing = true;
+  }
+  async function saveEdit(event: SubmitEvent) {
+    event.preventDefault();
+    if (!host) return;
+    const hostId = Number(host.id);
+    saving = true;
+    editProblem = '';
+    try {
+      const { job } = await fleetApi.updateHost(hostId, {
+        address: edit.address,
+        siteId: Number(edit.site),
+        profileId: edit.profile === '' ? null : Number(edit.profile),
+      });
+      editing = false;
+      if (job) {
+        polling = true;
+        toast = pollSummary(t, await followJob(job));
+      } else {
+        await fleet.load();
+        toast = t('hostSaved');
+      }
+      await loadEvents(hostId);
+    } catch (error) {
+      editProblem = (error as Error).message;
+    } finally {
+      saving = false;
+      polling = false;
+    }
+  }
 
   const broken = $derived(host ? pollBroken(host.poll.state) : false);
   const nameOf = (productId: string) => feed.index?.products[productId]?.name ?? productId;
@@ -151,8 +197,41 @@
           >{polling ? t('polling') : t('pollNow')}</button
         >
       {/if}
+      {#if canEdit && !editing}
+        <button class="button" onclick={startEdit}>{t('editHost')}</button>
+      {/if}
     </div>
   </header>
+
+  {#if editing}
+    <form class="edit" onsubmit={saveEdit} aria-label={t('editHost')}>
+      <label
+        >{t('fieldAddress')}
+        <input bind:value={edit.address} required class="mono" />
+        <small>{t('addressHint')}</small>
+      </label>
+      <label
+        >{t('siteLabel')}
+        <select bind:value={edit.site}>
+          {#each fleet.data?.sites ?? [] as s (s.id)}<option value={String(s.id)}>{s.name}</option>{/each}
+        </select>
+      </label>
+      <label
+        >{t('hostProfile')}
+        <select bind:value={edit.profile}>
+          {#each kindProfiles as p (p.id)}<option value={String(p.id)}>{p.name}</option>{/each}
+          <option value="">{t('noProfileOption')}</option>
+        </select>
+      </label>
+      <div class="actions">
+        <button class="primary" type="submit" disabled={saving}
+          >{saving ? t('polling') : t('saveAndCheck')}</button
+        >
+        <button class="button" type="button" onclick={() => (editing = false)}>{t('cancel')}</button>
+      </div>
+      {#if editProblem}<p class="error" role="alert">{editProblem}</p>{/if}
+    </form>
+  {/if}
 
   {#if broken || host.poll.state === 'unknown'}
     <section class="problem" aria-labelledby="problem-title">
@@ -160,7 +239,11 @@
       <p>{explanation}</p>
       {#if host.record.poll.errorMessage}<p class="detail mono">{host.record.poll.errorMessage}</p>{/if}
       <p class="muted">
-        {host.status.status === 'critical' ? t('lastKnownCritical') : t('lastKnown', { when: lastSuccess })}
+        {host.status.status === 'critical'
+          ? t('lastKnownCritical')
+          : lastSuccess
+            ? t('lastKnown', { when: lastSuccess })
+            : t('noSuccessYet')}
       </p>
       {#if profile && host.poll.state === 'auth-failed'}
         <a class="button" href={resolve('/access-profiles')}>{t('openProfile')}</a>
@@ -301,6 +384,49 @@
     border: 1px solid var(--border-strong);
     color: var(--text-soft);
     text-decoration: none;
+  }
+  .edit {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    padding: 16px 18px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+  .edit label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .edit input,
+  .edit select {
+    font: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 7px 10px;
+  }
+  .edit .mono {
+    font-family: var(--font-mono);
+  }
+  .edit small {
+    font-size: 12px;
+  }
+  .edit .actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+  }
+  .edit .error {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--critical);
   }
   .table-wrap {
     overflow-x: auto;

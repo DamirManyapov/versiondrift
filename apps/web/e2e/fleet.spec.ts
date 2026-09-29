@@ -111,3 +111,14 @@ test('a new access profile: type, instructions to copy, details, test on a host'
     page.getByText(/restrict,command="\/usr\/local\/bin\/versiondrift-inventory" ssh-ed25519 AAAA/),
   ).toBeVisible();
 });
+
+test('a host card edits the address with a port and checks the host again', async ({ page }) => {
+  await page.goto('/hosts');
+  await page.getByRole('link', { name: 'kzn-fs-01' }).click();
+  await page.getByRole('button', { name: 'Edit' }).click();
+  const form = page.getByRole('form', { name: 'Edit' });
+  await form.getByLabel('Address').fill('10.20.2.99:2026');
+  await form.getByRole('button', { name: 'Save and check the connection' }).click();
+  await expect(form).toBeHidden();
+  await expect(page.locator('dd', { hasText: '10.20.2.99:2026' })).toBeVisible();
+});

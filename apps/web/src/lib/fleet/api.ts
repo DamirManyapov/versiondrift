@@ -66,6 +66,19 @@ async function postText<T>(url: string, text: string): Promise<T> {
   return (await response.json()) as T;
 }
 
+async function patch<T>(url: string, data: unknown): Promise<T> {
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message ?? `${url}: HTTP ${response.status}`);
+  }
+  return (await response.json()) as T;
+}
+
 async function send(url: string, method: 'PATCH' | 'DELETE', data?: unknown): Promise<void> {
   const response = await fetch(url, {
     method,
@@ -96,6 +109,9 @@ export const fleetApi = {
     profileId: number | null;
     kind?: string;
   }) => post<{ host: HostRecord; job?: PollJob }>('/api/hosts', input),
+  /** Address ("10.0.0.5:2026"), site or profile from the host card; a new address or profile is checked at once. */
+  updateHost: (id: number, input: { address?: string; siteId?: number; profileId?: number | null }) =>
+    patch<{ host: HostRecord; job?: PollJob }>(`/api/hosts/${id}`, input),
   planImport: (csv: string) => postText<{ rows: ImportPlanRow[] }>('/api/hosts/import?dryRun=1', csv),
   runImport: (csv: string) =>
     postText<{ rows: ImportPlanRow[]; created: number; updated: number; job?: PollJob }>(

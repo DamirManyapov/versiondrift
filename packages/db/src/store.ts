@@ -198,11 +198,13 @@ export function openStorage(file: string, options: { secret?: string | Buffer } 
   migrate(sqlite);
   const db = drizzle(sqlite, { schema });
   const sealer = createSealer(options.secret ?? randomBytes(32));
+  const fleet = new FleetStore(db, sealer);
+  fleet.normalizeAddresses();
   return {
     store: new BoardStore(db),
     auth: new AuthStore(db),
     channels: new ChannelStore(db, sealer),
-    fleet: new FleetStore(db, sealer),
+    fleet,
     db,
     close: () => sqlite.close(),
   };

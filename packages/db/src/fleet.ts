@@ -317,16 +317,51 @@ export class FleetStore {
     return this.hosts().find((h) => h.id === row.id)!;
   }
 
-  /** "host" or "host:port" (see splitAddress); an address without a port goes back to the default port. */
+  /**
+   * "host" or "host:port" (see splitAddress); an address without a port goes back to the default port. A new address
+   * is another machine as far as pins go: the host key and certificate are pinned again, and the host waits for its
+   * next poll instead of showing the old address's problem.
+   */
   setAddress(id: number, text: string): void {
     const { address, port } = splitAddress(text);
     if (address === '') throw new StoreError('a host needs an address');
-    const result = this.db
+    const host = this.db.select().from(schema.hosts).where(eq(schema.hosts.id, id)).get();
+    if (!host) throw new StoreError(`no host ${id}`);
+    if (host.address === address && host.port === port) return;
+    this.db
       .update(schema.hosts)
-      .set({ address, port, updatedAt: new Date().toISOString() })
+      .set({
+        address,
+        port,
+        hostKey: null,
+        tlsFingerprint: null,
+        updatedAt: new Date().toISOString(),
+        ...(host.accessProfileId !== null && {
+          pollState: 'pending' as const,
+          pollSince: null,
+          pollErrorCode: null,
+          pollErrorMessage: null,
+        }),
+      })
       .where(eq(schema.hosts.id, id))
       .run();
-    if (result.changes === 0) throw new StoreError(`no host ${id}`);
+  }
+
+  /** Hosts added before ports were parsed kept "10.0.0.5:2026" as the address: split them (run at start). */
+  normalizeAddresses(): number {
+    let fixed = 0;
+    for (const host of this.db.select().from(schema.hosts).all()) {
+      if (host.port !== null || !host.address.includes(':')) continue;
+      try {
+        const parts = splitAddress(host.address);
+        if (parts.port === null) continue;
+        this.setAddress(host.id, host.address);
+        fixed++;
+      } catch {
+        // An address that doesn't parse stays as it is; the poll reports it.
+      }
+    }
+    return fixed;
   }
 
   /** Forgets the pinned host key and certificate (a host was reinstalled): the next contact pins them again. */

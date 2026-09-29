@@ -1,9 +1,11 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 import {
   joinAddress,
   openStorage,
+  schema,
   seedFleetDemo,
   splitAddress,
   type FleetDemo,
@@ -172,6 +174,36 @@ describe('FleetStore', () => {
     expect(() =>
       storage.fleet.createHost({ name: 'p-1', address: 'x:70000', kind: 'ssh-linux', siteId: site }),
     ).toThrow(/out of range/);
+  });
+});
+
+describe('host address changes', () => {
+  it('re-reads an address stored with its port; a new address forgets the pins and the old problem', () => {
+    const storage = seeded();
+    const { id } = byName(storage, 'msk-app-01');
+    storage.db
+      .update(schema.hosts)
+      .set({
+        address: '10.20.30.40:2026',
+        port: null,
+        hostKey: 'ssh-ed25519 AAAA',
+        pollState: 'unreachable',
+      })
+      .where(eq(schema.hosts.id, id))
+      .run();
+    expect(storage.fleet.normalizeAddresses()).toBe(1);
+    expect(byName(storage, 'msk-app-01')).toMatchObject({
+      address: '10.20.30.40',
+      port: 2026,
+      pins: { hostKey: null },
+      poll: { state: 'pending', errorCode: null },
+    });
+    expect(storage.fleet.normalizeAddresses()).toBe(0);
+
+    // The same address again changes nothing (the pins stay).
+    storage.db.update(schema.hosts).set({ hostKey: 'ssh-ed25519 BBBB' }).where(eq(schema.hosts.id, id)).run();
+    storage.fleet.setAddress(id, '10.20.30.40:2026');
+    expect(byName(storage, 'msk-app-01').pins.hostKey).toBe('ssh-ed25519 BBBB');
   });
 });
 
