@@ -1,3 +1,4 @@
+export { BUNDLE_NAME, importBundle, packBundle, packTar, unpackTar, type ImportOptions } from './bundle.ts';
 export {
   generateSigningKey,
   keyIdHex,

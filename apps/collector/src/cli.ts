@@ -4,6 +4,7 @@ import { access, chmod, mkdir, readdir, readFile, writeFile } from 'node:fs/prom
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { createFetcher } from '@versiondrift/adapters';
+import { BUNDLE_NAME, packBundle } from '@versiondrift/feed';
 import { FeedIndex, Health, validateModules } from '@versiondrift/schema';
 import { Command } from 'commander';
 import { githubIssues, syncModuleIssues } from './issues.ts';
@@ -97,6 +98,17 @@ program
       ...(published && { published }),
       log,
     });
+  });
+
+program
+  .command('bundle')
+  .description('pack a signed feed directory (after publish) into the offline package (docs/07)')
+  .option('--dir <dir>', 'feed directory', '.feed')
+  .option('--out <file>', 'package file', BUNDLE_NAME)
+  .action(async (opts: { dir: string; out: string }) => {
+    const { bytes, generatedAt } = await packBundle(path.resolve(opts.dir));
+    await writeFile(opts.out, bytes);
+    log.info(`${opts.out}: feed of ${generatedAt}, ${(bytes.length / 1024 / 1024).toFixed(1)} MB`);
   });
 
 program

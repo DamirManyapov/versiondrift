@@ -3,14 +3,15 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import type { Logger } from '@versiondrift/adapters';
+import { BUNDLE_NAME, packBundle } from '@versiondrift/feed';
 import type { FeedIndex } from '@versiondrift/schema';
 import { sha256 } from './build.ts';
 import { signFile, type SigningKey } from './minisign.ts';
 import type { R2Bucket } from './r2.ts';
 
-/** Index, signature and health change every run; everything else is also reachable through versioned URLs. */
+/** Index, signature, health and the offline package change every run; the rest is also reachable through versioned URLs. */
 export function cacheControlFor(key: string): string {
-  return /(^|\/)(index\.json(\.minisig)?|health\.json)$/.test(key)
+  return /(^|\/)(index\.json(\.minisig)?|health\.json|versiondrift-feed\.tar\.gz)$/.test(key)
     ? 'public, max-age=300, stale-while-revalidate=3600'
     : 'public, max-age=3600, stale-while-revalidate=86400';
 }
@@ -87,6 +88,13 @@ export async function publishFeed(
   });
   uploaded.push('v1/index.json.minisig');
   await upload('v1/index.json', indexBytes);
+  // The offline package (docs/07): the same signed files as one download, after the index it carries.
+  const bundle = await packBundle(options.dir);
+  await options.bucket.put(BUNDLE_NAME, bundle.bytes, {
+    contentType: 'application/gzip',
+    cacheControl: cacheControlFor(BUNDLE_NAME),
+  });
+  uploaded.push(BUNDLE_NAME);
   options.log.info(`published ${uploaded.length} files (${skipped.length} unchanged product files skipped)`);
   return { uploaded, skipped };
 }

@@ -63,3 +63,15 @@ test('settings offer boards and notification channels; the feed copy is served l
   expect(index.headers()['access-control-allow-origin']).toBe('*');
   expect((await request.get('/', { maxRedirects: 0 })).headers()['x-robots-tag']).toBe('noindex, nofollow');
 });
+
+test('settings → feed: an upload that is not a feed package is refused with the reason', async ({ page }) => {
+  await page.goto('/settings');
+  const section = page.locator('section', { has: page.getByRole('heading', { name: 'Feed' }) });
+  await expect(section.getByRole('button', { name: 'Check for updates' })).toBeVisible();
+  await section.getByLabel('Upload an offline package…').setInputFiles({
+    name: 'versiondrift-feed.tar.gz',
+    mimeType: 'application/gzip',
+    buffer: Buffer.from('not a package'),
+  });
+  await expect(section.getByRole('alert')).toContainText('not a VersionDrift feed package');
+});

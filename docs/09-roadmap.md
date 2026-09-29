@@ -100,6 +100,10 @@ Goal: red tiles are real.
   in-process) — deferred, see docs/07.
 - S5-T5 ✅ Notifications: Telegram, e-mail, ntfy, Gotify, webhook; rules (per-channel subscriptions); weekly digest.
 - S5-T6 ✅ `inventory.yaml` watch/import; docs for compose + reverse proxy.
+- S5-T7 ✅ Offline feed package (docs/07, docs/12 #7): the collector publishes `versiondrift-feed.tar.gz` with the
+  feed, every instance serves its copy as one; import through Settings → Feed or the `feed-import/` folder with the
+  sync's checks, never older than the current feed; `VD_FEED_URL=off` for instances without Internet access.
+  Still open from #7: a mirror in Russia, the image outside ghcr.io.
 
 ## S6 — Detection (self-hosted, ADR-0007)
 

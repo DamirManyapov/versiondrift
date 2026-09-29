@@ -15,6 +15,7 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 | `v1/health.json` | | per-module collection status (for the status page and module maintainers) |
 | `v1/week/<isoYear>-W<isoWeek>.json` | | precomputed weekly digest across all products (for RSS / SEO / "This week") |
 | `v1/versions.json` | small | since 1.2: per product the 20 newest stable releases, the newest release of each lifecycle branch and whether the notes have items (sitemap, links) |
+| `versiondrift-feed.tar.gz` | ~4 MB | the offline package: this `v1/` tree (signed index, every product, catalog, health, versions, weekly digests) plus a `README.txt`, as one ustar + gzip archive for instances without Internet access (docs/07) |
 
 ## `index.json`
 
@@ -144,6 +145,6 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 
 ## Caching
 
-`index.json`, `index.json.minisig` and `health.json` are served with `Cache-Control: public, max-age=300,
+`index.json`, `index.json.minisig`, `health.json` and `versiondrift-feed.tar.gz` are served with `Cache-Control: public, max-age=300,
 stale-while-revalidate=3600`, everything else with `max-age=3600, stale-while-revalidate=86400`; R2 adds strong ETags.
 Clients must use conditional requests.

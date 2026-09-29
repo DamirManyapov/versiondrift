@@ -34,3 +34,5 @@
    is itself a mirror for others. Options: a second mirror in Russia (S3-compatible storage the collector also
    publishes to), an offline update bundle (one signed archive to download anywhere and import through the UI or a
    folder, for closed networks), and the image as a `docker save` archive or on a second registry.
+   **Decided 2026-09-29**: the offline package is built (S5-T7, docs/07 "Offline feed package"); the Russian mirror
+   and the image delivery stay open.

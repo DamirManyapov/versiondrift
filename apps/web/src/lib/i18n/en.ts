@@ -376,6 +376,23 @@ export const en = {
   mirrorNever: 'Not synced yet — the first sync runs at start and takes about 20 seconds.',
   mirrorVerified: 'signature checked',
   mirrorError: 'The last sync failed, the previous copy is in use: {message}',
+  feedTitle: 'Feed',
+  feedBuilt: 'Feed built {generated}: {n} products',
+  feedNone: 'No feed here yet. Without Internet access, upload an offline package.',
+  feedSourceNetwork: 'Updates come from {url} every day.',
+  feedLastCheck: ' Last check {at}.',
+  feedSourceOff: 'Network updates are off (VD_FEED_URL=off): the feed changes only through offline packages.',
+  feedCheckNow: 'Check for updates',
+  feedWorking: 'Working…',
+  feedUpload: 'Upload an offline package…',
+  feedDownload: 'Download as an offline package',
+  feedChecked: 'Check finished.',
+  feedImported: 'Package imported: the feed is from {generated}.',
+  feedAlreadyHere: 'This instance already has this feed.',
+  feedOfflineHelp:
+    'No Internet here? Download the package where there is: {url} (or /feed/versiondrift-feed.tar.gz of any VersionDrift instance), then upload it here or copy it into {dir}. Its signature is checked; a package older than the current feed is refused.',
+  feedMissingHint:
+    'No feed on this instance yet? Without Internet access, upload an offline package in Settings → Feed.',
   trackLine: 'Line',
   trackChannel: 'Update channel',
   // Fleet (self-hosted, docs/specs/fleet-ui.md)

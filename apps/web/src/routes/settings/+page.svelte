@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/state';
   import BoardsManager from '$lib/components/BoardsManager.svelte';
+  import FeedManager from '$lib/components/FeedManager.svelte';
   import NotificationsManager from '$lib/components/NotificationsManager.svelte';
   import { i18n } from '$lib/i18n/context';
   import { fromYaml, InventoryImportError, toYaml, type InventoryItem } from '$lib/inventory/model';
@@ -54,6 +55,7 @@
 
   {#if inventory.mode === 'selfhosted'}<BoardsManager />{/if}
   {#if inventory.mode === 'selfhosted' && page.data.account?.role !== 'viewer'}<NotificationsManager />{/if}
+  {#if inventory.mode === 'selfhosted'}<FeedManager />{/if}
 
   <section>
     <h2><label for="cvss">{t('settingsThreshold')}</label></h2>

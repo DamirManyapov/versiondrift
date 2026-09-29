@@ -24,7 +24,8 @@ ENV NODE_ENV=production \
     PORT=8080 \
     VD_MODE=selfhosted \
     VD_DATA_DIR=/data \
-    PUBLIC_FEED_URL=/feed/
+    PUBLIC_FEED_URL=/feed/ \
+    BODY_SIZE_LIMIT=32M
 WORKDIR /app
 COPY --from=build /out/package.json ./package.json
 COPY --from=build /out/node_modules ./node_modules

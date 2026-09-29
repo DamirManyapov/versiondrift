@@ -11,6 +11,7 @@ services:
       VD_AUTH: password # none (trusted LAN only) | password | oidc | header
       VD_ADMIN_PASSWORD: ${VD_ADMIN_PASSWORD:-} # first start only, 8+ characters; empty = generated and logged
       VD_TZ: ${VD_TZ:-UTC}
+      # VD_FEED_URL: 'off' # no Internet access: update the feed with offline packages (Settings → Feed)
       # VD_DEMO: '1' # try the fleet screens on the demo data (31 hosts)
     restart: unless-stopped
 

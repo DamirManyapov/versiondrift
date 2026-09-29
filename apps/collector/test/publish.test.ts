@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import type { Health, Module } from '@versiondrift/schema';
+import { unpackTar } from '@versiondrift/feed';
 import { describe, expect, it } from 'vitest';
 import { syncModuleIssues, type GitHubIssues } from '../src/issues.ts';
 import { generateSigningKey, parseSecret, publicKeyOf, signFile, verifyFile } from '../src/minisign.ts';
@@ -61,7 +62,7 @@ describe('publishFeed', () => {
   it('uploads products first and index last, signs the index, skips unchanged products', async () => {
     const unchanged = '{"id":"a"}';
     const dir = await feedDir({
-      'v1/index.json': '{"products":{}}',
+      'v1/index.json': '{"generatedAt":"2026-09-28T02:00:00Z","products":{}}',
       'v1/products/a.json': unchanged,
       'v1/products/b.json': '{"id":"b"}',
       'v1/catalog.json': '{}',
@@ -73,7 +74,7 @@ describe('publishFeed', () => {
 
     expect(result.skipped).toEqual(['v1/products/a.json']);
     expect(order[0]).toBe('v1/products/b.json');
-    expect(order.slice(-2)).toEqual(['v1/index.json.minisig', 'v1/index.json']);
+    expect(order.slice(-3)).toEqual(['v1/index.json.minisig', 'v1/index.json', 'versiondrift-feed.tar.gz']);
     const index = objects.get('v1/index.json')!;
     const sig = Buffer.from(objects.get('v1/index.json.minisig')!.body).toString();
     expect(verifyFile(Buffer.from(index.body), sig, publicKey)).toMatch(
@@ -84,6 +85,11 @@ describe('publishFeed', () => {
       cacheControl: cacheControlFor('v1/index.json'),
     });
     expect(await readFile(path.join(dir, 'v1/index.json.minisig'), 'utf8')).toBe(sig);
+    // The offline package holds every product (unchanged ones too) and the signed index.
+    const bundle = unpackTar(objects.get('versiondrift-feed.tar.gz')!.body);
+    expect(bundle.get('v1/index.json.minisig')?.toString()).toBe(sig);
+    expect(bundle.get('v1/index.json')).toEqual(Buffer.from(index.body));
+    expect(bundle.get('v1/products/a.json')?.toString()).toBe(unchanged);
   });
 
   it('refuses to publish without an index', async () => {

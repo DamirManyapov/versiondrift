@@ -135,6 +135,28 @@ The first sync downloads ~15 MB; later ones only what changed.
 Offline mode (`VD_OFFLINE`, running the collector inside the container instead of pulling the feed) is not
 implemented yet: it needs the collector and the modules in the image and outbound access to every vendor.
 
+## Offline feed package (S5-T7)
+
+For an instance that can't reach `feed.versiondrift.dev` (a closed network, a blocked region), the feed travels as one
+file, the way antivirus bases do: `versiondrift-feed.tar.gz` (~4 MB, ~21 MB unpacked), the signed `v1/` tree plus a
+`README.txt` (`packages/feed`, `packBundle` / `importBundle`).
+
+- **Where to get it**: `https://feed.versiondrift.dev/versiondrift-feed.tar.gz` (the collector publishes it with the
+  feed every day), or `/feed/versiondrift-feed.tar.gz` of any instance that has a feed (open like the rest of `/feed/`;
+  Settings → Feed → "Download as an offline package"), so one instance with Internet access can feed the others.
+- **How to import it**: Settings → Feed → "Upload an offline package" (admins; `POST /api/feed/import` with the file as
+  the body), or copy it into `${VD_DATA_DIR}/feed-import/` (`docker compose cp versiondrift-feed.tar.gz
+  versiondrift:/data/feed-import/`): the folder is checked every minute and at every sync, a file is taken once it
+  has not changed for 10 seconds and is renamed to `*.imported` or `*.refused` (the reason is in the log). A package
+  can also be unpacked on an internal web server and used as a mirror with `VD_FEED_URL`.
+- **Checks**: the same as a network sync (the minisign signature of `index.json`, the sha256 of every product file,
+  files replaced atomically, `index.json` last), and a package older than the feed the instance has is refused, so an
+  old package can't roll the feed back. Importing the feed the instance already has changes nothing.
+- **No network at all**: `VD_FEED_URL=off` turns the network sync off (no failing requests in the log); the feed then
+  changes only through packages. Until the first package, the board says that there is no feed yet and points to
+  Settings → Feed. Settings → Feed shows where updates come from, the feed's date, the last check and error, and
+  "Check for updates" (the folder, then the network).
+
 ## Auth (S5-T3)
 
 `VD_AUTH` picks how people sign in; everything except `/login`, `/auth/*` and `/healthz` needs a signed-in user
@@ -165,8 +187,9 @@ https without `ORIGIN`, which would refuse every form post on a plain-http LAN i
 | Var | Default | Meaning |
 |---|---|---|
 | `PORT` | 8080 | listening port (adapter-node); `HOST` defaults to `0.0.0.0` |
-| `VD_DATA_DIR` | /data | SQLite DB, cache, private modules |
-| `VD_FEED_URL` | https://feed.versiondrift.dev/ | public feed (the directory holding `v1/`; a URL ending in `/v1/` works too) |
+| `VD_DATA_DIR` | /data | SQLite DB, cache, private modules, `feed/` (the mirror), `feed-import/` (offline packages to import) |
+| `BODY_SIZE_LIMIT` | 32M in the image | largest request body (adapter-node); an offline package is ~4 MB |
+| `VD_FEED_URL` | https://feed.versiondrift.dev/ | public feed (the directory holding `v1/`; a URL ending in `/v1/` works too); `off`: no network sync, offline packages only |
 | `VD_FEED_PUBKEY` | baked-in | minisign public key (`keys/feed.pub`) |
 | `VD_FEED_SYNC` | `0 3 * * *` | cron for the feed sync (the public feed is rebuilt at 02:00 UTC); also runs at start |
 | `VD_TZ` | UTC | time zone for `VD_FEED_SYNC` |

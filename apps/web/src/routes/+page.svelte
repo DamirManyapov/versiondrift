@@ -53,6 +53,9 @@
 
   {#if feed.error}
     <p role="alert" class="error">{t('feedError', { message: feed.error })}</p>
+    {#if inventory.mode === 'selfhosted'}
+      <p class="muted"><a href={resolve('/settings')}>{t('feedMissingHint')}</a></p>
+    {/if}
   {:else if !inventory.loaded}
     <p class="muted">{t('loading')}</p>
   {:else if inventory.data.items.length === 0}
