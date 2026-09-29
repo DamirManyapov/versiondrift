@@ -11,6 +11,7 @@
   import { inventory } from '$lib/inventory/state.svelte';
   import AddHosts from '$lib/components/fleet/AddHosts.svelte';
   import SiteSwitcher from '$lib/components/fleet/SiteSwitcher.svelte';
+  import UserMenu from '$lib/components/UserMenu.svelte';
   import { goto } from '$app/navigation';
   import { clockTime } from '$lib/fleet/labels';
   import { fleet, siteFrom } from '$lib/fleet/state.svelte';
@@ -145,12 +146,11 @@
       </a>
     {/if}
     {#if data.account && data.account.auth !== 'none'}
-      <a class="user" href={resolve('/account')}>{data.account.name}</a>
-      {#if data.account.auth === 'password' || data.account.auth === 'oidc'}
-        <form method="POST" action="/logout" data-sveltekit-reload>
-          <button class="ghost" type="submit">{t('signOut')}</button>
-        </form>
-      {/if}
+      <UserMenu
+        name={data.account.name}
+        role={data.account.role}
+        canSignOut={data.account.auth === 'password' || data.account.auth === 'oidc'}
+      />
     {/if}
   </header>
 
@@ -191,10 +191,6 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-  }
-  .user {
-    font-size: 13px;
-    color: var(--text-soft);
   }
   header {
     min-height: 72px;

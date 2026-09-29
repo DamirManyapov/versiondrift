@@ -290,6 +290,9 @@ export const en = {
   signInOidc: 'Sign in with single sign-on',
   signInHeader:
     'Sign-in is handled by your reverse proxy, which must send the “{header}” header. It did not.',
+  userMenu: 'Account menu: {name}',
+  roleAdmin: 'Administrator',
+  roleViewer: 'Viewer: can look, not change',
   signOut: 'Sign out',
   accountTitle: 'Account',
   accountRole: 'Role: {role}',
