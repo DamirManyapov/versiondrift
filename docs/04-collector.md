@@ -169,7 +169,8 @@ matching security item get a synthetic item `"Fixes CVE-…"` on the fixing rele
 - `collect.yml`: cron `0 2 * * *` + `workflow_dispatch` (inputs: `only` ids, `force`). Timeout 30 min. Concurrency group
   `collect`. Steps: `pnpm collector state-pull` (HTTP cache from the private bucket) → `pnpm collect` →
   `pnpm collector publish` (sign + upload via the R2 REST API: products first, unchanged ones skipped, then
-  signature and index, then the offline package `versiondrift-feed.tar.gz` packed from the same files; locally
+  signature and index, then the offline package `versiondrift-feed.tar.gz` packed from the same files, a partial
+  (`--only`) run completing it with the other products from the published feed, each checked against the index; locally
   `pnpm collector bundle --dir .feed` packs a signed feed directory) → `state-push` → `pnpm collector issues` (opens "Module X is failing" with label
   `module-broken` after 3 consecutive failures, closes it on recovery) → the built feed as an artifact.
 - `module-pr.yml`: on PRs touching `products/**` (`pull_request_target`: workflow and collector from `main`, only the

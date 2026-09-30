@@ -33,6 +33,8 @@ export interface PublishOptions {
   key: SigningKey;
   /** The currently published index: unchanged product files are not uploaded again. */
   published?: FeedIndex;
+  /** A published product file (path under v1/), to complete the offline package after a partial run. */
+  fetchPublished?: (file: string) => Promise<string>;
   log: Pick<Logger, 'info'>;
   now?: Date;
 }
@@ -88,13 +90,21 @@ export async function publishFeed(
   });
   uploaded.push('v1/index.json.minisig');
   await upload('v1/index.json', indexBytes);
-  // The offline package (docs/07): the same signed files as one download, after the index it carries.
-  const bundle = await packBundle(options.dir);
-  await options.bucket.put(BUNDLE_NAME, bundle.bytes, {
-    contentType: 'application/gzip',
-    cacheControl: cacheControlFor(BUNDLE_NAME),
-  });
-  uploaded.push(BUNDLE_NAME);
+  // The offline package (docs/07): the same signed files as one download, after the index it carries. A partial run
+  // (--only) has only its own products here; the others come from the published feed. When the package can't be
+  // made complete, the previous one stays: an incomplete package would only be refused by the instances.
+  try {
+    const bundle = await packBundle(options.dir, {
+      ...(options.fetchPublished && { fetchMissing: options.fetchPublished }),
+    });
+    await options.bucket.put(BUNDLE_NAME, bundle.bytes, {
+      contentType: 'application/gzip',
+      cacheControl: cacheControlFor(BUNDLE_NAME),
+    });
+    uploaded.push(BUNDLE_NAME);
+  } catch (error) {
+    options.log.info(`offline package not updated: ${(error as Error).message}`);
+  }
   options.log.info(`published ${uploaded.length} files (${skipped.length} unchanged product files skipped)`);
   return { uploaded, skipped };
 }

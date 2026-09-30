@@ -92,6 +92,38 @@ describe('publishFeed', () => {
     expect(bundle.get('v1/products/a.json')?.toString()).toBe(unchanged);
   });
 
+  it('completes the offline package of a partial run from the published feed, or keeps the old one', async () => {
+    const n8n = '{"id":"n8n"}';
+    const grafana = '{"id":"grafana"}';
+    const index = JSON.stringify({
+      generatedAt: '2026-09-30T09:00:00Z',
+      products: { n8n: { sha256: sha256(n8n) }, grafana: { sha256: sha256(grafana) } },
+    });
+    const files = { 'v1/index.json': index, 'v1/products/n8n.json': n8n, 'v1/catalog.json': '{}' };
+    const complete = memoryBucket();
+    await publishFeed({
+      dir: await feedDir(files),
+      bucket: complete.bucket,
+      key,
+      fetchPublished: (file) => Promise.resolve(file === 'products/grafana.json' ? grafana : ''),
+      log: quiet,
+    });
+    const bundle = unpackTar(complete.objects.get('versiondrift-feed.tar.gz')!.body);
+    expect(bundle.get('v1/products/grafana.json')?.toString()).toBe(grafana);
+
+    const lines: string[] = [];
+    const partial = memoryBucket();
+    await publishFeed({
+      dir: await feedDir(files),
+      bucket: partial.bucket,
+      key,
+      log: { info: (l) => lines.push(l) },
+    });
+    expect(partial.objects.has('versiondrift-feed.tar.gz')).toBe(false);
+    expect(partial.objects.has('v1/index.json')).toBe(true);
+    expect(lines.join('\n')).toMatch(/offline package not updated: .*grafana.json is missing/);
+  });
+
   it('refuses to publish without an index', async () => {
     const dir = await feedDir({ 'v1/catalog.json': '{}' });
     await expect(publishFeed({ dir, bucket: memoryBucket().bucket, key, log: quiet })).rejects.toThrow(

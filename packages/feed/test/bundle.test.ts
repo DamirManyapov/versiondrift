@@ -95,6 +95,26 @@ describe('offline feed package', () => {
     expect(await readFile(path.join(instance, 'v1/products/nginx.json'), 'utf8')).toBe('{"v":2}');
   });
 
+  it('completes a partial run from the published feed, checking each file against the index', async () => {
+    const source = await feedDir('2026-09-30T09:00:00Z', { n8n: '{"v":1}', grafana: '{"v":7}' });
+    const { rm } = await import('node:fs/promises');
+    await rm(path.join(source, 'v1/products/grafana.json'));
+    await expect(packBundle(source)).rejects.toThrow(/products\/grafana.json is missing/);
+    const asked: string[] = [];
+    const { bytes } = await packBundle(source, {
+      fetchMissing: (file) => {
+        asked.push(file);
+        return Promise.resolve('{"v":7}');
+      },
+    });
+    expect(asked).toEqual(['products/grafana.json']);
+    expect(unpackTar(bytes).get('v1/products/grafana.json')?.toString()).toBe('{"v":7}');
+    expect(await importInto(await temp(), bytes)).toMatchObject({ changed: true, state: { products: 2 } });
+    await expect(packBundle(source, { fetchMissing: () => Promise.resolve('{"v":6}') })).rejects.toThrow(
+      /does not match the index/,
+    );
+  });
+
   it('refuses unsigned, forged and tampered packages and anything that is not one', async () => {
     const instance = await temp();
     const unsigned = await feedDir('2026-09-27T02:00:00Z', { grafana: '{"v":1}' }, false);

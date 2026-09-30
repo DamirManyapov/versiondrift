@@ -91,11 +91,14 @@ program
     } catch {
       log.info('no published index yet: uploading every file');
     }
+    const fetcher = createFetcher();
     await publishFeed({
       dir: path.resolve(opts.dir),
       bucket: bucket(opts.bucket),
       key: parseSecret(env('MINISIGN_SECRET_KEY')),
       ...(published && { published }),
+      fetchPublished: async (file) =>
+        (await fetcher.text(new URL(`v1/${file}`, DEFAULT_FEED).toString())).body,
       log,
     });
   });

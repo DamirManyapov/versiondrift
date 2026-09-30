@@ -7,7 +7,7 @@ import path from 'node:path';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { FeedIndex } from '@versiondrift/schema';
 import { verifyFile } from './minisign.ts';
-import { FEED_PUBLIC_KEY, readSyncState, syncFeed, type SyncResult } from './sync.ts';
+import { FEED_PUBLIC_KEY, readSyncState, sha256, syncFeed, type SyncResult } from './sync.ts';
 
 /** The package's file name next to the feed (feed.versiondrift.dev/…, an instance's /feed/…). */
 export const BUNDLE_NAME = 'versiondrift-feed.tar.gz';
@@ -118,14 +118,32 @@ export function unpackTar(archive: Uint8Array): Map<string, Buffer> {
   return files;
 }
 
-/** The package for a feed directory (the one holding v1/, with index.json.minisig): v1/ plus a README. */
-export async function packBundle(dir: string): Promise<{ bytes: Buffer; generatedAt: string }> {
+export interface PackOptions {
+  /**
+   * Product files the directory lacks, by path under v1/ ("products/grafana.json"): a partial collector run
+   * (`--only`) writes only its own products, the rest are already published. Each must match the index's sha256.
+   */
+  fetchMissing?: (file: string) => Promise<string>;
+}
+
+/**
+ * The package for a feed directory (the one holding v1/, with index.json.minisig): v1/ plus a README. Every product
+ * the index lists must be in it, from the directory or `fetchMissing`: an instance refuses a package without one.
+ */
+export async function packBundle(
+  dir: string,
+  options: PackOptions = {},
+): Promise<{ bytes: Buffer; generatedAt: string }> {
   const v1 = path.join(dir, 'v1');
   const indexText = await readFile(path.join(v1, 'index.json'), 'utf8').catch(() => {
     throw new Error(`${v1}/index.json not found`);
   });
-  // Only the date is needed here; the importing instance validates the index in full.
-  const { generatedAt } = JSON.parse(indexText) as { generatedAt?: unknown };
+  // Only the date and the product hashes are needed here; the importing instance validates the index in full.
+  const index = JSON.parse(indexText) as {
+    generatedAt?: unknown;
+    products?: Record<string, { sha256?: string }>;
+  };
+  const { generatedAt } = index;
   if (typeof generatedAt !== 'string') throw new Error(`${v1}/index.json has no generatedAt`);
   const names = (await listFiles(v1))
     .filter((f) => (f.endsWith('.json') || f === 'index.json.minisig') && f !== 'index.json')
@@ -133,6 +151,15 @@ export async function packBundle(dir: string): Promise<{ bytes: Buffer; generate
   if (!names.includes('index.json.minisig')) throw new Error(`${v1}/index.json is not signed`);
   const files: [string, Uint8Array | string][] = [['README.txt', README(generatedAt)]];
   for (const name of names) files.push([`v1/${name}`, await readFile(path.join(v1, name))]);
+  for (const [id, entry] of Object.entries(index.products ?? {}).sort(([a], [b]) => a.localeCompare(b))) {
+    const file = `products/${id}.json`;
+    if (names.includes(file)) continue;
+    if (!options.fetchMissing) throw new Error(`${v1}/${file} is missing`);
+    const text = await options.fetchMissing(file);
+    if (sha256(text) !== entry.sha256)
+      throw new Error(`${file}: the published file does not match the index`);
+    files.push([`v1/${file}`, text]);
+  }
   files.push(['v1/index.json', indexText]);
   return { bytes: packTar(files, new Date(generatedAt)), generatedAt };
 }
