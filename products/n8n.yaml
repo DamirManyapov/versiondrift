@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-09-30 at the owner's request; checked against the live sources. Tags are n8n@X.Y.Z; a new minor ships as
+# a GitHub pre-release (the "beta"/next channel) and becomes "stable" about a week later, so pre-releases are skipped.
+# The 1.x line still gets fixes (1.123.x) next to 2.x.
+id: n8n
+name: n8n
+vendor: n8n GmbH
+category: other
+homepage: https://n8n.io
+logo: simpleicons:n8n
+description: Workflow automation platform.
+versionScheme: semver
+tracks:
+  - { id: "2", match: '^2\.' }
+  - { id: "1", match: '^1\.' }
+sources:
+  releases: { type: github, repo: n8n-io/n8n, versionRegex: '^n8n@(\d+\.\d+\.\d+)$' }
+  # The reviewed GitHub Advisory Database first: its ranges are checked (the repository's own advisories have slips,
+  # e.g. CVE-2025-68613 with "patched: < 1.122.0"); the repository adds advisories not reviewed yet.
+  security:
+    - { type: ghsa, ecosystem: npm, package: n8n }
+    - { type: ghsa, repo: n8n-io/n8n }
+classify:
+  sections:
+    breaking: ["BREAKING CHANGES", "⚠ BREAKING CHANGES"]
+    feature: ["Features"]
+    fix: ["Bug Fixes"]
+detect:
+  - docker: { image: n8nio/n8n }
+maintainers: ["@DamirManyapov"]
