@@ -82,14 +82,40 @@ export function branchFor(branches: Branch[], version: string): Branch | undefin
   return branches.filter((b) => isInBranch(version, b.id)).sort((a, b) => b.id.length - a.id.length)[0];
 }
 
+const upperOnly = (range: Advisory['affected'][number]) =>
+  range.introduced === undefined || range.introduced === '0';
+
+/** "2.41.4" → "2.41": the line a patch release belongs to (everything before the last dot). */
+const lineOf = (version: string) =>
+  version.includes('.') ? version.slice(0, version.lastIndexOf('.')) : undefined;
+
 /**
- * OSV range semantics: affected when ≥ introduced (or no introduced / "0"), < fixed and ≤ last_affected.
- * Ranges with versions that don't parse under the scheme are ignored.
+ * Backports written as overlapping upper bounds: n8n lists "< 2.42.1" and "< 2.41.4" for one advisory, meaning the
+ * 2.41 line is fixed in 2.41.4 and the 2.42 line in 2.42.1. A version at or past an upper-only fix of its own line is
+ * fixed, whatever the other upper-only ranges say (a single range, or ranges with lower bounds, read as OSV).
+ */
+function backported(spec: SchemeSpec, version: string, ranges: Advisory['affected']): boolean {
+  const line = lineOf(version);
+  if (!line || ranges.filter(upperOnly).length < 2) return false;
+  return ranges.some((r) => {
+    try {
+      return upperOnly(r) && r.fixed?.startsWith(`${line}.`) === true && compare(spec, version, r.fixed) >= 0;
+    } catch {
+      return false;
+    }
+  });
+}
+
+/**
+ * OSV range semantics: affected when ≥ introduced (or no introduced / "0"), < fixed and ≤ last_affected; see
+ * `backported` for overlapping upper bounds. Ranges with versions that don't parse under the scheme are ignored.
  */
 export function isAffected(spec: SchemeSpec, version: string, ranges: Advisory['affected']): boolean {
   const v = parse(spec, version);
   if (!v) return false;
+  const fixedInLine = backported(spec, version, ranges);
   return ranges.some((range) => {
+    if (fixedInLine && upperOnly(range)) return false;
     try {
       if (
         range.introduced !== undefined &&
@@ -106,9 +132,27 @@ export function isAffected(spec: SchemeSpec, version: string, ranges: Advisory['
   });
 }
 
-/** The fix for this version: the `fixed` bound of the range that contains it (per-branch fixes differ). */
+/**
+ * The fix for this version: the `fixed` bound of the range that contains it (per-branch fixes differ); among
+ * overlapping upper bounds the fix in the version's own line, else the lowest one above it.
+ */
 export function fixedIn(spec: SchemeSpec, version: string, ranges: Advisory['affected']): string | undefined {
-  return ranges.find((range) => range.fixed !== undefined && isAffected(spec, version, [range]))?.fixed;
+  if (!isAffected(spec, version, ranges)) return undefined;
+  const containing = ranges.filter(
+    (range) => range.fixed !== undefined && isAffected(spec, version, [range]),
+  );
+  const line = lineOf(version);
+  const own = containing.find((range) => upperOnly(range) && line && range.fixed!.startsWith(`${line}.`));
+  if (own) return own.fixed;
+  return containing
+    .map((range) => range.fixed!)
+    .sort((a, b) => {
+      try {
+        return compare(spec, a, b);
+      } catch {
+        return 0;
+      }
+    })[0];
 }
 
 function isCritical(a: Advisory, settings: StatusSettings): boolean {

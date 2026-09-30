@@ -48,6 +48,60 @@ describe('ghsa: repository advisories without a CVE', () => {
   });
 });
 
+describe('ghsa: more than 100 repository advisories, CVSS 4.0 only', () => {
+  it('follows the Link cursor (GitHub ignores page=) and takes a 4.0 score when there is no 3.x one', async () => {
+    const advisory = (n: number, cvss4?: number) => ({
+      ghsa_id: `GHSA-0000-0000-${String(n).padStart(4, '0')}`,
+      cve_id: null,
+      summary: `Advisory ${n}`,
+      severity: 'medium',
+      cvss: { score: null, vector_string: null },
+      cvss_severities: {
+        cvss_v3: { score: null, vector_string: null },
+        cvss_v4: cvss4
+          ? { score: cvss4, vector_string: 'CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N' }
+          : null,
+      },
+      published_at: '2026-09-30T08:00:00Z',
+      html_url: `https://github.com/n8n-io/n8n/security/advisories/GHSA-${n}`,
+      vulnerabilities: [{ vulnerable_version_range: '< 2.41.4', patched_versions: '2.41.4' }],
+    });
+    const urls: string[] = [];
+    const next = 'https://api.github.com/repositories/1/security-advisories?per_page=100&after=abc';
+    const context: AdapterContext = {
+      fetcher: createFetcher({
+        fetch: (url) => {
+          urls.push(url);
+          return Promise.resolve(
+            url === next
+              ? Response.json([advisory(101, 9.3), advisory(102)])
+              : Response.json(
+                  Array.from({ length: 100 }, (_, i) => advisory(i + 1)),
+                  {
+                    headers: {
+                      link: `<${next}>; rel="next", <https://api.github.com/x?after=zzz>; rel="last"`,
+                    },
+                  },
+                ),
+          );
+        },
+        sleep: () => Promise.resolve(),
+      }),
+      log: { info() {}, warn() {} },
+      knownVersions: new Set(),
+    };
+    const list = await fetchAdvisories({ type: 'ghsa', repo: 'n8n-io/n8n' }, context);
+    expect(urls).toHaveLength(2);
+    expect(urls[1]).toBe(next);
+    expect(new Set(list.map((a) => a.id)).size).toBe(102);
+    expect(list.find((a) => a.id.endsWith('0101'))).toMatchObject({
+      cvss: { score: 9.3, version: '4.0' },
+      severity: 'critical',
+    });
+    expect(list.find((a) => a.id.endsWith('0102'))).toMatchObject({ cvss: null, severity: 'medium' });
+  });
+});
+
 describe('parseRangeExpression', () => {
   it.each([
     ['>= 1.0.0, < 1.2.3', undefined, [{ introduced: '1.0.0', fixed: '1.2.3' }]],

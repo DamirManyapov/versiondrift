@@ -39,6 +39,13 @@ trackOf(module, raw): string | null   // first matching track regex
 isAffected(scheme, version, ranges): boolean
 ```
 
+`isAffected` reads ranges as OSV does (a union), with one exception for backports written as overlapping upper bounds:
+n8n lists `< 2.42.1` and `< 2.41.4` for one advisory, meaning the 2.41 line is fixed in 2.41.4. When an advisory has
+two or more upper-bound-only ranges and one of them is fixed at or below the version in the version's own line (the
+prefix before its last dot), the version is fixed. `fixedIn` then names the fix of the version's own line, else the
+lowest fix above it (2.40.7 → 2.41.4, not the pre-release 2.42.1). A single range, or ranges with lower bounds, are
+read as before.
+
 Property tests (fast-check): `compare` is a total order; `sortKey` order == `compare` order.
 
 ## Inputs to status

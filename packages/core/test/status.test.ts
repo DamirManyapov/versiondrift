@@ -274,3 +274,43 @@ describe('fixedIn', async () => {
     expect(fixedIn('loose', '7.24.4', ranges)).toBeUndefined();
   });
 });
+
+describe('backports written as overlapping upper bounds (n8n)', async () => {
+  const { fixedIn } = await import('../src/index.ts');
+  // GHSA-2r5r-xgvc-rj4p: "< 2.42.1" and "< 2.41.4"; others add "< 1.123.83" for the 1.x line.
+  const ranges = [
+    { introduced: '0', fixed: '2.42.1' },
+    { introduced: '0', fixed: '2.41.4' },
+    { introduced: '0', fixed: '1.123.83' },
+  ];
+  it.each([
+    ['2.41.4', false],
+    ['2.41.5', false],
+    ['2.41.3', true],
+    ['2.40.7', true],
+    ['2.42.0', true],
+    ['2.42.1', false],
+    ['1.123.83', false],
+    ['1.123.82', true],
+    ['1.122.9', true],
+    ['2.43.0', false],
+  ])('%s → affected %s', (version, expected) => {
+    expect(isAffected('semver', version, ranges)).toBe(expected);
+  });
+  it("points to the fix of the version's own line, else the lowest one above it", () => {
+    expect(fixedIn('semver', '2.41.3', ranges)).toBe('2.41.4');
+    expect(fixedIn('semver', '2.42.0', ranges)).toBe('2.42.1');
+    expect(fixedIn('semver', '2.40.7', ranges)).toBe('2.41.4');
+    expect(fixedIn('semver', '1.122.9', ranges)).toBe('1.123.83');
+    expect(fixedIn('semver', '2.41.4', ranges)).toBeUndefined();
+  });
+  it('leaves a single upper bound and ranges with lower bounds as OSV reads them', () => {
+    expect(isAffected('semver', '2.41.4', [{ introduced: '0', fixed: '2.42.1' }])).toBe(true);
+    expect(
+      isAffected('semver', '2.41.4', [
+        { introduced: '2.42.0', fixed: '2.42.1' },
+        { introduced: '0', fixed: '2.41.4' },
+      ]),
+    ).toBe(false);
+  });
+});

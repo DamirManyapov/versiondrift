@@ -90,6 +90,11 @@ Security sources as implemented (S3-T1, verified 2026-09):
   Vendor range strings are free-form; `parseRangeExpression` handles `>= a, < b`, `a - b`, space-separated pairs,
   `||`, drops wildcard bounds (`<9.x`), and with several patched versions ("9.3.2, 9.2.8, 8.5.16") builds one range
   per patched branch while unpatched branches in between stay affected.
+  Pages follow the `Link: rel="next"` cursor (GitHub ignores `page=` there; before 2026-09-30 every repository with
+  more than 100 advisories was cut at 100). CVSS: 3.x when present, else 4.0 (n8n scores in 4.0 only). For the
+  global database, only the ranges of the named package count. When both exist, list the reviewed global database
+  (`ecosystem` + `package`) before the repository's own advisories: the first source's ranges win, and repository
+  advisories carry slips (n8n's CVE-2025-68613 with "patched: < 1.122.0"); the repository adds what is not reviewed yet.
 - **nvd**: `?virtualMatchString=<cpe>&resultsPerPage=2000`; CVSS from v3.1 → v3.0 → v4.0 → v2; ranges from the
   CVE's `cpeMatch` entries for the module's vendor:product (exact CPE versions become single-version ranges). The
   shared fetcher paces NVD at 6.5 s (0.7 s with `NVD_API_KEY`).
