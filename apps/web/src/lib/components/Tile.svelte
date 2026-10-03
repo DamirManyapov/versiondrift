@@ -22,7 +22,10 @@
   <span class="head">
     <span class="title">
       <span class="name">{row.name}</span>
-      <span class="muted">{categoryLabel(t, row.category)}</span>
+      <span class="muted"
+        >{categoryLabel(t, row.category)}{#if row.instances.length === 1 && row.instances[0]?.item.label}
+          · {row.instances[0].item.label}{/if}</span
+      >
     </span>
     {#if row.known}
       <StatusChip status={row.status} cvss={s?.maxCvss} />

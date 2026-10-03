@@ -102,7 +102,7 @@ detail) → FL-6/FL-7 (header, board) → FL-8 (hosts) → FL-9 (host card) → 
 
 ### Questions for the owner
 1. Is «a site is a board» (decision 1) right for you?
-2. Keep host-less manual products in self-hosted, or require a host for every version?
+2. Keep host-less manual products in self-hosted, or require a host for every version? **Decided 2026-10-04 (owner): keep them** — "+ Product" adds from the catalog to a site like on the public site; the board lists them under "Without a host".
 3. One poll schedule for everything (6 h), or per site / per profile?
 
 ## Progress (2026-09-28)

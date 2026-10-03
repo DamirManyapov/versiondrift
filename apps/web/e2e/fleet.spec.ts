@@ -138,6 +138,34 @@ test('a product the detectors cannot see is added to a host by hand, and removed
   await expect(row).toHaveCount(0);
 });
 
+test('a product without a host is added from the catalog to a site and given a version, like on the public site', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('Site:').selectOption({ label: 'Казань, филиал' });
+  const hostless = page.locator('section.hostless');
+  await expect(hostless.getByRole('heading', { name: 'Without a host' })).toBeVisible();
+  await hostless.getByRole('link', { name: 'Add a product' }).click();
+  await expect(page.getByLabel('Add to site:').locator('option:checked')).toHaveText('Казань, филиал');
+  await page.getByRole('searchbox').fill('zabbix');
+  const row = page.locator('li', { hasText: 'Zabbix' });
+  await row.getByRole('button', { name: 'Add' }).click();
+  await expect(row).toContainText('Added');
+
+  await page.goto('/');
+  const tile = hostless.locator('[data-tile]', { hasText: 'Zabbix' });
+  await tile.click();
+  const version = hostless.getByRole('combobox', { name: 'My version' });
+  await version.fill('7.0.0');
+  await version.press('Enter');
+  await expect(tile).not.toContainText('No version');
+
+  // "All sites": every site's products without a host, read-only, labelled with the site.
+  await page.getByLabel('Site:').selectOption({ label: 'All sites' });
+  await expect(hostless.locator('[data-tile]', { hasText: 'Zabbix' })).toContainText('Казань, филиал');
+  await expect(hostless.getByRole('combobox', { name: 'My version' })).toHaveCount(0);
+});
+
 test('a new site is made from the site switcher; Settings list sites and keep ones with hosts', async ({
   page,
 }) => {

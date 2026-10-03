@@ -14,6 +14,7 @@
     items,
     settings,
     readonly = false,
+    summary = true,
     onhideok,
     ontoast,
     actions,
@@ -22,6 +23,8 @@
     settings: InventorySettings;
     /** A shared board: no edits, the detail panel only shows. */
     readonly?: boolean;
+    /** The status strip on top; off where the page already has one (the fleet board). */
+    summary?: boolean;
     onhideok: (value: boolean) => void;
     ontoast: (message: string, undo?: () => void) => void;
     /** Extra controls at the end of the filter row (e.g. "Share"). */
@@ -98,21 +101,21 @@
 
 <div class="board">
   <div class="left">
-    <div class="summary">
-      {#each SUMMARY_STATUSES as key (key)}
-        <button
-          class="stat {key}"
-          aria-pressed={status === key}
-          onclick={() => (status = status === key ? undefined : key)}
-        >
-          <span class="dot" aria-hidden="true"></span>
-          <span class="col">
-            <span class="n">{counts[key]}</span>
-            <span class="muted">{t(SUMMARY_KEYS[key])}</span>
-          </span>
-        </button>
-      {/each}
-    </div>
+    {#if summary}<div class="summary">
+        {#each SUMMARY_STATUSES as key (key)}
+          <button
+            class="stat {key}"
+            aria-pressed={status === key}
+            onclick={() => (status = status === key ? undefined : key)}
+          >
+            <span class="dot" aria-hidden="true"></span>
+            <span class="col">
+              <span class="n">{counts[key]}</span>
+              <span class="muted">{t(SUMMARY_KEYS[key])}</span>
+            </span>
+          </button>
+        {/each}
+      </div>{/if}
 
     <div class="filters">
       <button class="chip" aria-pressed={category === undefined} onclick={() => (category = undefined)}

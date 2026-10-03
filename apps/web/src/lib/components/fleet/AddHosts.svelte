@@ -195,7 +195,7 @@
       {/if}
       <div class="actions">
         <button class="primary" type="submit" disabled={busy}
-          >{busy ? t('polling') : t('saveAndCheck')}</button
+          >{busy ? t('polling') : profileId === '' ? t('save') : t('saveAndCheck')}</button
         >
       </div>
     </form>

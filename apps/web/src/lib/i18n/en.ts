@@ -542,7 +542,7 @@ export const en = {
   hostSaved: 'Saved.',
   noSuccessYet: 'No poll of this host has succeeded yet.',
   addressHint: 'A non-standard port after a colon: 10.10.1.11:2026',
-  noProfileOption: 'No profile: versions by hand',
+  noProfileOption: 'No polling: versions by hand',
   saveAndCheck: 'Save and check the connection',
   hostAdded: '{host} added.',
   openHost: 'Open {host}',
@@ -564,6 +564,15 @@ export const en = {
   resultUnchanged: 'no changes',
   resultUpdate: 'will change: {what}',
   resultError: 'error',
+  addProductLong: 'Add a product',
+  hostlessTitle: 'Without a host',
+  hostlessHint:
+    'Products you follow on this site without a host: added from the catalog, the version set in the card, like on the public site. Nothing polls them.',
+  hostlessAllHint:
+    'Products followed without a host on every site, each labelled with its site. Choose a site to change them.',
+  hostlessEmpty:
+    'Nothing on {site} is followed without a host. Add a product from the catalog and set its version.',
+  addToSite: 'Add to site:',
   sitesTitle: 'Sites',
   sitesHint:
     'A site groups hosts (a data centre, an office, a lab) and filters every screen. A site with hosts is deleted once its hosts are moved or deleted.',

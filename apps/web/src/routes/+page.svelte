@@ -9,6 +9,7 @@
   import SharePanel from '$lib/components/SharePanel.svelte';
   import Toast from '$lib/components/Toast.svelte';
   import FleetBoard from '$lib/components/fleet/FleetBoard.svelte';
+  import HostlessProducts from '$lib/components/fleet/HostlessProducts.svelte';
   import { fleet, siteFrom } from '$lib/fleet/state.svelte';
   import { feed } from '$lib/feed/state.svelte';
   import { i18n } from '$lib/i18n/context';
@@ -33,6 +34,7 @@
 
 {#if page.data.mode === 'selfhosted' && fleet.hasHosts && fleet.data}
   <FleetBoard data={fleet.data} site={siteFrom(page.url, fleet.data)} ontoast={showToast} />
+  <HostlessProducts data={fleet.data} site={siteFrom(page.url, fleet.data)} ontoast={showToast} />
 {:else}
   {#if inventory.mode === 'selfhosted' && inventory.boards.length > 0}<BoardSwitcher />{/if}
 

@@ -5,6 +5,8 @@ export type { AccessProfile, HostEvent, HostRecord };
 
 export interface FleetData {
   sites: { id: number; name: string }[];
+  /** Per site, the products followed without a host (the board's own items, added from the catalog). */
+  hostless: { siteId: number; items: { p: string; ver?: string; track?: string; label?: string }[] }[];
   profiles: AccessProfile[];
   hosts: HostRecord[];
   schedule: { intervalHours: number; next: string | null };

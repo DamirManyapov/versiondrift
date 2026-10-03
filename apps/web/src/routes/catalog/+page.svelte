@@ -8,6 +8,8 @@
   import { categoryLabel } from '$lib/i18n';
   import { i18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
+  import { page } from '$app/state';
+  import { fleet, rememberSite, siteFrom } from '$lib/fleet/state.svelte';
 
   const { t } = $derived(i18n());
   let catalog = $state<Catalog | undefined>();
@@ -31,6 +33,21 @@
   );
   const results = $derived(searchCatalog(products, query, category));
   const onBoard = $derived(new Set(inventory.demo ? [] : inventory.data.items.map((i) => i.p)));
+
+  // Self-hosted with hosts: products are added to a site (its board), the one chosen on the board by default.
+  const sites = $derived(inventory.mode === 'selfhosted' && fleet.hasHosts ? (fleet.data?.sites ?? []) : []);
+  let siteOpened = false;
+  $effect(() => {
+    if (siteOpened || sites.length === 0 || !inventory.loaded) return;
+    siteOpened = true;
+    const site = siteFrom(page.url, fleet.data);
+    if (site !== undefined && site !== inventory.boardId) void inventory.openBoard(site);
+  });
+  function chooseSite(value: string) {
+    const id = Number(value);
+    rememberSite(id);
+    void inventory.openBoard(id);
+  }
 </script>
 
 <Meta title="{t('catalogTitle')} · VersionDrift" />
@@ -43,6 +60,14 @@
     <p class="muted">{t('loading')}</p>
   {:else}
     <p class="muted">{t('catalogIntro', { n: products.length })}</p>
+    {#if sites.length > 0}
+      <label class="target"
+        >{t('addToSite')}
+        <select value={String(inventory.boardId ?? '')} onchange={(e) => chooseSite(e.currentTarget.value)}>
+          {#each sites as s (s.id)}<option value={String(s.id)}>{s.name}</option>{/each}
+        </select>
+      </label>
+    {/if}
     <input
       type="search"
       bind:value={query}
@@ -95,6 +120,21 @@
 </div>
 
 <style>
+  .target {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+  .target select {
+    font: inherit;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 6px 10px;
+  }
   .catalog {
     max-width: 880px;
     margin: 0 auto;
