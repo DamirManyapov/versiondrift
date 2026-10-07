@@ -38,6 +38,8 @@ export default defineConfig(
     rules: {
       // Most hrefs are external URLs from the feed; internal links use resolve() by convention.
       'svelte/no-navigation-without-resolve': ['error', { ignoreLinks: true }],
+      // A button without a type submits the form it sits in: every button says what it is.
+      'svelte/button-has-type': 'error',
     },
   },
   {

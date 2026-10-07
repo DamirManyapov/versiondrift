@@ -45,7 +45,9 @@
   {#if inventory.demo}
     <div class="demo" role="note">
       <span>{t('demoBanner')}</span>
-      <button class="btn btn-primary" onclick={() => inventory.startOwn()}>{t('demoStart')}</button>
+      <button type="button" class="btn btn-primary" onclick={() => inventory.startOwn()}
+        >{t('demoStart')}</button
+      >
     </div>
   {/if}
 
@@ -71,7 +73,7 @@
       <SharePanel items={inventory.data.items} onclose={() => (sharing = false)} ontoast={showToast} />
     {/if}
     {#snippet share()}
-      <button class="chip-btn" aria-expanded={sharing} onclick={() => (sharing = !sharing)}
+      <button type="button" class="chip-btn" aria-expanded={sharing} onclick={() => (sharing = !sharing)}
         >{t('shareBoard')}</button
       >
     {/snippet}

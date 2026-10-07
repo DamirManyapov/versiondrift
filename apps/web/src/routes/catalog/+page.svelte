@@ -80,11 +80,15 @@
       aria-label={t('catalogSearch')}
     />
     <div class="chips">
-      <button class="chip-btn" aria-pressed={category === undefined} onclick={() => (category = undefined)}
-        >{t('filterAll')}</button
+      <button
+        type="button"
+        class="chip-btn"
+        aria-pressed={category === undefined}
+        onclick={() => (category = undefined)}>{t('filterAll')}</button
       >
       {#each categories as c (c)}
         <button
+          type="button"
           class="chip-btn"
           aria-pressed={category === c}
           onclick={() => (category = category === c ? undefined : c)}>{categoryLabel(t, c)}</button
@@ -107,6 +111,7 @@
             <span class="added">✓ {t('added')}</span>
           {:else}
             <button
+              type="button"
               class="btn btn-sm btn-primary"
               onclick={() => {
                 if (inventory.demo) inventory.startOwn();

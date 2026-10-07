@@ -94,7 +94,7 @@
     {#if info.state.lastError}<p class="error">{t('mirrorError', { message: info.state.lastError })}</p>{/if}
     {#if admin}
       <div class="actions">
-        <button class="btn btn-sm" onclick={checkNow} disabled={busy}
+        <button type="button" class="btn btn-sm" onclick={checkNow} disabled={busy}
           >{busy ? t('feedWorking') : t('feedCheckNow')}</button
         >
         <label class="btn btn-sm upload" aria-disabled={busy}>

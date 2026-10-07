@@ -54,7 +54,7 @@
   <label class="site">
     <span class="muted">{t('siteLabel')}:</span>
     <select
-      class="chevron"
+      class="input"
       value={current === undefined ? '' : String(current)}
       onchange={(e) => change(e.currentTarget)}
     >
@@ -92,31 +92,19 @@
   .wrap {
     position: relative;
   }
+  /* The select is the control (40px, like the buttons next to it); its label sits in front of it. */
   .site {
     display: flex;
     align-items: center;
     gap: 8px;
-    height: var(--control-h);
-    padding: 0 12px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--control-radius);
     font-size: 14px;
-    transition: background-color 0.12s;
-  }
-  .site:hover {
-    background: var(--surface-hover);
   }
   .muted {
     color: var(--text-muted);
   }
   select {
-    height: 100%;
-    font: inherit;
     font-weight: 600;
-    color: var(--text);
-    background: transparent;
-    border: 0;
-    cursor: pointer;
+    min-width: 170px;
   }
   .panel {
     position: absolute;

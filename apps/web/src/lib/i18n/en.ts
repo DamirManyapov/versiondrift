@@ -577,6 +577,9 @@ export const en = {
   resultUpdate: 'will change: {what}',
   resultError: 'error',
   addProductLong: 'Add a product',
+  hostlessReadonly:
+    'All sites are shown: choose this product’s site (the label on the card) at the top to change its line and version.',
+  viewerReadonly: 'Your account can look but not change.',
   hostlessTitle: 'Without a host',
   hostlessHint:
     'Products you follow on this site without a host: added from the catalog, the version set in the card, like on the public site. Nothing polls them.',

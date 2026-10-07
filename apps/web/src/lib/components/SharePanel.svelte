@@ -38,7 +38,9 @@
 <section class="share" aria-labelledby="share-title">
   <header>
     <h2 id="share-title">{t('shareTitle')}</h2>
-    <button class="btn btn-sm btn-ghost btn-icon" onclick={onclose} aria-label={t('closePanel')}>✕</button>
+    <button type="button" class="btn btn-sm btn-ghost btn-icon" onclick={onclose} aria-label={t('closePanel')}
+      >✕</button
+    >
   </header>
   <p class="muted">{t('shareNote')}</p>
   <div class="row">
@@ -49,7 +51,9 @@
       aria-label={t('shareLink')}
       onfocus={(e) => e.currentTarget.select()}
     />
-    <button class="btn btn-primary" onclick={copy} disabled={url === ''}>{t('shareCopy')}</button>
+    <button type="button" class="btn btn-primary" onclick={copy} disabled={url === ''}
+      >{t('shareCopy')}</button
+    >
   </div>
   {#if hasLabels}
     <label class="toggle"><input type="checkbox" bind:checked={labels} /> {t('shareLabels')}</label>

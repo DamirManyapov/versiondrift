@@ -15,6 +15,7 @@
   <span>{message}</span>
   {#if undo}
     <button
+      type="button"
       onclick={() => {
         undo?.();
         onclose();

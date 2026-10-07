@@ -149,13 +149,20 @@
 <dialog bind:this={dialog} {onclose} aria-labelledby="add-hosts-title">
   <header>
     <h2 id="add-hosts-title">{t('addHosts')}</h2>
-    <button class="btn btn-sm btn-ghost btn-icon" onclick={() => dialog.close()} aria-label={t('closeDialog')}
-      >✕</button
+    <button
+      type="button"
+      class="btn btn-sm btn-ghost btn-icon"
+      onclick={() => dialog.close()}
+      aria-label={t('closeDialog')}>✕</button
     >
   </header>
   <div class="tabs" role="tablist">
-    <button role="tab" aria-selected={tab === 'one'} onclick={() => (tab = 'one')}>{t('addOne')}</button>
-    <button role="tab" aria-selected={tab === 'csv'} onclick={() => (tab = 'csv')}>{t('addCsv')}</button>
+    <button type="button" role="tab" aria-selected={tab === 'one'} onclick={() => (tab = 'one')}
+      >{t('addOne')}</button
+    >
+    <button type="button" role="tab" aria-selected={tab === 'csv'} onclick={() => (tab = 'csv')}
+      >{t('addCsv')}</button
+    >
   </div>
 
   {#if tab === 'one'}
@@ -223,11 +230,15 @@
       <textarea bind:value={csv} rows="6" class="input mono" placeholder={CSV_EXAMPLE}></textarea>
     </label>
     <div class="actions">
-      <button class="btn" onclick={() => void check()} disabled={busy || csv.trim() === ''}
+      <button type="button" class="btn" onclick={() => void check()} disabled={busy || csv.trim() === ''}
         >{t('checkList')}</button
       >
       {#if plan}
-        <button class="btn btn-primary" onclick={() => void runImport()} disabled={busy || toWrite === 0}
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick={() => void runImport()}
+          disabled={busy || toWrite === 0}
           >{toWrite === 0 ? t('importNothing') : t('importN', { n: toWrite })}</button
         >
       {/if}

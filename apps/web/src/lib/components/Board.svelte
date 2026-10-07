@@ -14,6 +14,7 @@
     items,
     settings,
     readonly = false,
+    readonlyNote,
     summary = true,
     onhideok,
     ontoast,
@@ -23,6 +24,8 @@
     settings: InventorySettings;
     /** A shared board: no edits, the detail panel only shows. */
     readonly?: boolean;
+    /** Why the board is read-only, shown in the detail panel under its disabled fields. */
+    readonlyNote?: string | undefined;
     /** The status strip on top; off where the page already has one (the fleet board). */
     summary?: boolean;
     onhideok: (value: boolean) => void;
@@ -104,6 +107,7 @@
     {#if summary}<div class="summary">
         {#each SUMMARY_STATUSES as key (key)}
           <button
+            type="button"
             class="stat {key}"
             aria-pressed={status === key}
             disabled={counts[key] === 0 && status !== key}
@@ -119,11 +123,15 @@
       </div>{/if}
 
     <div class="filters">
-      <button class="chip-btn" aria-pressed={category === undefined} onclick={() => (category = undefined)}
-        >{t('filterAll')}</button
+      <button
+        type="button"
+        class="chip-btn"
+        aria-pressed={category === undefined}
+        onclick={() => (category = undefined)}>{t('filterAll')}</button
       >
       {#each categories as c (c)}
         <button
+          type="button"
           class="chip-btn"
           aria-pressed={category === c}
           onclick={() => (category = category === c ? undefined : c)}>{categoryLabel(t, c)}</button
@@ -147,6 +155,7 @@
       </label>
       {#if filtered}
         <button
+          type="button"
           class="btn btn-sm btn-ghost"
           onclick={() => {
             status = undefined;
@@ -165,7 +174,8 @@
           n: visible.length,
           noun: t('productsNoun', { n: visible.length }),
         })}
-        <button class="btn btn-sm btn-ghost" onclick={() => (status = undefined)}>✕ {t('clearFilter')}</button
+        <button type="button" class="btn btn-sm btn-ghost" onclick={() => (status = undefined)}
+          >✕ {t('clearFilter')}</button
         >
       </p>
     {/if}
@@ -181,7 +191,7 @@
 
   {#if selected}
     <div class="right" class:overlay>
-      <DetailPanel row={selected} {readonly} onclose={() => (overlay = false)} {ontoast} />
+      <DetailPanel row={selected} {readonly} {readonlyNote} onclose={() => (overlay = false)} {ontoast} />
     </div>
   {/if}
 </div>

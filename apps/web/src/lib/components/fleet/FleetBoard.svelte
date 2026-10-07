@@ -61,6 +61,7 @@
   {#each SUMMARY as item (item.key)}
     <!-- A filter: nothing to filter when the count is 0 (UI audit P1-1). -->
     <button
+      type="button"
       class="stat {item.key}"
       aria-pressed={status === item.key}
       disabled={summary[item.key] === 0 && status !== item.key}
@@ -100,7 +101,9 @@
       n: shown.length,
       noun: t('productsNoun', { n: shown.length }),
     })}
-    <button class="btn btn-sm btn-ghost" onclick={() => (status = undefined)}>✕ {t('clearFilter')}</button>
+    <button type="button" class="btn btn-sm btn-ghost" onclick={() => (status = undefined)}
+      >✕ {t('clearFilter')}</button
+    >
   </p>
 {/if}
 

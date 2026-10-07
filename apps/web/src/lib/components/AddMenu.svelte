@@ -32,6 +32,7 @@
 
 <div class="menu" bind:this={root}>
   <button
+    type="button"
     bind:this={button}
     class="btn btn-primary"
     aria-expanded={open}
@@ -44,10 +45,10 @@
   </button>
   {#if open}
     <div id="add-menu" class="panel">
-      <button onclick={() => hosts('one')}>
+      <button type="button" onclick={() => hosts('one')}>
         <strong>{t('addMenuHost')}</strong><span>{t('addMenuHostHint')}</span>
       </button>
-      <button onclick={() => hosts('csv')}>
+      <button type="button" onclick={() => hosts('csv')}>
         <strong>{t('addMenuCsv')}</strong><span>{t('addMenuCsvHint')}</span>
       </button>
       <a href={resolve('/catalog')}>

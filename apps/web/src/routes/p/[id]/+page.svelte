@@ -87,6 +87,7 @@
       <span class="on">✓ {t('onYourBoard')}</span>
     {:else}
       <button
+        type="button"
         class="btn btn-primary"
         onclick={() => {
           if (inventory.demo) inventory.startOwn();

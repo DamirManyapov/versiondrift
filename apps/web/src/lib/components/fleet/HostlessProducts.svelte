@@ -65,6 +65,7 @@
         {items}
         settings={inventory.data.settings}
         readonly={site === undefined || !canEdit}
+        readonlyNote={!canEdit ? t('viewerReadonly') : site === undefined ? t('hostlessReadonly') : undefined}
         summary={false}
         onhideok={(value: boolean) => inventory.setSettings({ hideOk: value })}
         {ontoast}

@@ -68,6 +68,7 @@
               >{/if}</span
           >
           <button
+            type="button"
             class="btn btn-sm"
             onclick={() => {
               editing = board.id;
@@ -79,14 +80,19 @@
           {:else if inventory.boards.length > 1}
             {#if confirming === board.id}
               <button
+                type="button"
                 class="btn btn-sm btn-danger"
                 onclick={() => void run(() => inventory.deleteBoard(board.id))}
                 >{t('deleteBoardConfirm', { name: board.name })}</button
               >
-              <button class="btn btn-sm" onclick={() => (confirming = undefined)}>{t('cancel')}</button>
+              <button type="button" class="btn btn-sm" onclick={() => (confirming = undefined)}
+                >{t('cancel')}</button
+              >
             {:else}
-              <button class="btn btn-sm btn-danger-ghost" onclick={() => (confirming = board.id)}
-                >{t('deleteBoard')}</button
+              <button
+                type="button"
+                class="btn btn-sm btn-danger-ghost"
+                onclick={() => (confirming = board.id)}>{t('deleteBoard')}</button
               >
             {/if}
           {/if}

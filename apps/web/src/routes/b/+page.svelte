@@ -68,12 +68,14 @@
     <span class="text">{t('sharedBanner', { n: new Set(items.map((i) => i.p)).size })}</span>
     {#if choosing}
       <span class="muted">{t('sharedChoose')}</span>
-      <button class="btn btn-primary" onclick={() => save('merge')}>{t('sharedMerge')}</button>
-      <button class="btn" onclick={() => save('replace')}>{t('sharedReplace')}</button>
-      <button class="btn btn-ghost" onclick={() => (choosing = false)}>{t('cancel')}</button>
+      <button type="button" class="btn btn-primary" onclick={() => save('merge')}>{t('sharedMerge')}</button>
+      <button type="button" class="btn" onclick={() => save('replace')}>{t('sharedReplace')}</button>
+      <button type="button" class="btn btn-ghost" onclick={() => (choosing = false)}>{t('cancel')}</button>
     {:else}
-      <button class="btn btn-primary" onclick={() => (hasOwn ? (choosing = true) : save('replace'))}
-        >{t('sharedSave')}</button
+      <button
+        type="button"
+        class="btn btn-primary"
+        onclick={() => (hasOwn ? (choosing = true) : save('replace'))}>{t('sharedSave')}</button
       >
     {/if}
   </div>

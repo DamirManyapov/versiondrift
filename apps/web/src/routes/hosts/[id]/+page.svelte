@@ -262,15 +262,15 @@
     <div class="side">
       <FleetChip status={host.status.status} label={hostLabel(t, host.status, host.poll.state)} size="md" />
       {#if canPoll}
-        <button class="btn btn-primary" onclick={() => void poll()} disabled={polling}
+        <button type="button" class="btn btn-primary" onclick={() => void poll()} disabled={polling}
           >{polling ? t('polling') : t('pollNow')}</button
         >
       {/if}
       {#if canEdit && !editing}
-        <button class="btn btn-sm" onclick={startEdit}>{t('editHost')}</button>
+        <button type="button" class="btn btn-sm" onclick={startEdit}>{t('editHost')}</button>
       {/if}
       {#if canEdit && !confirmingDelete}
-        <button class="btn btn-sm btn-danger-ghost" onclick={() => (confirmingDelete = true)}
+        <button type="button" class="btn btn-sm btn-danger-ghost" onclick={() => (confirmingDelete = true)}
           >{t('deleteHost')}</button
         >
       {/if}
@@ -280,8 +280,12 @@
   {#if confirmingDelete}
     <div class="confirm" role="alert">
       <span>{t('confirmDeleteHost', { host: host.record.name })}</span>
-      <button class="btn btn-sm btn-danger" onclick={() => void deleteHost()}>{t('deleteHost')}</button>
-      <button class="btn btn-sm" onclick={() => (confirmingDelete = false)}>{t('cancel')}</button>
+      <button type="button" class="btn btn-sm btn-danger" onclick={() => void deleteHost()}
+        >{t('deleteHost')}</button
+      >
+      <button type="button" class="btn btn-sm" onclick={() => (confirmingDelete = false)}
+        >{t('cancel')}</button
+      >
     </div>
   {/if}
 
@@ -331,7 +335,7 @@
         <a class="btn btn-sm" href={resolve('/access-profiles')}>{t('openProfile')}</a>
       {/if}
       {#if canPoll && (host.record.poll.errorCode === 'host_key_mismatch' || host.record.poll.errorCode === 'tls_mismatch')}
-        <button class="btn btn-sm" onclick={() => void trustNewKey()} disabled={polling}
+        <button type="button" class="btn btn-sm" onclick={() => void trustNewKey()} disabled={polling}
           >{t('trustNewKey')}</button
         >
       {/if}
@@ -364,8 +368,10 @@
                   : broken
                     ? t('sourceLastKnown')
                     : t('sourceDetected')}{#if inst.source === 'manual' && canEdit}
-                  <button class="btn btn-sm btn-ghost" onclick={() => void removeManual(inst.productId)}
-                    >{t('removeManual')}</button
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-ghost"
+                    onclick={() => void removeManual(inst.productId)}>{t('removeManual')}</button
                   >{/if}</td
               >
             </tr>
@@ -412,7 +418,7 @@
           {#if manualProblem}<p class="error" role="alert">{manualProblem}</p>{/if}
         </form>
       {:else}
-        <p><button class="btn btn-sm" onclick={startManual}>{t('addManualProduct')}</button></p>
+        <p><button type="button" class="btn btn-sm" onclick={startManual}>{t('addManualProduct')}</button></p>
       {/if}
     {/if}
   </section>

@@ -80,6 +80,7 @@
           <div class="acts">
             {#if profile.publicKey}
               <button
+                type="button"
                 class="btn btn-sm"
                 onclick={() =>
                   (open =
@@ -88,11 +89,14 @@
                       : { id: profile.id, what: 'key' })}>{t('showPublicKey')}</button
               >
             {:else}
-              <button class="btn btn-sm" onclick={() => (open = { id: profile.id, what: 'secret' })}
-                >{t('replaceSecret')}</button
+              <button
+                type="button"
+                class="btn btn-sm"
+                onclick={() => (open = { id: profile.id, what: 'secret' })}>{t('replaceSecret')}</button
               >
             {/if}
             <button
+              type="button"
               class="btn btn-sm btn-danger-ghost delete"
               onclick={() => (open = { id: profile.id, what: 'delete' })}>{t('deleteProfile')}</button
             >
@@ -129,8 +133,11 @@
                   ><strong>{t('deleteProfileAsk', { name: profile.name })}</strong>
                   {profile.hosts > 0 ? t('profileUsedBy', { n: profile.hosts }) : t('profileUnused')}</span
                 >
-                <button class="btn btn-sm" onclick={() => (open = undefined)}>{t('cancel')}</button>
+                <button type="button" class="btn btn-sm" onclick={() => (open = undefined)}
+                  >{t('cancel')}</button
+                >
                 <button
+                  type="button"
                   class="btn btn-sm btn-danger"
                   onclick={() => void act(() => fleetApi.deleteProfile(profile.id), t('profileDeleted'))}
                   >{t('deleteProfile')}</button

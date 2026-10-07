@@ -18,7 +18,7 @@
   const lastRelease = $derived(row.product?.releases.find((r) => !r.prerelease));
 </script>
 
-<button class="tile {row.status}" aria-pressed={selected} onclick={onselect} data-tile>
+<button type="button" class="tile {row.status}" aria-pressed={selected} onclick={onselect} data-tile>
   <span class="head">
     <span class="title">
       <span class="name">{row.name}</span>

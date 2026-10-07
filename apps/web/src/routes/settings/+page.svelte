@@ -79,8 +79,11 @@
     <h2>{t('settingsInventory')}</h2>
     <p class="muted">{inventory.mode === 'selfhosted' ? t('settingsStorageServer') : t('settingsStorage')}</p>
     <div class="row">
-      <button class="btn btn-primary" onclick={exportYaml} disabled={inventory.data.items.length === 0}
-        >{t('exportYaml')}</button
+      <button
+        type="button"
+        class="btn btn-primary"
+        onclick={exportYaml}
+        disabled={inventory.data.items.length === 0}>{t('exportYaml')}</button
       >
       <label class="btn upload">
         {t('importYaml')}
@@ -92,6 +95,7 @@
         />
       </label>
       <button
+        type="button"
         class="btn btn-danger"
         onclick={() => {
           inventory.startOwn();
@@ -102,8 +106,10 @@
     {#if pending}
       <div class="confirm" role="status">
         <span>{t('importedItems', { n: pending.length }).replace(/\.$/, '')}?</span>
-        <button class="btn btn-sm btn-primary" onclick={() => apply('replace')}>{t('importReplace')}</button>
-        <button class="btn btn-sm" onclick={() => apply('add')}>{t('importAdd')}</button>
+        <button type="button" class="btn btn-sm btn-primary" onclick={() => apply('replace')}
+          >{t('importReplace')}</button
+        >
+        <button type="button" class="btn btn-sm" onclick={() => apply('add')}>{t('importAdd')}</button>
       </div>
     {/if}
     {#if message}<p role="status">{message}</p>{/if}

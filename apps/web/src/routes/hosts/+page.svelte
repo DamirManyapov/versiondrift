@@ -176,10 +176,10 @@
       aria-label={t('searchHosts')}
     />
     <div class="toggle" role="group">
-      <button aria-pressed={grouped} onclick={() => setParam('group', 'site', 'site')}
+      <button type="button" aria-pressed={grouped} onclick={() => setParam('group', 'site', 'site')}
         >{t('groupBySite')}</button
       >
-      <button aria-pressed={!grouped} onclick={() => setParam('group', 'none', 'site')}
+      <button type="button" aria-pressed={!grouped} onclick={() => setParam('group', 'none', 'site')}
         >{t('groupNone')}</button
       >
     </div>
@@ -195,6 +195,7 @@
       <span class="muted">{t('filterStatus')}</span>
       {#each STATUSES as s (s.id)}
         <button
+          type="button"
           class="chip-btn"
           aria-pressed={status === s.id}
           onclick={() => setParam('status', s.id, 'all')}
@@ -204,10 +205,15 @@
     </div>
     <div class="fgroup" role="group" aria-label={t('filterPoll')}>
       <span class="muted">{t('filterPoll')}</span>
-      <button class="chip-btn" aria-pressed={poll === 'any'} onclick={() => setParam('poll', 'any', 'any')}
+      <button
+        type="button"
+        class="chip-btn"
+        aria-pressed={poll === 'any'}
+        onclick={() => setParam('poll', 'any', 'any')}
         >{t('pollAny')} <span class="c">{count({ poll: 'any' })}</span></button
       >
       <button
+        type="button"
         class="chip-btn"
         aria-pressed={poll === 'problem'}
         onclick={() => setParam('poll', 'problem', 'any')}
@@ -217,7 +223,11 @@
     <div class="fgroup" role="group" aria-label={t('filterKind')}>
       <span class="muted">{t('filterKind')}</span>
       {#each KINDS as k (k.id)}
-        <button class="chip-btn" aria-pressed={kind === k.id} onclick={() => setParam('kind', k.id, 'all')}
+        <button
+          type="button"
+          class="chip-btn"
+          aria-pressed={kind === k.id}
+          onclick={() => setParam('kind', k.id, 'all')}
           >{t(k.key)} <span class="c">{count({ kind: k.id })}</span></button
         >
       {/each}
@@ -229,24 +239,31 @@
       <strong>{t('selectedHosts', { n: selected.length })}</strong>
       {#if hiddenSelected > 0}<span class="muted">{t('hiddenSelected', { n: hiddenSelected })}</span>{/if}
       <span class="grow"></span>
-      <button class="btn btn-sm btn-primary" onclick={() => void pollSelected()} disabled={polling}
-        >{polling ? t('polling') : t('pollNow')}</button
+      <button
+        type="button"
+        class="btn btn-sm btn-primary"
+        onclick={() => void pollSelected()}
+        disabled={polling}>{polling ? t('polling') : t('pollNow')}</button
       >
       {#if canEdit}
         {#if confirmingDelete}
           <span>{t('confirmDeleteHosts', { n: selected.length })}</span>
-          <button class="btn btn-sm btn-danger" onclick={() => void deleteSelected()}
+          <button type="button" class="btn btn-sm btn-danger" onclick={() => void deleteSelected()}
             >{t('deleteSelected')}</button
           >
-          <button class="btn btn-sm" onclick={() => (confirmingDelete = false)}>{t('cancel')}</button>
+          <button type="button" class="btn btn-sm" onclick={() => (confirmingDelete = false)}
+            >{t('cancel')}</button
+          >
         {:else}
-          <button class="btn btn-sm btn-danger-ghost" onclick={() => (confirmingDelete = true)}
+          <button type="button" class="btn btn-sm btn-danger-ghost" onclick={() => (confirmingDelete = true)}
             >{t('deleteSelected')}</button
           >
         {/if}
       {/if}
-      <button class="btn btn-sm btn-ghost" onclick={() => ((selected = []), (confirmingDelete = false))}
-        >{t('clearSelection')}</button
+      <button
+        type="button"
+        class="btn btn-sm btn-ghost"
+        onclick={() => ((selected = []), (confirmingDelete = false))}>{t('clearSelection')}</button
       >
     </div>
   {/if}

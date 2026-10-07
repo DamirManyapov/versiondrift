@@ -69,17 +69,22 @@
     </form>
   {:else if mode === 'delete' && current}
     {#if inventory.boards.length > 1}
-      <button class="btn btn-sm btn-danger" onclick={() => void run(() => inventory.deleteBoard(current.id))}
+      <button
+        type="button"
+        class="btn btn-sm btn-danger"
+        onclick={() => void run(() => inventory.deleteBoard(current.id))}
         >{t('deleteBoardConfirm', { name: current.name })}</button
       >
     {:else}
       <span class="muted" role="status">{t('lastBoardHint')}</span>
     {/if}
-    <button class="btn btn-sm" onclick={() => start('pick')}>{t('cancel')}</button>
+    <button type="button" class="btn btn-sm" onclick={() => start('pick')}>{t('cancel')}</button>
   {:else}
-    <button class="btn btn-sm" onclick={() => start('rename')}>{t('rename')}</button>
-    <button class="btn btn-sm btn-danger-ghost" onclick={() => start('delete')}>{t('deleteBoard')}</button>
-    <button class="btn btn-sm" onclick={() => start('create')}>+ {t('newBoard')}</button>
+    <button type="button" class="btn btn-sm" onclick={() => start('rename')}>{t('rename')}</button>
+    <button type="button" class="btn btn-sm btn-danger-ghost" onclick={() => start('delete')}
+      >{t('deleteBoard')}</button
+    >
+    <button type="button" class="btn btn-sm" onclick={() => start('create')}>+ {t('newBoard')}</button>
   {/if}
   {#if problem}<span class="error" role="alert">{problem}</span>{/if}
 </div>

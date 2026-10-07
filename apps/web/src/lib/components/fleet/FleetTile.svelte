@@ -62,6 +62,7 @@
 </script>
 
 <button
+  type="button"
   class="tile {aggregate.status}"
   aria-pressed={selected}
   onclick={onselect}

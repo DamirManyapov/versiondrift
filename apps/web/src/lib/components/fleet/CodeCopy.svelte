@@ -25,7 +25,9 @@
 
 <div class="code">
   <pre bind:this={pre}><code>{code}</code></pre>
-  <button class="btn btn-sm copy" onclick={() => void copy()}>{copied ? t('copiedShort') : t('copy')}</button>
+  <button type="button" class="btn btn-sm copy" onclick={() => void copy()}
+    >{copied ? t('copiedShort') : t('copy')}</button
+  >
 </div>
 
 <style>

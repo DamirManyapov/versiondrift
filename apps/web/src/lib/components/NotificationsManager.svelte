@@ -201,19 +201,25 @@
               >{/if}
           </div>
           <div class="actions">
-            <button class="btn btn-sm" onclick={() => void test(channel.id)}>{t('sendTest')}</button>
-            <button class="btn btn-sm" onclick={() => start(channel)}>{t('edit')}</button>
-            <button class="btn btn-sm" onclick={() => void toggle(channel)}
+            <button type="button" class="btn btn-sm" onclick={() => void test(channel.id)}
+              >{t('sendTest')}</button
+            >
+            <button type="button" class="btn btn-sm" onclick={() => start(channel)}>{t('edit')}</button>
+            <button type="button" class="btn btn-sm" onclick={() => void toggle(channel)}
               >{channel.enabled ? t('disable') : t('enable')}</button
             >
             {#if confirming === channel.id}
-              <button class="btn btn-sm btn-danger" onclick={() => void remove(channel.id)}
+              <button type="button" class="btn btn-sm btn-danger" onclick={() => void remove(channel.id)}
                 >{t('deleteChannelConfirm', { name: channel.name })}</button
               >
-              <button class="btn btn-sm" onclick={() => (confirming = undefined)}>{t('cancel')}</button>
+              <button type="button" class="btn btn-sm" onclick={() => (confirming = undefined)}
+                >{t('cancel')}</button
+              >
             {:else}
-              <button class="btn btn-sm btn-danger-ghost" onclick={() => (confirming = channel.id)}
-                >{t('deleteChannel')}</button
+              <button
+                type="button"
+                class="btn btn-sm btn-danger-ghost"
+                onclick={() => (confirming = channel.id)}>{t('deleteChannel')}</button
               >
             {/if}
           </div>
@@ -227,8 +233,8 @@
 
   {#if editing === undefined}
     <div class="actions">
-      <button class="btn btn-primary" onclick={() => start()}>{t('addChannel')}</button>
-      {#if channels.some((c) => c.enabled)}<button class="btn" onclick={() => void checkNow()}
+      <button type="button" class="btn btn-primary" onclick={() => start()}>{t('addChannel')}</button>
+      {#if channels.some((c) => c.enabled)}<button type="button" class="btn" onclick={() => void checkNow()}
           >{t('checkNow')}</button
         >{/if}
     </div>

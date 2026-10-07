@@ -95,7 +95,7 @@
   <div class="types">
     {#each PROFILE_TYPES as id (id)}
       {@const it = instructions(locale, id)}
-      <button class="type" onclick={() => go({ type: id, step: 2 })}>
+      <button type="button" class="type" onclick={() => go({ type: id, step: 2 })}>
         <strong>{it.label}</strong><span class="muted">{it.transport}</span>
       </button>
     {/each}
@@ -114,7 +114,7 @@
     <p class="note">{fill(how.note, { instance })}</p>
     <div class="actions">
       <a class="btn" href={resolve('/access-profiles/new')}>{t('back')}</a>
-      <button class="btn btn-primary" onclick={() => go({ step: 3 })}>{t('next')}</button>
+      <button type="button" class="btn btn-primary" onclick={() => go({ step: 3 })}>{t('next')}</button>
     </div>
   </section>
 {:else if how && type}
@@ -153,7 +153,7 @@
             <option value="" disabled>—</option>
             {#each hostsOfKind as h (h.id)}<option value={String(h.id)}>{h.name} · {h.address}</option>{/each}
           </select>
-          <button class="btn" onclick={() => void runTest()} disabled={busy || testHost === ''}
+          <button type="button" class="btn" onclick={() => void runTest()} disabled={busy || testHost === ''}
             >{t('testRun')}</button
           >
         </div>

@@ -72,8 +72,11 @@
       </p>
     </div>
     <FleetChip status={aggregate.status} label={chipLabel} size="md" />
-    {#if onclose}<button class="btn btn-sm btn-ghost btn-icon" onclick={onclose} aria-label={t('closePanel')}
-        >✕</button
+    {#if onclose}<button
+        type="button"
+        class="btn btn-sm btn-ghost btn-icon"
+        onclick={onclose}
+        aria-label={t('closePanel')}>✕</button
       >{/if}
   </header>
 
@@ -116,7 +119,7 @@
           {/each}
           {#if group.entries.length > SHOWN && !expanded[key]}
             <li>
-              <button class="btn btn-sm btn-ghost" onclick={() => (expanded[key] = true)}
+              <button type="button" class="btn btn-sm btn-ghost" onclick={() => (expanded[key] = true)}
                 >{t('showAllHosts', { n: group.entries.length })}</button
               >
             </li>
@@ -133,6 +136,7 @@
             >
           {/if}
           <button
+            type="button"
             class="btn btn-sm"
             onclick={() =>
               void copyHosts(

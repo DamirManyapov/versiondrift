@@ -28,6 +28,7 @@
 
 <div class="menu" bind:this={root}>
   <button
+    type="button"
     bind:this={button}
     class="btn trigger"
     aria-expanded={open}

@@ -17,12 +17,15 @@
   let {
     row,
     readonly = false,
+    readonlyNote,
     onclose,
     ontoast,
   }: {
     row: Row;
     /** A shared board: shows everything, edits nothing. */
     readonly?: boolean;
+    /** Why the fields are read-only, shown under them (e.g. "choose a site to change this"). */
+    readonlyNote?: string | undefined;
     onclose?: (() => void) | undefined;
     ontoast: (message: string, undo?: () => void) => void;
   } = $props();
@@ -179,10 +182,16 @@
     </div>
     {#if row.known}<StatusChip status={row.status} cvss={s?.maxCvss} size="md" />{/if}
     {#if !readonly && instance}
-      <button class="btn btn-sm remove" onclick={removeFromBoard}>{t('removeFromBoard')}</button>
+      <button type="button" class="btn btn-sm remove" onclick={removeFromBoard}>{t('removeFromBoard')}</button
+      >
     {/if}
     {#if onclose}
-      <button class="btn btn-sm btn-ghost btn-icon" onclick={onclose} aria-label={t('closePanel')}>✕</button>
+      <button
+        type="button"
+        class="btn btn-sm btn-ghost btn-icon"
+        onclick={onclose}
+        aria-label={t('closePanel')}>✕</button
+      >
     {/if}
   </header>
 
@@ -190,6 +199,7 @@
     <div class="instances" role="group" aria-label={t('instance')}>
       {#each row.instances as inst (inst.index)}
         <button
+          type="button"
           class="pill mono"
           aria-pressed={inst.index === instance?.index}
           onclick={() => (chosen = inst.index)}
@@ -218,7 +228,7 @@
       {/if}
       <span class="grow"></span>
       {#if s.newer.length > 0 && s.installed && !readonly}
-        <button class="done" onclick={markUpdated}>
+        <button type="button" class="done" onclick={markUpdated}>
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
             ><path d="M5 12.5l4.5 4.5L19 7.5" /></svg
           >
@@ -289,6 +299,7 @@
       {/if}
     </div>
     {#if versionError && !readonly}<span class="hint">{versionError}</span>{/if}
+    {#if readonly && readonlyNote}<p class="hint">{readonlyNote}</p>{/if}
 
     {#snippet note(text: string, tone: 'warn' | 'info' = 'warn')}
       <div class="note {tone}" role="status">
@@ -337,6 +348,7 @@
       <div role="tablist" tabindex="-1" onkeydown={onTabKey}>
         {#each TABS as key (key)}
           <button
+            type="button"
             role="tab"
             id="tab-{key}-{row.id}"
             aria-controls="panel-{row.id}"
@@ -354,7 +366,7 @@
       </div>
       <span class="grow"></span>
       {#if tab === 'changes' && s.newer.length > 0}
-        <button class="btn btn-sm btn-ghost" onclick={copyMarkdown}>{t('copyMarkdown')}</button>
+        <button type="button" class="btn btn-sm btn-ghost" onclick={copyMarkdown}>{t('copyMarkdown')}</button>
         <label class="toggle">
           <input type="checkbox" bind:checked={importantOnly} />
           {t('importantOnly')}
