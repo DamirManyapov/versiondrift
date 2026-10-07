@@ -9,15 +9,21 @@
   import type { FleetData } from '$lib/fleet/api';
   import { fleet } from '$lib/fleet/state.svelte';
   import { i18n } from '$lib/i18n/context';
+  import { hostlessView } from '$lib/fleet/hostless';
   import { inventory } from '$lib/inventory/state.svelte';
 
   let {
     data,
     site,
+    chosen,
+    onchoose,
     ontoast,
   }: {
     data: FleetData;
     site: number | undefined;
+    /** The selected product (the board's one detail panel shows it); `onchoose` reports a click on a tile. */
+    chosen: string | undefined;
+    onchoose: (id: string) => void;
     ontoast: (message: string, undo?: () => void) => void;
   } = $props();
   const { t } = $derived(i18n());
@@ -33,16 +39,16 @@
     if (site === undefined) untrack(() => void fleet.load());
   });
 
-  const all = $derived(
-    data.hostless.flatMap((s) =>
-      s.items.map((item) => ({
-        ...item,
-        label: item.label ? `${siteName(s.siteId)} · ${item.label}` : siteName(s.siteId),
-      })),
-    ),
+  const view = $derived(
+    hostlessView(data, site, {
+      loaded: inventory.loaded,
+      boardId: inventory.boardId,
+      items: inventory.data.items,
+    }),
   );
-  const editable = $derived(site !== undefined && inventory.loaded && inventory.boardId === site);
-  const items = $derived(site === undefined ? all : editable ? inventory.data.items : []);
+  const all = $derived(view.all);
+  const editable = $derived(view.editable);
+  const items = $derived(view.items);
 </script>
 
 {#if site !== undefined || all.length > 0}
@@ -61,22 +67,26 @@
     {:else if items.length === 0}
       <p class="muted">{t('hostlessEmpty', { site: siteName(site ?? 0) })}</p>
     {:else}
-      <Board
-        {items}
-        settings={inventory.data.settings}
-        readonly={site === undefined || !canEdit}
-        readonlyNote={!canEdit ? t('viewerReadonly') : site === undefined ? t('hostlessReadonly') : undefined}
-        summary={false}
-        onhideok={(value: boolean) => inventory.setSettings({ hideOk: value })}
-        {ontoast}
-      />
+      <div style="--tile-min: 320px">
+        <Board
+          {items}
+          settings={inventory.data.settings}
+          readonly={site === undefined || !canEdit}
+          summary={false}
+          panel={false}
+          {chosen}
+          {onchoose}
+          onhideok={(value: boolean) => inventory.setSettings({ hideOk: value })}
+          {ontoast}
+        />
+      </div>
     {/if}
   </section>
 {/if}
 
 <style>
   .hostless {
-    margin-top: 32px;
+    margin-top: 28px;
     padding-top: 20px;
     border-top: 1px solid var(--border);
   }

@@ -156,7 +156,8 @@ test('a product without a host is added from the catalog to a site and given a v
   await page.goto('/');
   const tile = hostless.locator('[data-tile]', { hasText: 'Zabbix' });
   await tile.click();
-  const version = hostless.getByRole('combobox', { name: 'My version' });
+  // The board has one detail panel, on the right, for fleet and host-less products alike.
+  const version = page.getByRole('combobox', { name: 'My version' });
   await version.fill('7.0.0');
   await version.press('Enter');
   await expect(tile).not.toContainText('No version');
@@ -164,7 +165,11 @@ test('a product without a host is added from the catalog to a site and given a v
   // "All sites": every site's products without a host, read-only, labelled with the site.
   await page.getByLabel('Site:').selectOption({ label: 'All sites' });
   await expect(hostless.locator('[data-tile]', { hasText: 'Zabbix' })).toContainText('Казань, филиал');
-  await expect(hostless.getByRole('combobox', { name: 'My version' })).toHaveCount(0);
+  await hostless.locator('[data-tile]', { hasText: 'Zabbix' }).click();
+  await expect(page.getByRole('combobox', { name: 'My version' })).toHaveCount(0);
+  await expect(
+    page.locator('[aria-pressed="true"][data-tile], [aria-pressed="true"][data-fleet-tile]'),
+  ).toHaveCount(1);
 });
 
 test('a new site is made from the site switcher; Settings list sites and keep ones with hosts', async ({

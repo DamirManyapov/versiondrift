@@ -16,6 +16,9 @@
     readonly = false,
     readonlyNote,
     summary = true,
+    panel = true,
+    chosen,
+    onchoose,
     onhideok,
     ontoast,
     actions,
@@ -26,6 +29,13 @@
     readonly?: boolean;
     /** Why the board is read-only, shown in the detail panel under its disabled fields. */
     readonlyNote?: string | undefined;
+    /**
+     * The detail panel next to the grid; off where the page has one panel for several grids (the fleet board), which
+     * then owns the selection: `chosen` is the selected row, `onchoose` reports a click.
+     */
+    panel?: boolean;
+    chosen?: string | undefined;
+    onchoose?: (id: string) => void;
     /** The status strip on top; off where the page already has one (the fleet board). */
     summary?: boolean;
     onhideok: (value: boolean) => void;
@@ -56,7 +66,9 @@
       categoryLabel(t, a).localeCompare(categoryLabel(t, b)),
     ),
   );
-  const selected = $derived(rows.find((r) => r.id === selectedId) ?? visible[0]);
+  const selected = $derived(
+    panel ? (rows.find((r) => r.id === selectedId) ?? visible[0]) : rows.find((r) => r.id === chosen),
+  );
   const filtered = $derived(status !== undefined || category !== undefined || query !== '');
 
   const SUMMARY_KEYS = {
@@ -67,6 +79,10 @@
   } as const;
 
   async function select(id: string) {
+    if (!panel) {
+      onchoose?.(id);
+      return;
+    }
     selectedId = id;
     overlay = true;
     // On narrow screens the panel covers the board: move focus into it (Escape returns).
@@ -102,7 +118,7 @@
 
 <svelte:window onkeydown={onKey} />
 
-<div class="board">
+<div class="board" class:single={!panel}>
   <div class="left">
     {#if summary}<div class="summary">
         {#each SUMMARY_STATUSES as key (key)}
@@ -189,7 +205,7 @@
     {#if visible.length === 0}<p class="muted center">{t('nothingMatches')}</p>{/if}
   </div>
 
-  {#if selected}
+  {#if panel && selected}
     <div class="right" class:overlay>
       <DetailPanel row={selected} {readonly} {readonlyNote} onclose={() => (overlay = false)} {ontoast} />
     </div>
@@ -202,6 +218,9 @@
     grid-template-columns: minmax(0, 3fr) minmax(380px, 2fr);
     gap: 24px;
     align-items: start;
+  }
+  .board.single {
+    grid-template-columns: minmax(0, 1fr);
   }
   .left {
     display: flex;
@@ -332,7 +351,7 @@
   }
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--tile-min, 240px), 1fr));
     gap: 16px;
   }
   @media (max-width: 1100px) {

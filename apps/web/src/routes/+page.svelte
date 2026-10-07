@@ -14,6 +14,10 @@
   import { feed } from '$lib/feed/state.svelte';
   import { i18n } from '$lib/i18n/context';
   import { inventory } from '$lib/inventory/state.svelte';
+  import DetailPanel from '$lib/components/DetailPanel.svelte';
+  import { productCache } from '$lib/board/products.svelte';
+  import { buildRows } from '$lib/board/rows';
+  import { hostlessView } from '$lib/fleet/hostless';
 
   const { t } = $derived(i18n());
 
@@ -23,6 +27,23 @@
   onMount(() => inventory.init());
 
   const showToast = (message: string, undo?: () => void) => (toast = { message, ...(undo && { undo }) });
+
+  // The fleet board has one detail panel: a fleet product, or a product without a host when one was clicked.
+  const site = $derived(fleet.data ? siteFrom(page.url, fleet.data) : undefined);
+  const canEdit = $derived(page.data.account?.role !== 'viewer');
+  let hostlessId = $state<string | undefined>();
+  const chooseHostless = (id: string) => (hostlessId = id);
+  const hostlessRow = $derived.by(() => {
+    if (!hostlessId || !fleet.data) return undefined;
+    const { items } = hostlessView(fleet.data, site, {
+      loaded: inventory.loaded,
+      boardId: inventory.boardId,
+      items: inventory.data.items,
+    });
+    return buildRows(items, feed.index, productCache.products, inventory.data.settings).find(
+      (r) => r.id === hostlessId,
+    );
+  });
 </script>
 
 <Meta title="VersionDrift" description={t('appTagline')} />
@@ -33,8 +54,34 @@
 {#if page.data.mode === 'public' && (!inventory.loaded || inventory.demo)}<Landing />{/if}
 
 {#if page.data.mode === 'selfhosted' && fleet.hasHosts && fleet.data}
-  <FleetBoard data={fleet.data} site={siteFrom(page.url, fleet.data)} ontoast={showToast} />
-  <HostlessProducts data={fleet.data} site={siteFrom(page.url, fleet.data)} ontoast={showToast} />
+  {@const data = fleet.data}
+  <FleetBoard
+    {data}
+    {site}
+    ontoast={showToast}
+    other={hostlessRow ? hostlessPanel : undefined}
+    onpick={() => (hostlessId = undefined)}
+  >
+    {#snippet below()}
+      <HostlessProducts
+        {data}
+        {site}
+        chosen={hostlessRow?.id}
+        onchoose={chooseHostless}
+        ontoast={showToast}
+      />
+    {/snippet}
+  </FleetBoard>
+  {#snippet hostlessPanel()}
+    {#if hostlessRow}
+      <DetailPanel
+        row={hostlessRow}
+        readonly={site === undefined || !canEdit}
+        readonlyNote={!canEdit ? t('viewerReadonly') : site === undefined ? t('hostlessReadonly') : undefined}
+        ontoast={showToast}
+      />
+    {/if}
+  {/snippet}
 {:else}
   {#if inventory.mode === 'selfhosted' && inventory.boards.length > 0}<BoardSwitcher />{/if}
 

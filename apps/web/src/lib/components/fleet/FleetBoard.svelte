@@ -1,6 +1,7 @@
 <script lang="ts">
   // The self-hosted board with hosts (docs/specs/fleet-ui.md §5.A): products aggregated over the hosts of the
   // chosen site, a summary strip with poll problems, and the version breakdown of the selected product.
+  import type { Snippet } from 'svelte';
   import { fleetSummary, type AggregateKey, type SummaryKey } from '@versiondrift/core';
   import { resolve } from '$app/paths';
   import { productCache } from '$lib/board/products.svelte';
@@ -11,8 +12,24 @@
   import FleetPanel from './FleetPanel.svelte';
   import FleetTile from './FleetTile.svelte';
 
-  let { data, site, ontoast }: { data: FleetData; site: number | undefined; ontoast: (m: string) => void } =
-    $props();
+  let {
+    data,
+    site,
+    ontoast,
+    below,
+    other,
+    onpick,
+  }: {
+    data: FleetData;
+    site: number | undefined;
+    ontoast: (m: string) => void;
+    /** Under the tiles, in the same column (the products without a host). */
+    below?: Snippet;
+    /** The one detail panel shows something else (a product without a host): no fleet tile is selected then. */
+    other?: Snippet | undefined;
+    /** A fleet tile was clicked. */
+    onpick?: () => void;
+  } = $props();
   const { t } = $derived(i18n());
 
   $effect(() => void productCache.ensure(fleetProductIds(data)));
@@ -31,7 +48,7 @@
   let status = $state<SummaryKey | undefined>();
   let selectedId = $state<string | undefined>();
   const shown = $derived(status ? tiles.filter((a) => a.status === status) : tiles);
-  const selected = $derived(shown.find((a) => a.productId === selectedId) ?? shown[0]);
+  const selected = $derived(other ? undefined : (shown.find((a) => a.productId === selectedId) ?? shown[0]));
 
   const SUMMARY: {
     key: SummaryKey;
@@ -107,20 +124,29 @@
   </p>
 {/if}
 
+<!-- One detail panel for the whole board (UI audit, board 1): a fleet product or one without a host. -->
 <div class="layout">
-  <div class="grid">
-    {#each shown as aggregate (aggregate.productId)}
-      <FleetTile
-        {aggregate}
-        product={productCache.products[aggregate.productId]}
-        name={nameOf(aggregate.productId)}
-        category={categoryOf(aggregate.productId)}
-        selected={selected?.productId === aggregate.productId}
-        onselect={() => (selectedId = aggregate.productId)}
-      />
-    {/each}
+  <div class="left">
+    <div class="grid">
+      {#each shown as aggregate (aggregate.productId)}
+        <FleetTile
+          {aggregate}
+          product={productCache.products[aggregate.productId]}
+          name={nameOf(aggregate.productId)}
+          category={categoryOf(aggregate.productId)}
+          selected={selected?.productId === aggregate.productId}
+          onselect={() => {
+            selectedId = aggregate.productId;
+            onpick?.();
+          }}
+        />
+      {/each}
+    </div>
+    {@render below?.()}
   </div>
-  {#if selected}
+  {#if other}
+    <div class="right">{@render other()}</div>
+  {:else if selected}
     <div class="right">
       <FleetPanel
         aggregate={selected}
