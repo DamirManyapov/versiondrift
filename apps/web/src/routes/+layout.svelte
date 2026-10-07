@@ -125,13 +125,13 @@
       <SiteSwitcher sites={fleet.data.sites} />
     {/if}
     {#if canAddHosts}
-      <button class="primary" onclick={() => setAdd('one')}>
+      <button class="btn btn-primary" onclick={() => setAdd('one')}>
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
         {t('addHosts')}
       </button>
     {/if}
     {#if data.account?.role !== 'viewer'}
-      <a class={canAddHosts ? 'ghost' : 'primary'} href={resolve('/catalog')}>
+      <a class={canAddHosts ? 'btn' : 'btn btn-primary'} href={resolve('/catalog')}>
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
         {t('addProduct')}
       </a>
@@ -172,7 +172,11 @@
     <div class="spacer"></div>
     <label>
       <span class="visually-hidden">{t('language')}</span>
-      <select value={data.locale} onchange={(e) => setLocale(e.currentTarget.value as Locale)}>
+      <select
+        class="input input-sm"
+        value={data.locale}
+        onchange={(e) => setLocale(e.currentTarget.value as Locale)}
+      >
         {#each LOCALES as locale (locale)}
           <option value={locale}>{locale === 'en' ? 'English' : 'Русский'}</option>
         {/each}
@@ -180,7 +184,7 @@
     </label>
     <label>
       <span class="visually-hidden">{t('theme')}</span>
-      <select value={data.theme} onchange={(e) => setTheme(e.currentTarget.value)}>
+      <select class="input input-sm" value={data.theme} onchange={(e) => setTheme(e.currentTarget.value)}>
         <option value="auto">{t('themeAuto')}</option>
         <option value="dark">{t('themeDark')}</option>
         <option value="light">{t('themeLight')}</option>
@@ -234,21 +238,35 @@
     font-weight: 700;
     letter-spacing: -0.01em;
   }
+  /* A segmented control as tall as the other header controls: 3 + 32 + 3 px inside a 1 px border. */
   nav {
     display: flex;
+    height: var(--control-h);
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 4px;
-    gap: 4px;
+    border-radius: var(--control-radius);
+    padding: 3px;
+    gap: 3px;
   }
   nav a {
-    padding: 8px 16px;
-    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    border-radius: var(--control-radius-sm);
     font-size: 14px;
     font-weight: 500;
     color: var(--text-muted);
     text-decoration: none;
+    transition:
+      background-color 0.12s,
+      color 0.12s;
+  }
+  nav a:hover:not([aria-current='page']) {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+  nav a:active:not([aria-current='page']) {
+    background: var(--surface-active);
   }
   nav a[aria-current='page'] {
     background: var(--text);
@@ -265,34 +283,6 @@
   .muted {
     color: var(--text-muted);
     font-size: 12px;
-  }
-  .ghost,
-  .primary {
-    height: 44px;
-    padding: 0 16px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    text-decoration: none;
-  }
-  .ghost {
-    border: 1px solid var(--border-strong);
-  }
-  .ghost:hover {
-    background: var(--surface);
-  }
-  .ghost:disabled {
-    opacity: 0.6;
-  }
-  .primary {
-    background: var(--text);
-    color: var(--bg);
-    font-weight: 600;
-  }
-  .primary:hover {
-    color: var(--bg);
   }
   main {
     flex-grow: 1;
@@ -326,15 +316,6 @@
     gap: 16px;
     flex-wrap: wrap;
     font-size: 13px;
-  }
-  select {
-    font: inherit;
-    font-size: 13px;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 8px;
   }
   @media (max-width: 720px) {
     header,

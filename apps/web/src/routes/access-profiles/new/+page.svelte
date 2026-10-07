@@ -113,22 +113,28 @@
     </ol>
     <p class="note">{fill(how.note, { instance })}</p>
     <div class="actions">
-      <a class="button" href={resolve('/access-profiles/new')}>{t('back')}</a>
-      <button class="primary" onclick={() => go({ step: 3 })}>{t('next')}</button>
+      <a class="btn" href={resolve('/access-profiles/new')}>{t('back')}</a>
+      <button class="btn btn-primary" onclick={() => go({ step: 3 })}>{t('next')}</button>
     </div>
   </section>
 {:else if how && type}
   {#if !saved}
     <form onsubmit={save}>
-      <label>{t('profileName')}<input bind:value={name} required /></label>
-      <label>{t('profileUser')}<input class="mono" bind:value={user} required /></label>
+      <label>{t('profileName')}<input class="input" bind:value={name} required /></label>
+      <label>{t('profileUser')}<input class="input mono" bind:value={user} required /></label>
       {#if how.secret}<label
-          >{how.secret}<input type="password" bind:value={secret} required autocomplete="off" /></label
+          >{how.secret}<input
+            class="input"
+            type="password"
+            bind:value={secret}
+            required
+            autocomplete="off"
+          /></label
         >{/if}
       <p class="muted small">{how.rights}</p>
       <div class="actions">
-        <button type="button" onclick={() => go({ step: 2 })}>{t('back')}</button>
-        <button class="primary" type="submit" disabled={busy}>{t('saveProfile')}</button>
+        <button class="btn" type="button" onclick={() => go({ step: 2 })}>{t('back')}</button>
+        <button class="btn btn-primary" type="submit" disabled={busy}>{t('saveProfile')}</button>
       </div>
     </form>
   {:else}
@@ -143,11 +149,13 @@
         <p class="muted">{t('noHostsOfKind')}</p>
       {:else}
         <div class="row">
-          <select bind:value={testHost} aria-label={t('testOnHost')}>
+          <select class="input" bind:value={testHost} aria-label={t('testOnHost')}>
             <option value="" disabled>—</option>
             {#each hostsOfKind as h (h.id)}<option value={String(h.id)}>{h.name} · {h.address}</option>{/each}
           </select>
-          <button onclick={() => void runTest()} disabled={busy || testHost === ''}>{t('testRun')}</button>
+          <button class="btn" onclick={() => void runTest()} disabled={busy || testHost === ''}
+            >{t('testRun')}</button
+          >
         </div>
         {#if test}
           <p role="status" class={test.ok ? 'ok' : 'bad'}>
@@ -162,7 +170,7 @@
         {/if}
       {/if}
     </section>
-    <div class="actions"><a class="button primary" href={resolve('/access-profiles')}>{t('done')}</a></div>
+    <div class="actions"><a class="btn btn-primary" href={resolve('/access-profiles')}>{t('done')}</a></div>
   {/if}
   {#if problem}<p class="error" role="alert">{problem}</p>{/if}
 {/if}
@@ -221,9 +229,17 @@
     color: var(--text);
     font: inherit;
     text-align: left;
+    cursor: pointer;
+    transition:
+      background-color 0.12s,
+      border-color 0.12s;
   }
   .type:hover {
     border-color: var(--link);
+    background: var(--surface-hover);
+  }
+  .type:active {
+    background: var(--surface-active);
   }
   .how,
   form,
@@ -255,16 +271,6 @@
     color: var(--text-muted);
     max-width: 420px;
   }
-  input,
-  select {
-    font: inherit;
-    font-size: 14px;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 7px 10px;
-  }
   .row {
     display: flex;
     gap: 8px;
@@ -273,23 +279,6 @@
     display: flex;
     gap: 8px;
     margin-top: 16px;
-  }
-  .actions button,
-  .row button,
-  .button {
-    font-size: 14px;
-    padding: 8px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-    text-decoration: none;
-    background: none;
-  }
-  .primary {
-    background: var(--text) !important;
-    color: var(--bg) !important;
-    border-color: var(--text) !important;
-    font-weight: 600;
   }
   .test {
     margin-top: 20px;

@@ -62,6 +62,7 @@
     <p class="muted">{t('settingsThresholdHelp')}</p>
     <input
       id="cvss"
+      class="input cvss"
       type="number"
       min="0"
       max="10"
@@ -78,10 +79,10 @@
     <h2>{t('settingsInventory')}</h2>
     <p class="muted">{inventory.mode === 'selfhosted' ? t('settingsStorageServer') : t('settingsStorage')}</p>
     <div class="row">
-      <button class="primary" onclick={exportYaml} disabled={inventory.data.items.length === 0}
+      <button class="btn btn-primary" onclick={exportYaml} disabled={inventory.data.items.length === 0}
         >{t('exportYaml')}</button
       >
-      <label class="ghost">
+      <label class="btn upload">
         {t('importYaml')}
         <input
           type="file"
@@ -91,7 +92,7 @@
         />
       </label>
       <button
-        class="ghost danger"
+        class="btn btn-danger"
         onclick={() => {
           inventory.startOwn();
           message = t('clearedBoard');
@@ -101,8 +102,8 @@
     {#if pending}
       <div class="confirm" role="status">
         <span>{t('importedItems', { n: pending.length }).replace(/\.$/, '')}?</span>
-        <button class="primary" onclick={() => apply('replace')}>{t('importReplace')}</button>
-        <button class="ghost" onclick={() => apply('add')}>{t('importAdd')}</button>
+        <button class="btn btn-sm btn-primary" onclick={() => apply('replace')}>{t('importReplace')}</button>
+        <button class="btn btn-sm" onclick={() => apply('add')}>{t('importAdd')}</button>
       </div>
     {/if}
     {#if message}<p role="status">{message}</p>{/if}
@@ -134,14 +135,8 @@
     font-size: 14px;
     margin: 0;
   }
-  input[type='number'] {
-    font: inherit;
+  .cvss {
     width: 100px;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 8px 10px;
   }
   .row,
   .confirm {
@@ -156,29 +151,8 @@
     background: var(--surface);
     border: 1px solid var(--border);
   }
-  .primary,
-  .ghost {
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .primary {
-    background: var(--text);
-    color: var(--bg);
-  }
-  .primary:disabled {
-    opacity: 0.5;
-  }
-  .ghost {
-    border: 1px solid var(--border-strong);
-  }
-  .ghost:focus-within {
+  .upload:focus-within {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
-  }
-  .danger {
-    color: var(--critical);
   }
 </style>

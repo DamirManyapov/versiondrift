@@ -118,18 +118,19 @@
       </div>{/if}
 
     <div class="filters">
-      <button class="chip" aria-pressed={category === undefined} onclick={() => (category = undefined)}
+      <button class="chip-btn" aria-pressed={category === undefined} onclick={() => (category = undefined)}
         >{t('filterAll')}</button
       >
       {#each categories as c (c)}
         <button
-          class="chip"
+          class="chip-btn"
           aria-pressed={category === c}
           onclick={() => (category = category === c ? undefined : c)}>{categoryLabel(t, c)}</button
         >
       {/each}
       <span class="grow"></span>
       <input
+        class="input input-sm search"
         type="search"
         placeholder={t('searchPlaceholder')}
         bind:value={query}
@@ -145,7 +146,7 @@
       </label>
       {#if filtered}
         <button
-          class="link"
+          class="btn btn-sm btn-ghost"
           onclick={() => {
             status = undefined;
             category = undefined;
@@ -204,9 +205,19 @@
     display: flex;
     align-items: center;
     gap: 14px;
+    transition:
+      background-color 0.12s,
+      border-color 0.12s;
+  }
+  .stat:hover {
+    background: var(--surface-hover);
+  }
+  .stat:active {
+    background: var(--surface-active);
   }
   .stat[aria-pressed='true'] {
-    border-color: var(--text);
+    border-color: var(--selected);
+    box-shadow: 0 0 0 1px var(--selected);
   }
   .dot {
     width: 12px;
@@ -249,42 +260,20 @@
     flex-wrap: wrap;
     align-items: center;
   }
-  .chip {
-    height: 34px;
-    padding: 0 14px;
-    border-radius: 17px;
-    font-size: 13px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-  }
-  .chip[aria-pressed='true'] {
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
-  }
   .grow {
     flex-grow: 1;
   }
-  input[type='search'] {
-    font: inherit;
-    font-size: 14px;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 7px 10px;
+  .search {
     min-width: 180px;
   }
   .toggle {
     display: flex;
     align-items: center;
     gap: 6px;
+    height: var(--control-h-sm);
     font-size: 13px;
     color: var(--text-soft);
-  }
-  .link {
-    font-size: 13px;
-    color: var(--link);
+    cursor: pointer;
   }
   .grid {
     display: grid;

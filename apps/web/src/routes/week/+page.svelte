@@ -111,9 +111,9 @@
 <div class="week">
   <header>
     {#if prev}
-      <a class="nav" href={hrefFor(prev)} aria-label={t('prevWeek')}>‹</a>
+      <a class="btn btn-icon nav" href={hrefFor(prev)} aria-label={t('prevWeek')}>‹</a>
     {:else}
-      <span class="nav off" aria-hidden="true">‹</span>
+      <span class="btn btn-icon nav" aria-hidden="true" aria-disabled="true">‹</span>
     {/if}
     <div class="col">
       <h1>{t('weekTitle')}: {range}</h1>
@@ -126,9 +126,9 @@
       {/if}
     </div>
     {#if next}
-      <a class="nav" href={hrefFor(next)} aria-label={t('nextWeek')}>›</a>
+      <a class="btn btn-icon nav" href={hrefFor(next)} aria-label={t('nextWeek')}>›</a>
     {:else}
-      <span class="nav off" aria-hidden="true">›</span>
+      <span class="btn btn-icon nav" aria-hidden="true" aria-disabled="true">›</span>
     {/if}
   </header>
 
@@ -202,20 +202,7 @@
     color: var(--text-muted);
   }
   .nav {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text);
-    text-decoration: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    border: 1px solid var(--border-strong);
     font-size: 22px;
-    text-align: center;
-  }
-  .nav.off {
-    opacity: 0.35;
   }
   section {
     display: flex;

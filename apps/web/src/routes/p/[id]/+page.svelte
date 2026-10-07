@@ -87,7 +87,7 @@
       <span class="on">✓ {t('onYourBoard')}</span>
     {:else}
       <button
-        class="add"
+        class="btn btn-primary"
         onclick={() => {
           if (inventory.demo) inventory.startOwn();
           inventory.add(product.id);
@@ -240,13 +240,6 @@
   }
   .big {
     font-size: 24px;
-    font-weight: 600;
-  }
-  .add {
-    padding: 10px 16px;
-    border-radius: 10px;
-    background: var(--text);
-    color: var(--bg);
     font-weight: 600;
   }
   .on {

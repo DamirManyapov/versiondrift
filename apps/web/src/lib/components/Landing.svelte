@@ -24,8 +24,8 @@
       <li>{t('landingPoint3')}</li>
     </ul>
     <div class="ctas">
-      <a class="cta" href={resolve('/catalog')}>{t('landingBuild')}</a>
-      <a class="secondary" href={REPO_URL} target="_blank" rel="noreferrer">{t('landingGithub')}</a>
+      <a class="btn btn-primary" href={resolve('/catalog')}>{t('landingBuild')}</a>
+      <a class="btn" href={REPO_URL} target="_blank" rel="noreferrer">{t('landingGithub')}</a>
     </div>
   </div>
 
@@ -86,21 +86,6 @@
     gap: 12px;
     flex-wrap: wrap;
     margin-top: 6px;
-  }
-  .cta,
-  .secondary {
-    padding: 12px 18px;
-    border-radius: 10px;
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .cta {
-    background: var(--text);
-    color: var(--bg);
-  }
-  .secondary {
-    border: 1px solid var(--border-strong);
-    color: var(--text);
   }
   h3 {
     margin: 0 0 12px;

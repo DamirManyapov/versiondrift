@@ -53,7 +53,7 @@
         <p class="muted">{site === undefined ? t('hostlessAllHint') : t('hostlessHint')}</p>
       </div>
       {#if canEdit && site !== undefined}
-        <a class="button" href={resolve('/catalog')}>{t('addProductLong')}</a>
+        <a class="btn" href={resolve('/catalog')}>{t('addProductLong')}</a>
       {/if}
     </header>
     {#if site !== undefined && !editable}
@@ -94,14 +94,5 @@
     margin: 0;
     color: var(--text-muted);
     font-size: 13px;
-  }
-  .button {
-    flex-shrink: 0;
-    padding: 8px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--border-strong);
-    color: var(--text);
-    font-size: 14px;
-    text-decoration: none;
   }
 </style>

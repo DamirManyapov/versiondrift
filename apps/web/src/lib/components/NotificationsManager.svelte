@@ -201,18 +201,20 @@
               >{/if}
           </div>
           <div class="actions">
-            <button onclick={() => void test(channel.id)}>{t('sendTest')}</button>
-            <button onclick={() => start(channel)}>{t('edit')}</button>
-            <button onclick={() => void toggle(channel)}
+            <button class="btn btn-sm" onclick={() => void test(channel.id)}>{t('sendTest')}</button>
+            <button class="btn btn-sm" onclick={() => start(channel)}>{t('edit')}</button>
+            <button class="btn btn-sm" onclick={() => void toggle(channel)}
               >{channel.enabled ? t('disable') : t('enable')}</button
             >
             {#if confirming === channel.id}
-              <button class="danger" onclick={() => void remove(channel.id)}
+              <button class="btn btn-sm btn-danger" onclick={() => void remove(channel.id)}
                 >{t('deleteChannelConfirm', { name: channel.name })}</button
               >
-              <button onclick={() => (confirming = undefined)}>{t('cancel')}</button>
+              <button class="btn btn-sm" onclick={() => (confirming = undefined)}>{t('cancel')}</button>
             {:else}
-              <button onclick={() => (confirming = channel.id)}>{t('deleteChannel')}</button>
+              <button class="btn btn-sm" onclick={() => (confirming = channel.id)}
+                >{t('deleteChannel')}</button
+              >
             {/if}
           </div>
         </li>
@@ -225,8 +227,9 @@
 
   {#if editing === undefined}
     <div class="actions">
-      <button class="primary" onclick={() => start()}>{t('addChannel')}</button>
-      {#if channels.some((c) => c.enabled)}<button onclick={() => void checkNow()}>{t('checkNow')}</button
+      <button class="btn btn-primary" onclick={() => start()}>{t('addChannel')}</button>
+      {#if channels.some((c) => c.enabled)}<button class="btn" onclick={() => void checkNow()}
+          >{t('checkNow')}</button
         >{/if}
     </div>
   {:else}
@@ -306,8 +309,8 @@
       </div>
 
       <div class="actions">
-        <button class="primary" type="submit">{t('save')}</button>
-        <button type="button" onclick={() => (editing = undefined)}>{t('cancel')}</button>
+        <button class="btn btn-primary" type="submit">{t('save')}</button>
+        <button class="btn" type="button" onclick={() => (editing = undefined)}>{t('cancel')}</button>
       </div>
     </form>
   {/if}
@@ -386,31 +389,20 @@
   }
   input:not([type='checkbox']),
   select {
+    height: var(--control-h);
     font: inherit;
     font-size: 14px;
     color: var(--text);
     background: var(--bg);
     border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 7px 10px;
+    border-radius: var(--control-radius-sm);
+    padding: 0 12px;
     min-width: 220px;
+    transition: border-color 0.12s;
   }
-  button {
-    font-size: 13px;
-    padding: 7px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-  }
-  .primary {
-    align-self: flex-start;
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
-  }
-  .danger {
-    border-color: var(--critical-border);
-    color: var(--critical);
+  input:not([type='checkbox']):hover:not(:disabled, :focus),
+  select:hover:not(:disabled, :focus) {
+    border-color: var(--text-muted);
   }
   .muted {
     color: var(--text-muted);

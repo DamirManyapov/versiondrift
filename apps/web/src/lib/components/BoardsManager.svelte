@@ -49,9 +49,17 @@
       <li>
         {#if editing === board.id}
           <form onsubmit={(e) => rename(e, board.id)}>
-            <input bind:value={name} aria-label={t('boardName')} maxlength="60" required />
-            <button class="primary" type="submit">{t('save')}</button>
-            <button type="button" onclick={() => (editing = undefined)}>{t('cancel')}</button>
+            <input
+              class="input input-sm"
+              bind:value={name}
+              aria-label={t('boardName')}
+              maxlength="60"
+              required
+            />
+            <button class="btn btn-sm btn-primary" type="submit">{t('save')}</button>
+            <button class="btn btn-sm" type="button" onclick={() => (editing = undefined)}
+              >{t('cancel')}</button
+            >
           </form>
         {:else}
           <span class="name"
@@ -60,6 +68,7 @@
               >{/if}</span
           >
           <button
+            class="btn btn-sm"
             onclick={() => {
               editing = board.id;
               name = board.name;
@@ -69,12 +78,14 @@
             <span class="muted">{t('siteHasHosts')}</span>
           {:else if inventory.boards.length > 1}
             {#if confirming === board.id}
-              <button class="danger" onclick={() => void run(() => inventory.deleteBoard(board.id))}
+              <button
+                class="btn btn-sm btn-danger"
+                onclick={() => void run(() => inventory.deleteBoard(board.id))}
                 >{t('deleteBoardConfirm', { name: board.name })}</button
               >
-              <button onclick={() => (confirming = undefined)}>{t('cancel')}</button>
+              <button class="btn btn-sm" onclick={() => (confirming = undefined)}>{t('cancel')}</button>
             {:else}
-              <button onclick={() => (confirming = board.id)}>{t('deleteBoard')}</button>
+              <button class="btn btn-sm" onclick={() => (confirming = board.id)}>{t('deleteBoard')}</button>
             {/if}
           {/if}
         {/if}
@@ -83,13 +94,14 @@
   </ul>
   <form class="new" onsubmit={create}>
     <input
+      class="input new-name"
       bind:value={newName}
       aria-label={sites ? t('newSiteName') : t('boardName')}
       placeholder={sites ? t('newSiteName') : t('boardName')}
       maxlength="60"
       required
     />
-    <button class="primary" type="submit">{sites ? t('newSite') : t('newBoard')}</button>
+    <button class="btn btn-primary" type="submit">{sites ? t('newSite') : t('newBoard')}</button>
   </form>
   {#if problem}<p class="error" role="alert">{problem}</p>{/if}
 </section>
@@ -121,37 +133,12 @@
   .new {
     margin-top: 12px;
   }
-  .new input {
+  .new-name {
     min-width: 260px;
   }
   .muted {
     color: var(--text-muted);
     font-size: 13px;
-  }
-  input {
-    font: inherit;
-    font-size: 14px;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 6px 10px;
-  }
-  button {
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-  }
-  .primary {
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
-  }
-  .danger {
-    border-color: var(--critical-border);
-    color: var(--critical);
   }
   .error {
     color: var(--critical);

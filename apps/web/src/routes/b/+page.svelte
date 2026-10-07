@@ -57,7 +57,7 @@
 {#if broken}
   <section class="empty">
     <h2>{t('sharedInvalid')}</h2>
-    <a class="cta" href={resolve('/')}>{t('sharedBack')}</a>
+    <a class="btn btn-primary" href={resolve('/')}>{t('sharedBack')}</a>
   </section>
 {:else if feed.error}
   <p role="alert" class="error">{t('feedError', { message: feed.error })}</p>
@@ -68,11 +68,11 @@
     <span class="text">{t('sharedBanner', { n: new Set(items.map((i) => i.p)).size })}</span>
     {#if choosing}
       <span class="muted">{t('sharedChoose')}</span>
-      <button class="cta" onclick={() => save('merge')}>{t('sharedMerge')}</button>
-      <button class="secondary" onclick={() => save('replace')}>{t('sharedReplace')}</button>
-      <button class="link" onclick={() => (choosing = false)}>{t('cancel')}</button>
+      <button class="btn btn-primary" onclick={() => save('merge')}>{t('sharedMerge')}</button>
+      <button class="btn" onclick={() => save('replace')}>{t('sharedReplace')}</button>
+      <button class="btn btn-ghost" onclick={() => (choosing = false)}>{t('cancel')}</button>
     {:else}
-      <button class="cta" onclick={() => (hasOwn ? (choosing = true) : save('replace'))}
+      <button class="btn btn-primary" onclick={() => (hasOwn ? (choosing = true) : save('replace'))}
         >{t('sharedSave')}</button
       >
     {/if}
@@ -123,24 +123,5 @@
   }
   .empty h2 {
     margin: 0;
-  }
-  .cta,
-  .secondary {
-    padding: 10px 16px;
-    border-radius: 10px;
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .cta {
-    background: var(--text);
-    color: var(--bg);
-  }
-  .secondary {
-    border: 1px solid var(--border-strong);
-    color: var(--text);
-  }
-  .link {
-    font-size: 13px;
-    color: var(--link);
   }
 </style>

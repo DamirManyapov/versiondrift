@@ -124,9 +124,21 @@
     text-align: left;
     text-decoration: none;
     font: inherit;
+    cursor: pointer;
+    transition:
+      background-color 0.12s,
+      border-color 0.12s;
+  }
+  .stat:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+  .stat:active {
+    background: var(--surface-active);
   }
   .stat[aria-pressed='true'] {
-    border-color: var(--focus);
+    border-color: var(--selected);
+    box-shadow: 0 0 0 1px var(--selected);
   }
   .stat.poll {
     border-style: dashed;

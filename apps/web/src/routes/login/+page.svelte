@@ -16,18 +16,18 @@
     <form method="POST">
       <label>
         <span>{t('signInName')}</span>
-        <input name="name" autocomplete="username" value={form?.name ?? ''} required />
+        <input class="input" name="name" autocomplete="username" value={form?.name ?? ''} required />
       </label>
       <label>
         <span>{t('signInPassword')}</span>
-        <input name="password" type="password" autocomplete="current-password" required />
+        <input class="input" name="password" type="password" autocomplete="current-password" required />
       </label>
       {#if form?.problem}
         <p class="error" role="alert">
           {form.problem === 'tooMany' ? t('signInTooMany') : t('signInInvalid')}
         </p>
       {/if}
-      <button class="primary" type="submit">{t('signInButton')}</button>
+      <button class="btn btn-primary" type="submit">{t('signInButton')}</button>
     </form>
   {:else if data.method === 'oidc'}
     <a
@@ -61,23 +61,6 @@
     flex-direction: column;
     gap: 6px;
     font-size: 14px;
-  }
-  input {
-    font: inherit;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 9px 12px;
-  }
-  .primary {
-    padding: 11px 16px;
-    border-radius: 10px;
-    background: var(--text);
-    color: var(--bg);
-    font-weight: 600;
-    text-align: center;
-    text-decoration: none;
   }
   .error {
     color: var(--critical);

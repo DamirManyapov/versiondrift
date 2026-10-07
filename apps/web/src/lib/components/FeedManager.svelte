@@ -94,8 +94,10 @@
     {#if info.state.lastError}<p class="error">{t('mirrorError', { message: info.state.lastError })}</p>{/if}
     {#if admin}
       <div class="actions">
-        <button onclick={checkNow} disabled={busy}>{busy ? t('feedWorking') : t('feedCheckNow')}</button>
-        <label class="button" class:disabled={busy}>
+        <button class="btn btn-sm" onclick={checkNow} disabled={busy}
+          >{busy ? t('feedWorking') : t('feedCheckNow')}</button
+        >
+        <label class="btn btn-sm upload" aria-disabled={busy}>
           {t('feedUpload')}
           <input
             type="file"
@@ -106,7 +108,9 @@
           />
         </label>
         {#if info.state.generatedAt}
-          <a class="button" href={resolve('/feed/versiondrift-feed.tar.gz')} download>{t('feedDownload')}</a>
+          <a class="btn btn-sm" href={resolve('/feed/versiondrift-feed.tar.gz')} download
+            >{t('feedDownload')}</a
+          >
         {/if}
       </div>
     {/if}
@@ -127,23 +131,9 @@
     align-items: center;
     margin: 12px 0;
   }
-  button,
-  .button {
-    font-size: 13px;
-    padding: 7px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-    text-decoration: none;
-    cursor: pointer;
-  }
-  .button:focus-within {
-    outline: 2px solid var(--focus, var(--text));
+  .upload:focus-within {
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
-  }
-  .disabled {
-    opacity: 0.6;
-    cursor: default;
   }
   .muted {
     color: var(--text-muted);

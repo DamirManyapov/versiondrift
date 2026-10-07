@@ -262,15 +262,17 @@
     <div class="side">
       <FleetChip status={host.status.status} label={hostLabel(t, host.status, host.poll.state)} size="md" />
       {#if canPoll}
-        <button class="primary" onclick={() => void poll()} disabled={polling}
+        <button class="btn btn-primary" onclick={() => void poll()} disabled={polling}
           >{polling ? t('polling') : t('pollNow')}</button
         >
       {/if}
       {#if canEdit && !editing}
-        <button class="button" onclick={startEdit}>{t('editHost')}</button>
+        <button class="btn btn-sm" onclick={startEdit}>{t('editHost')}</button>
       {/if}
       {#if canEdit && !confirmingDelete}
-        <button class="button danger" onclick={() => (confirmingDelete = true)}>{t('deleteHost')}</button>
+        <button class="btn btn-sm btn-danger" onclick={() => (confirmingDelete = true)}
+          >{t('deleteHost')}</button
+        >
       {/if}
     </div>
   </header>
@@ -278,8 +280,8 @@
   {#if confirmingDelete}
     <div class="confirm" role="alert">
       <span>{t('confirmDeleteHost', { host: host.record.name })}</span>
-      <button class="button danger" onclick={() => void deleteHost()}>{t('deleteHost')}</button>
-      <button class="button" onclick={() => (confirmingDelete = false)}>{t('cancel')}</button>
+      <button class="btn btn-sm btn-danger" onclick={() => void deleteHost()}>{t('deleteHost')}</button>
+      <button class="btn btn-sm" onclick={() => (confirmingDelete = false)}>{t('cancel')}</button>
     </div>
   {/if}
 
@@ -287,27 +289,27 @@
     <form class="edit" onsubmit={saveEdit} aria-label={t('editHost')}>
       <label
         >{t('fieldAddress')}
-        <input bind:value={edit.address} required class="mono" />
+        <input bind:value={edit.address} required class="input mono" />
         <small>{t('addressHint')}</small>
       </label>
       <label
         >{t('siteLabel')}
-        <select bind:value={edit.site}>
+        <select class="input" bind:value={edit.site}>
           {#each fleet.data?.sites ?? [] as s (s.id)}<option value={String(s.id)}>{s.name}</option>{/each}
         </select>
       </label>
       <label
         >{t('hostProfile')}
-        <select bind:value={edit.profile}>
+        <select class="input" bind:value={edit.profile}>
           {#each kindProfiles as p (p.id)}<option value={String(p.id)}>{p.name}</option>{/each}
           <option value="">{t('noProfileOption')}</option>
         </select>
       </label>
       <div class="actions">
-        <button class="primary" type="submit" disabled={saving}
+        <button class="btn btn-primary" type="submit" disabled={saving}
           >{saving ? t('polling') : t('saveAndCheck')}</button
         >
-        <button class="button" type="button" onclick={() => (editing = false)}>{t('cancel')}</button>
+        <button class="btn" type="button" onclick={() => (editing = false)}>{t('cancel')}</button>
       </div>
       {#if editProblem}<p class="error" role="alert">{editProblem}</p>{/if}
     </form>
@@ -326,10 +328,10 @@
             : t('noSuccessYet')}
       </p>
       {#if profile && host.poll.state === 'auth-failed'}
-        <a class="button" href={resolve('/access-profiles')}>{t('openProfile')}</a>
+        <a class="btn btn-sm" href={resolve('/access-profiles')}>{t('openProfile')}</a>
       {/if}
       {#if canPoll && (host.record.poll.errorCode === 'host_key_mismatch' || host.record.poll.errorCode === 'tls_mismatch')}
-        <button class="button" onclick={() => void trustNewKey()} disabled={polling}
+        <button class="btn btn-sm" onclick={() => void trustNewKey()} disabled={polling}
           >{t('trustNewKey')}</button
         >
       {/if}
@@ -362,7 +364,7 @@
                   : broken
                     ? t('sourceLastKnown')
                     : t('sourceDetected')}{#if inst.source === 'manual' && canEdit}
-                  <button class="link" onclick={() => void removeManual(inst.productId)}
+                  <button class="btn btn-sm btn-ghost" onclick={() => void removeManual(inst.productId)}
                     >{t('removeManual')}</button
                   >{/if}</td
               >
@@ -377,6 +379,7 @@
           <label
             >{t('colProduct')}
             <input
+              class="input"
               bind:value={manual.product}
               list="feed-products"
               required
@@ -390,7 +393,7 @@
               bind:value={manual.version}
               list="product-versions"
               required
-              class="mono"
+              class="input mono"
               placeholder={versionOptions[0] ?? '7.0.5'}
               autocomplete="off"
             />
@@ -403,13 +406,13 @@
           </datalist>
           <small class="span">{t('manualProductHint')}</small>
           <div class="actions">
-            <button class="primary" type="submit" disabled={savingManual}>{t('save')}</button>
-            <button class="button" type="button" onclick={() => (adding = false)}>{t('cancel')}</button>
+            <button class="btn btn-primary" type="submit" disabled={savingManual}>{t('save')}</button>
+            <button class="btn" type="button" onclick={() => (adding = false)}>{t('cancel')}</button>
           </div>
           {#if manualProblem}<p class="error" role="alert">{manualProblem}</p>{/if}
         </form>
       {:else}
-        <p><button class="button" onclick={startManual}>{t('addManualProduct')}</button></p>
+        <p><button class="btn btn-sm" onclick={startManual}>{t('addManualProduct')}</button></p>
       {/if}
     {/if}
   </section>
@@ -449,15 +452,6 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 10px;
-  }
-  .primary {
-    font-size: 14px;
-    font-weight: 600;
-    padding: 8px 14px;
-    border-radius: 10px;
-    background: var(--text);
-    color: var(--bg);
-    border: 1px solid var(--text);
   }
   h1 {
     margin: 0 0 10px;
@@ -500,19 +494,6 @@
     color: var(--text-muted);
     word-break: break-word;
   }
-  .button {
-    display: inline-block;
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-    text-decoration: none;
-  }
-  .danger {
-    color: var(--critical);
-    border-color: var(--critical-border);
-  }
   .confirm {
     display: flex;
     align-items: center;
@@ -543,16 +524,6 @@
     font-size: 13px;
     color: var(--text-muted);
   }
-  .edit input,
-  .edit select {
-    font: inherit;
-    font-size: 14px;
-    color: var(--text);
-    background: var(--bg);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 7px 10px;
-  }
   .edit .mono {
     font-family: var(--font-mono);
   }
@@ -568,12 +539,6 @@
     grid-column: 1 / -1;
     color: var(--text-muted);
     font-size: 12px;
-  }
-  .link {
-    margin-left: 8px;
-    font-size: 12px;
-    color: var(--text-soft);
-    text-decoration: underline;
   }
   .edit .error {
     grid-column: 1 / -1;

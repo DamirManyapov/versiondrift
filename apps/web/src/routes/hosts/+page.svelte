@@ -169,7 +169,7 @@
   <div class="top">
     <h1>{t('hostsTitle')} <span class="muted n">{all.length}</span></h1>
     <input
-      class="search"
+      class="input search"
       type="search"
       bind:value={query}
       placeholder={t('searchHosts')}
@@ -194,18 +194,21 @@
     <div class="fgroup" role="group" aria-label={t('filterStatus')}>
       <span class="muted">{t('filterStatus')}</span>
       {#each STATUSES as s (s.id)}
-        <button class="chip" aria-pressed={status === s.id} onclick={() => setParam('status', s.id, 'all')}
+        <button
+          class="chip-btn"
+          aria-pressed={status === s.id}
+          onclick={() => setParam('status', s.id, 'all')}
           >{t(s.key)} <span class="c">{count({ status: s.id })}</span></button
         >
       {/each}
     </div>
     <div class="fgroup" role="group" aria-label={t('filterPoll')}>
       <span class="muted">{t('filterPoll')}</span>
-      <button class="chip" aria-pressed={poll === 'any'} onclick={() => setParam('poll', 'any', 'any')}
+      <button class="chip-btn" aria-pressed={poll === 'any'} onclick={() => setParam('poll', 'any', 'any')}
         >{t('pollAny')} <span class="c">{count({ poll: 'any' })}</span></button
       >
       <button
-        class="chip"
+        class="chip-btn"
         aria-pressed={poll === 'problem'}
         onclick={() => setParam('poll', 'problem', 'any')}
         >{t('pollProblems')} <span class="c">{count({ poll: 'problem' })}</span></button
@@ -214,7 +217,7 @@
     <div class="fgroup" role="group" aria-label={t('filterKind')}>
       <span class="muted">{t('filterKind')}</span>
       {#each KINDS as k (k.id)}
-        <button class="chip" aria-pressed={kind === k.id} onclick={() => setParam('kind', k.id, 'all')}
+        <button class="chip-btn" aria-pressed={kind === k.id} onclick={() => setParam('kind', k.id, 'all')}
           >{t(k.key)} <span class="c">{count({ kind: k.id })}</span></button
         >
       {/each}
@@ -226,19 +229,25 @@
       <strong>{t('selectedHosts', { n: selected.length })}</strong>
       {#if hiddenSelected > 0}<span class="muted">{t('hiddenSelected', { n: hiddenSelected })}</span>{/if}
       <span class="grow"></span>
-      <button class="primary" onclick={() => void pollSelected()} disabled={polling}
+      <button class="btn btn-sm btn-primary" onclick={() => void pollSelected()} disabled={polling}
         >{polling ? t('polling') : t('pollNow')}</button
       >
       {#if canEdit}
         {#if confirmingDelete}
           <span>{t('confirmDeleteHosts', { n: selected.length })}</span>
-          <button class="danger" onclick={() => void deleteSelected()}>{t('deleteSelected')}</button>
-          <button onclick={() => (confirmingDelete = false)}>{t('cancel')}</button>
+          <button class="btn btn-sm btn-danger" onclick={() => void deleteSelected()}
+            >{t('deleteSelected')}</button
+          >
+          <button class="btn btn-sm" onclick={() => (confirmingDelete = false)}>{t('cancel')}</button>
         {:else}
-          <button class="danger" onclick={() => (confirmingDelete = true)}>{t('deleteSelected')}</button>
+          <button class="btn btn-sm btn-danger" onclick={() => (confirmingDelete = true)}
+            >{t('deleteSelected')}</button
+          >
         {/if}
       {/if}
-      <button onclick={() => ((selected = []), (confirmingDelete = false))}>{t('clearSelection')}</button>
+      <button class="btn btn-sm btn-ghost" onclick={() => ((selected = []), (confirmingDelete = false))}
+        >{t('clearSelection')}</button
+      >
     </div>
   {/if}
 
@@ -348,29 +357,35 @@
     flex: 1;
     min-width: 200px;
     max-width: 360px;
-    font: inherit;
-    padding: 8px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--border-strong);
-    background: var(--surface);
-    color: var(--text);
   }
+  /* A segmented control as tall as the search field next to it. */
   .toggle {
     display: flex;
+    height: var(--control-h);
+    padding: 3px;
+    gap: 3px;
     border: 1px solid var(--border-strong);
-    border-radius: 10px;
-    overflow: hidden;
+    border-radius: var(--control-radius);
   }
   .toggle button {
-    padding: 7px 12px;
+    padding: 0 12px;
     font-size: 13px;
-    border-radius: 0;
+    border-radius: var(--control-radius-sm);
+    color: var(--text-soft);
+    transition:
+      background-color 0.12s,
+      color 0.12s;
   }
-  .toggle button[aria-pressed='true'],
-  .chip[aria-pressed='true'] {
+  .toggle button:hover:not([aria-pressed='true']) {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+  .toggle button:active:not([aria-pressed='true']) {
+    background: var(--surface-active);
+  }
+  .toggle button[aria-pressed='true'] {
     background: var(--text);
     color: var(--bg);
-    border-color: var(--text);
   }
   .filters {
     display: flex;
@@ -388,19 +403,12 @@
     min-width: 70px;
     font-size: 13px;
   }
-  .chip {
-    font-size: 13px;
-    padding: 5px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-  }
   .c {
     font-family: var(--font-mono);
     color: var(--text-muted);
     margin-left: 4px;
   }
-  .chip[aria-pressed='true'] .c {
+  .chip-btn[aria-pressed='true'] .c {
     color: inherit;
   }
   .table-wrap {
@@ -482,22 +490,5 @@
   }
   .grow {
     flex: 1;
-  }
-  .bulk button {
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-  }
-  .bulk .danger {
-    color: var(--critical);
-    border-color: var(--critical-border);
-  }
-  .bulk .primary {
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
-    font-weight: 600;
   }
 </style>

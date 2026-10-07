@@ -8,7 +8,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['list']] : 'list',
-  use: { ...devices['Desktop Chrome'], trace: 'retain-on-failure' },
+  // Reduced motion turns off the controls' colour transitions (global.css), so axe never samples a colour mid-fade.
+  use: {
+    ...devices['Desktop Chrome'],
+    trace: 'retain-on-failure',
+    contextOptions: { reducedMotion: 'reduce' },
+  },
   projects: [
     { name: 'public', testMatch: 'public.spec.ts', use: { baseURL: 'http://localhost:4173' } },
     { name: 'selfhosted', testMatch: 'selfhosted.spec.ts', use: { baseURL: 'http://localhost:4174' } },

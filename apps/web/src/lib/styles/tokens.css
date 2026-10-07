@@ -48,6 +48,21 @@
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --radius: 10px;
   --radius-lg: 14px;
+
+  /* Controls (UI audit P0-1/P0-2): two heights; hover and pressed shades for each surface. */
+  --control-h: 40px;
+  --control-h-sm: 32px;
+  --control-radius: 10px;
+  --control-radius-sm: 8px;
+  --control-px: 14px;
+  --control-px-sm: 10px;
+  --surface-hover: #292b30;
+  --surface-active: #32353a;
+  --primary-hover: #d6d3cc;
+  --primary-active: #c4c1ba;
+  /* A selected card (P0-3): its own look, apart from the focus ring. */
+  --selected: #eceae4;
+  --selected-bg: #26282d;
 }
 
 @media (prefers-color-scheme: light) {
@@ -92,6 +107,12 @@
     --type-other: #ecebe5;
     --on-type: #ffffff;
     --on-type-fix: #1b1c1f;
+    --surface-hover: #f1efea;
+    --surface-active: #e7e4dd;
+    --primary-hover: #34363b;
+    --primary-active: #484a50;
+    --selected: #1b1c1f;
+    --selected-bg: #f4f2ed;
   }
 }
 
@@ -136,4 +157,10 @@
   --type-other: #ecebe5;
   --on-type: #ffffff;
   --on-type-fix: #1b1c1f;
+  --surface-hover: #f1efea;
+  --surface-active: #e7e4dd;
+  --primary-hover: #34363b;
+  --primary-active: #484a50;
+  --selected: #1b1c1f;
+  --selected-bg: #f4f2ed;
 }

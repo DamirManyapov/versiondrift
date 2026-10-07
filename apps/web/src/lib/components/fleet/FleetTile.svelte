@@ -115,6 +115,16 @@
     color: var(--text);
     font: inherit;
     cursor: pointer;
+    transition:
+      background-color 0.12s,
+      border-color 0.12s,
+      box-shadow 0.12s;
+  }
+  .tile:hover {
+    background: var(--surface-hover);
+  }
+  .tile:active {
+    background: var(--surface-active);
   }
   .tile.critical {
     border-color: var(--critical-border);
@@ -128,9 +138,14 @@
   .tile.ok {
     border-color: var(--ok-border);
   }
+  /* Selected (the card the panel shows) is its own look and stays when focus leaves; the focus ring sits outside. */
   .tile[aria-pressed='true'] {
-    outline: 2px solid var(--focus);
-    outline-offset: 1px;
+    border-color: var(--selected);
+    box-shadow: 0 0 0 1px var(--selected);
+    background: var(--selected-bg);
+  }
+  .tile:focus-visible {
+    outline-offset: 3px;
   }
   .head {
     display: flex;

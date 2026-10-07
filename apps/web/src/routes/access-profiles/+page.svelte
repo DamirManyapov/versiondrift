@@ -45,7 +45,7 @@
 
 <div class="top">
   <h1>{t('profilesTitle')}</h1>
-  {#if canEdit}<a class="button primary" href={resolve('/access-profiles/new')}>+ {t('newProfile')}</a>{/if}
+  {#if canEdit}<a class="btn btn-primary" href={resolve('/access-profiles/new')}>+ {t('newProfile')}</a>{/if}
 </div>
 <p class="note">{t('profilesNote')}</p>
 {#if message}<p role="status">{message}</p>{/if}
@@ -80,6 +80,7 @@
           <div class="acts">
             {#if profile.publicKey}
               <button
+                class="btn btn-sm"
                 onclick={() =>
                   (open =
                     open?.id === profile.id && open.what === 'key'
@@ -87,10 +88,13 @@
                       : { id: profile.id, what: 'key' })}>{t('showPublicKey')}</button
               >
             {:else}
-              <button onclick={() => (open = { id: profile.id, what: 'secret' })}>{t('replaceSecret')}</button
+              <button class="btn btn-sm" onclick={() => (open = { id: profile.id, what: 'secret' })}
+                >{t('replaceSecret')}</button
               >
             {/if}
-            <button onclick={() => (open = { id: profile.id, what: 'delete' })}>{t('deleteProfile')}</button>
+            <button class="btn btn-sm" onclick={() => (open = { id: profile.id, what: 'delete' })}
+              >{t('deleteProfile')}</button
+            >
           </div>
         {/if}
         {#if open?.id === profile.id}
@@ -105,22 +109,25 @@
                 }}
               >
                 <input
+                  class="input input-sm"
                   type="password"
                   bind:value={secret}
                   required
                   autocomplete="off"
                   aria-label={t('replaceSecret')}
                 />
-                <button class="primary" type="submit">{t('save')}</button>
-                <button type="button" onclick={() => (open = undefined)}>{t('cancel')}</button>
+                <button class="btn btn-sm btn-primary" type="submit">{t('save')}</button>
+                <button class="btn btn-sm" type="button" onclick={() => (open = undefined)}
+                  >{t('cancel')}</button
+                >
               </form>
             {:else if open.what === 'delete'}
               <button
-                class="danger"
+                class="btn btn-sm btn-danger"
                 onclick={() => void act(() => fleetApi.deleteProfile(profile.id), t('profileDeleted'))}
                 >{t('deleteProfileConfirm', { name: profile.name })}</button
               >
-              <button onclick={() => (open = undefined)}>{t('cancel')}</button>
+              <button class="btn btn-sm" onclick={() => (open = undefined)}>{t('cancel')}</button>
             {/if}
           </div>
         {/if}
@@ -195,35 +202,6 @@
   }
   .drawer :global(.code) {
     flex: 1;
-  }
-  button,
-  .button {
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-    text-decoration: none;
-    background: none;
-  }
-  .primary {
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
-    font-weight: 600;
-  }
-  .danger {
-    color: var(--critical);
-    border-color: var(--critical-border);
-  }
-  input {
-    font: inherit;
-    font-size: 14px;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 6px 10px;
   }
   .error {
     color: var(--critical);

@@ -64,6 +64,7 @@
   {#if creating}
     <form class="panel" onsubmit={create}>
       <input
+        class="input"
         bind:this={input}
         onkeydown={(e) => {
           if (e.key === 'Escape') creating = false;
@@ -75,8 +76,8 @@
         required
       />
       <div class="actions">
-        <button class="primary" type="submit">{t('create')}</button>
-        <button type="button" onclick={() => (creating = false)}>{t('cancel')}</button>
+        <button class="btn btn-sm btn-primary" type="submit">{t('create')}</button>
+        <button class="btn btn-sm" type="button" onclick={() => (creating = false)}>{t('cancel')}</button>
       </div>
       {#if problem}<p class="error" role="alert">{problem}</p>{/if}
     </form>
@@ -91,20 +92,27 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 12px;
+    height: var(--control-h);
+    padding: 0 12px;
     border: 1px solid var(--border-strong);
-    border-radius: 10px;
+    border-radius: var(--control-radius);
     font-size: 14px;
+    transition: background-color 0.12s;
+  }
+  .site:hover {
+    background: var(--surface-hover);
   }
   .muted {
     color: var(--text-muted);
   }
   select {
+    height: 100%;
     font: inherit;
     font-weight: 600;
     color: var(--text);
     background: transparent;
     border: 0;
+    cursor: pointer;
   }
   .panel {
     position: absolute;
@@ -121,30 +129,9 @@
     background: var(--surface);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   }
-  input {
-    font: inherit;
-    font-size: 14px;
-    color: var(--text);
-    background: var(--bg);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 7px 10px;
-  }
   .actions {
     display: flex;
     gap: 8px;
-  }
-  .actions button {
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-  }
-  .actions .primary {
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
   }
   .error {
     margin: 0;

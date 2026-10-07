@@ -149,7 +149,9 @@
 <dialog bind:this={dialog} {onclose} aria-labelledby="add-hosts-title">
   <header>
     <h2 id="add-hosts-title">{t('addHosts')}</h2>
-    <button class="icon" onclick={() => dialog.close()} aria-label={t('closeDialog')}>✕</button>
+    <button class="btn btn-sm btn-ghost btn-icon" onclick={() => dialog.close()} aria-label={t('closeDialog')}
+      >✕</button
+    >
   </header>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected={tab === 'one'} onclick={() => (tab = 'one')}>{t('addOne')}</button>
@@ -158,29 +160,35 @@
 
   {#if tab === 'one'}
     <form onsubmit={saveOne}>
-      <label>{t('fieldName')}<input bind:value={name} required class="mono" placeholder="srv-app-01" /></label
+      <label
+        >{t('fieldName')}<input
+          bind:value={name}
+          required
+          class="input mono"
+          placeholder="srv-app-01"
+        /></label
       >
       <label
         >{t('fieldAddress')}<input
           bind:value={address}
           required
-          class="mono"
+          class="input mono"
           placeholder="10.10.1.11"
         /><small>{t('addressHint')}</small></label
       >
       <label
         >{t('siteLabel')}
-        <select bind:value={siteId}>
+        <select class="input" bind:value={siteId}>
           {#each fleet.data?.sites ?? [] as s (s.id)}<option value={String(s.id)}>{s.name}</option>{/each}
           <option value="new">{t('newSiteOption')}</option>
         </select>
       </label>
       {#if siteId === 'new'}
-        <label>{t('newSiteName')}<input bind:value={newSite} required maxlength="60" /></label>
+        <label>{t('newSiteName')}<input class="input" bind:value={newSite} required maxlength="60" /></label>
       {/if}
       <label
         >{t('hostProfile')}
-        <select bind:value={profileId}>
+        <select class="input" bind:value={profileId}>
           {#each fleet.data?.profiles ?? [] as p (p.id)}<option value={String(p.id)}>{p.name}</option>{/each}
           <option value="">{t('noProfileOption')}</option>
         </select>
@@ -188,13 +196,13 @@
       {#if profileId === ''}
         <label
           >{t('hostKind')}
-          <select bind:value={kind}>
+          <select class="input" bind:value={kind}>
             {#each KINDS as k (k.id)}<option value={k.id}>{t(k.key)}</option>{/each}
           </select>
         </label>
       {/if}
       <div class="actions">
-        <button class="primary" type="submit" disabled={busy}
+        <button class="btn btn-primary" type="submit" disabled={busy}
           >{busy ? t('polling') : profileId === '' ? t('save') : t('saveAndCheck')}</button
         >
       </div>
@@ -212,12 +220,14 @@
     <label>{t('csvFile')}<input type="file" accept=".csv,text/csv,text/plain" onchange={readFile} /></label>
     <label
       >{t('csvText')}
-      <textarea bind:value={csv} rows="6" class="mono" placeholder={CSV_EXAMPLE}></textarea>
+      <textarea bind:value={csv} rows="6" class="input mono" placeholder={CSV_EXAMPLE}></textarea>
     </label>
     <div class="actions">
-      <button onclick={() => void check()} disabled={busy || csv.trim() === ''}>{t('checkList')}</button>
+      <button class="btn" onclick={() => void check()} disabled={busy || csv.trim() === ''}
+        >{t('checkList')}</button
+      >
       {#if plan}
-        <button class="primary" onclick={() => void runImport()} disabled={busy || toWrite === 0}
+        <button class="btn btn-primary" onclick={() => void runImport()} disabled={busy || toWrite === 0}
           >{toWrite === 0 ? t('importNothing') : t('importN', { n: toWrite })}</button
         >
       {/if}
@@ -278,11 +288,6 @@
     margin: 0;
     font-size: 20px;
   }
-  .icon {
-    font-size: 18px;
-    padding: 4px 8px;
-    border-radius: 8px;
-  }
   .tabs {
     display: flex;
     gap: 4px;
@@ -290,10 +295,23 @@
     border-bottom: 1px solid var(--border);
   }
   .tabs button {
-    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    height: var(--control-h);
+    padding: 0 14px;
     font-size: 14px;
-    border-radius: 8px 8px 0 0;
+    border-radius: var(--control-radius-sm) var(--control-radius-sm) 0 0;
     color: var(--text-muted);
+    transition:
+      background-color 0.12s,
+      color 0.12s;
+  }
+  .tabs button:hover {
+    color: var(--text);
+    background: var(--surface-hover);
+  }
+  .tabs button:active {
+    background: var(--surface-active);
   }
   .tabs button[aria-selected='true'] {
     color: var(--text);
@@ -312,17 +330,6 @@
     color: var(--text-muted);
     margin-bottom: 10px;
   }
-  input,
-  select,
-  textarea {
-    font: inherit;
-    font-size: 14px;
-    color: var(--text);
-    background: var(--bg);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 7px 10px;
-  }
   .mono {
     font-family: var(--font-mono);
   }
@@ -334,19 +341,6 @@
     display: flex;
     gap: 8px;
     margin: 4px 0 12px;
-  }
-  .actions button {
-    font-size: 14px;
-    padding: 8px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-  }
-  .primary {
-    background: var(--text) !important;
-    color: var(--bg) !important;
-    border-color: var(--text) !important;
-    font-weight: 600;
   }
   .help {
     font-size: 13px;

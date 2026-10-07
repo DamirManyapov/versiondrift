@@ -63,24 +63,29 @@
     {#if sites.length > 0}
       <label class="target"
         >{t('addToSite')}
-        <select value={String(inventory.boardId ?? '')} onchange={(e) => chooseSite(e.currentTarget.value)}>
+        <select
+          class="input"
+          value={String(inventory.boardId ?? '')}
+          onchange={(e) => chooseSite(e.currentTarget.value)}
+        >
           {#each sites as s (s.id)}<option value={String(s.id)}>{s.name}</option>{/each}
         </select>
       </label>
     {/if}
     <input
+      class="input"
       type="search"
       bind:value={query}
       placeholder={t('catalogSearch')}
       aria-label={t('catalogSearch')}
     />
     <div class="chips">
-      <button class="chip" aria-pressed={category === undefined} onclick={() => (category = undefined)}
+      <button class="chip-btn" aria-pressed={category === undefined} onclick={() => (category = undefined)}
         >{t('filterAll')}</button
       >
       {#each categories as c (c)}
         <button
-          class="chip"
+          class="chip-btn"
           aria-pressed={category === c}
           onclick={() => (category = category === c ? undefined : c)}>{categoryLabel(t, c)}</button
         >
@@ -102,7 +107,7 @@
             <span class="added">✓ {t('added')}</span>
           {:else}
             <button
-              class="add"
+              class="btn btn-sm btn-primary"
               onclick={() => {
                 if (inventory.demo) inventory.startOwn();
                 inventory.add(p.id);
@@ -126,15 +131,6 @@
     gap: 8px;
     font-size: 14px;
   }
-  .target select {
-    font: inherit;
-    font-weight: 600;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 6px 10px;
-  }
   .catalog {
     max-width: 880px;
     margin: 0 auto;
@@ -153,29 +149,10 @@
   .error {
     color: var(--critical);
   }
-  input {
-    font: inherit;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 10px;
-    padding: 10px 12px;
-  }
   .chips {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-  }
-  .chip {
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 16px;
-    font-size: 13px;
-    border: 1px solid var(--border-strong);
-  }
-  .chip[aria-pressed='true'] {
-    background: var(--text);
-    color: var(--bg);
   }
   ul {
     list-style: none;
@@ -214,14 +191,6 @@
   }
   .name {
     font-weight: 600;
-  }
-  .add {
-    padding: 8px 14px;
-    border-radius: 8px;
-    background: var(--text);
-    color: var(--bg);
-    font-weight: 600;
-    font-size: 14px;
   }
   .added {
     color: var(--ok);

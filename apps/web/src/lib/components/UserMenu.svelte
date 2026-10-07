@@ -29,7 +29,7 @@
 <div class="menu" bind:this={root}>
   <button
     bind:this={button}
-    class="trigger"
+    class="btn trigger"
     aria-expanded={open}
     aria-controls="user-menu"
     aria-label={t('userMenu', { name })}
@@ -61,23 +61,14 @@
     position: relative;
   }
   .trigger {
-    height: 44px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 10px 0 6px;
-    border-radius: 10px;
-    border: 1px solid var(--border-strong);
-    font-size: 14px;
-    color: var(--text);
+    padding: 0 10px 0 5px;
   }
-  .trigger:hover,
   .trigger[aria-expanded='true'] {
-    background: var(--surface);
+    background: var(--surface-hover);
   }
   .avatar {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -131,9 +122,17 @@
     color: var(--text);
     text-decoration: none;
   }
+  .panel a,
+  .panel button {
+    transition: background-color 0.12s;
+  }
   .panel a:hover,
   .panel button:hover {
-    background: var(--bg);
+    background: var(--surface-hover);
+  }
+  .panel a:active,
+  .panel button:active {
+    background: var(--surface-active);
   }
   form {
     margin: 4px 0 0;

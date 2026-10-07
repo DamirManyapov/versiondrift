@@ -138,6 +138,29 @@ status chips always carry text.
 A light theme is required before public launch (tokens redefined under `[data-theme=light]` and
 `prefers-color-scheme`). Contrast ≥ 4.5:1 for text; status is always also conveyed by text.
 
+## Controls (UI audit 2026-10, P0)
+
+Two control heights and one set of states, in `apps/web/src/lib/styles` (tokens) and `global.css` (classes):
+
+| Token | Value | Used for |
+|---|---|---|
+| `--control-h` | 40px | header buttons and segmented tabs, form fields and selects, panel tabs, page-level actions |
+| `--control-h-sm` | 32px | buttons in panels, rows of tables and lists, filter chips and the search/checkbox next to them, footer selects |
+| `--control-radius`, `--control-radius-sm` | 10px, 8px | |
+| `--surface-hover`, `--surface-active`, `--primary-hover`, `--primary-active` | per theme | hover and pressed shades |
+| `--selected`, `--selected-bg` | per theme | a selected card |
+
+Classes: `btn` (secondary), `btn-primary`, `btn-ghost`, `btn-danger`, sizes `btn-sm` and `btn-icon`; `chip-btn` for
+toggles with `aria-pressed`; `input` / `input-sm` for text fields and selects (`chip` and `field` stay free: status
+badges and label wrappers use them). Every control has `:hover`, `:active` (a darker shade and a 1px press),
+`:focus-visible` (2px `--focus` ring) and `:disabled` / `aria-disabled` (50% opacity, no hover). Rule: controls in one
+row have one height.
+
+A selected card (the one the detail panel shows, `aria-pressed="true"`) has its own look — a 2px `--selected` border
+and `--selected-bg` — the same on the fleet board and the board, and it stays when focus leaves; the focus ring is drawn
+outside it (`outline-offset: 3px`). Status shows in the card's border, chip and versions, not as a fill of the whole
+card. Colour transitions take 0.12s and are off with `prefers-reduced-motion` (the e2e tests run that way).
+
 ## Product page (`/p/:id`, S2-T7)
 
 Server-rendered (universal load through `FeedClient`, 404 for unknown ids): latest release, latest per track,

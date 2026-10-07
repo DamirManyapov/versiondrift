@@ -45,6 +45,158 @@ button {
   outline-offset: 2px;
 }
 
+/*
+ * Controls (UI audit P0): two heights (--control-h, --control-h-sm) and the same states everywhere: hover, pressed,
+ * the focus ring above and disabled. `btn` takes a variant (primary, ghost, danger; plain is secondary) and a size
+ * (sm); `chip-btn` is a compact toggle (aria-pressed); `input` is a text field or select. Anything in one row has one height.
+ */
+.btn,
+.chip-btn,
+.input {
+  font: inherit;
+  transition:
+    background-color 0.12s,
+    border-color 0.12s,
+    color 0.12s,
+    transform 0.06s;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--control-h);
+  padding: 0 var(--control-px);
+  border-radius: var(--control-radius);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.btn:hover:not(:disabled, [aria-disabled='true']) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.btn:active:not(:disabled, [aria-disabled='true']) {
+  background: var(--surface-active);
+  transform: translateY(1px);
+}
+.btn-primary {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled, [aria-disabled='true']) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: var(--bg);
+}
+.btn-primary:active:not(:disabled, [aria-disabled='true']) {
+  background: var(--primary-active);
+  border-color: var(--primary-active);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-soft);
+}
+.btn-danger {
+  background: transparent;
+  border-color: var(--critical-border);
+  color: var(--critical);
+}
+.btn-danger:hover:not(:disabled, [aria-disabled='true']) {
+  background: var(--critical-bg);
+  color: var(--critical);
+}
+.btn-sm {
+  height: var(--control-h-sm);
+  padding: 0 var(--control-px-sm);
+  border-radius: var(--control-radius-sm);
+  font-size: 13px;
+  gap: 6px;
+}
+.btn-icon {
+  width: var(--control-h);
+  padding: 0;
+}
+.btn-icon.btn-sm {
+  width: var(--control-h-sm);
+}
+.btn:disabled,
+.btn[aria-disabled='true'],
+.chip-btn:disabled,
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn svg {
+  flex-shrink: 0;
+}
+
+.chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--control-h-sm);
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.chip-btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.chip-btn:active:not(:disabled) {
+  background: var(--surface-active);
+  transform: translateY(1px);
+}
+.chip-btn[aria-pressed='true'] {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+.chip-btn[aria-pressed='true']:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: var(--bg);
+}
+
+.input {
+  height: var(--control-h);
+  padding: 0 12px;
+  border-radius: var(--control-radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+.input:hover:not(:disabled, :focus) {
+  border-color: var(--text-muted);
+}
+.input-sm {
+  height: var(--control-h-sm);
+  font-size: 13px;
+  padding: 0 10px;
+}
+textarea.input {
+  height: auto;
+  padding: 8px 12px;
+}
+
 .mono {
   font-family: var(--font-mono);
 }

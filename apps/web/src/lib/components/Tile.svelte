@@ -18,7 +18,7 @@
   const lastRelease = $derived(row.product?.releases.find((r) => !r.prerelease));
 </script>
 
-<button class="tile {row.status}" class:selected aria-pressed={selected} onclick={onselect} data-tile>
+<button class="tile {row.status}" aria-pressed={selected} onclick={onselect} data-tile>
   <span class="head">
     <span class="title">
       <span class="name">{row.name}</span>
@@ -73,22 +73,24 @@
     flex-direction: column;
     gap: 10px;
     transition:
-      filter 0.12s ease,
-      box-shadow 0.12s ease;
+      background-color 0.12s,
+      border-color 0.12s,
+      box-shadow 0.12s;
   }
   .tile:hover {
-    filter: brightness(1.08);
+    background: var(--surface-hover);
   }
+  .tile:active {
+    background: var(--surface-active);
+  }
+  /* The status shows in the border, the chip and the versions, not as a fill of the whole card (UI audit P0-3). */
   .critical {
-    background: var(--critical-bg);
     border-color: var(--critical-border);
   }
   .update {
-    background: var(--update-bg);
     border-color: var(--update-border);
   }
   .eol {
-    background: var(--eol-bg);
     border-color: var(--eol-border);
   }
   .ok {
@@ -98,8 +100,14 @@
     border-style: dashed;
     border-color: var(--stale-border);
   }
-  .selected {
-    box-shadow: 0 0 0 2px var(--text);
+  /* Selected (the card the panel shows) is its own look and stays when focus leaves; the focus ring sits outside. */
+  .tile[aria-pressed='true'] {
+    border-color: var(--selected);
+    box-shadow: 0 0 0 1px var(--selected);
+    background: var(--selected-bg);
+  }
+  .tile:focus-visible {
+    outline-offset: 3px;
   }
   .head {
     display: flex;

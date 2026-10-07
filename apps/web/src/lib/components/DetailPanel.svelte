@@ -184,10 +184,10 @@
     </div>
     {#if row.known}<StatusChip status={row.status} cvss={s?.maxCvss} size="md" />{/if}
     {#if !readonly && instance}
-      <button class="remove" onclick={removeFromBoard}>{t('removeFromBoard')}</button>
+      <button class="btn btn-sm remove" onclick={removeFromBoard}>{t('removeFromBoard')}</button>
     {/if}
     {#if onclose}
-      <button class="icon" onclick={onclose} aria-label={t('closePanel')}>✕</button>
+      <button class="btn btn-sm btn-ghost btn-icon" onclick={onclose} aria-label={t('closePanel')}>✕</button>
     {/if}
   </header>
 
@@ -344,7 +344,7 @@
       </div>
       <span class="grow"></span>
       {#if tab === 'changes' && s.newer.length > 0}
-        <button class="copy" onclick={copyMarkdown}>{t('copyMarkdown')}</button>
+        <button class="btn btn-sm btn-ghost" onclick={copyMarkdown}>{t('copyMarkdown')}</button>
         <label class="toggle">
           <input type="checkbox" bind:checked={importantOnly} />
           {t('importantOnly')}
@@ -496,11 +496,6 @@
   .small {
     font-size: 13px;
   }
-  .icon {
-    font-size: 18px;
-    padding: 4px 8px;
-    border-radius: 8px;
-  }
   .instances {
     display: flex;
     gap: 6px;
@@ -510,14 +505,22 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    height: 36px;
+    height: var(--control-h-sm);
     padding: 0 10px;
-    border-radius: 8px;
+    border-radius: var(--control-radius-sm);
     font-size: 13px;
     border: 1px solid var(--border-strong);
+    transition: background-color 0.12s;
+  }
+  .pill:hover {
+    background: var(--surface-hover);
+  }
+  .pill:active {
+    background: var(--surface-active);
   }
   .pill[aria-pressed='true'] {
-    border-color: var(--text);
+    border-color: var(--selected);
+    box-shadow: 0 0 0 1px var(--selected);
   }
   .versionbox {
     display: flex;
@@ -547,9 +550,9 @@
     color: var(--text-muted);
   }
   .done {
-    height: 44px;
-    padding: 0 16px;
-    border-radius: 10px;
+    height: var(--control-h);
+    padding: 0 var(--control-px);
+    border-radius: var(--control-radius);
     background: var(--ok);
     color: var(--on-ok);
     font-size: 14px;
@@ -557,6 +560,16 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    transition:
+      filter 0.12s,
+      transform 0.06s;
+  }
+  .done:hover {
+    filter: brightness(1.08);
+  }
+  .done:active {
+    filter: brightness(0.94);
+    transform: translateY(1px);
   }
   .done svg {
     color: inherit;
@@ -574,7 +587,7 @@
   input,
   select {
     box-sizing: border-box;
-    height: 40px;
+    height: var(--control-h);
     font: inherit;
     color: var(--text);
     background-color: var(--surface);
@@ -600,6 +613,10 @@
   .setup select {
     width: 100%;
     max-width: none;
+  }
+  input:hover:not(:disabled, :focus),
+  select:hover:not(:disabled, :focus) {
+    border-color: var(--text-muted);
   }
   input[aria-invalid='true'] {
     border-color: var(--critical);
@@ -664,28 +681,39 @@
     flex-wrap: wrap;
   }
   [role='tab'] {
-    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    height: var(--control-h);
+    padding: 0 14px;
     font-size: 14px;
     font-weight: 500;
     color: var(--text-muted);
     border-bottom: 2px solid transparent;
+    border-radius: var(--control-radius-sm) var(--control-radius-sm) 0 0;
     margin-bottom: -1px;
+    transition:
+      background-color 0.12s,
+      color 0.12s;
+  }
+  [role='tab']:hover {
+    color: var(--text);
+    background: var(--surface-hover);
+  }
+  [role='tab']:active {
+    background: var(--surface-active);
   }
   [role='tab'][aria-selected='true'] {
     color: var(--text);
     border-bottom-color: var(--text);
   }
-  .copy {
-    font-size: 13px;
-    color: var(--link);
-    padding: 8px 4px;
-  }
   .toggle {
     display: flex;
     align-items: center;
     gap: 8px;
+    height: var(--control-h-sm);
     font-size: 13px;
     color: var(--text-soft);
+    cursor: pointer;
   }
   .tabpanel {
     display: flex;
@@ -804,16 +832,7 @@
   }
   .remove {
     flex: none;
-    font-size: 13px;
-    padding: 5px 10px;
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
     color: var(--text-soft);
-    white-space: nowrap;
-  }
-  .remove:hover {
-    color: var(--critical);
-    border-color: var(--critical-border);
   }
   @media (max-width: 720px) {
     .panel {

@@ -45,7 +45,7 @@
   {#if inventory.demo}
     <div class="demo" role="note">
       <span>{t('demoBanner')}</span>
-      <button class="cta" onclick={() => inventory.startOwn()}>{t('demoStart')}</button>
+      <button class="btn btn-primary" onclick={() => inventory.startOwn()}>{t('demoStart')}</button>
     </div>
   {/if}
 
@@ -64,14 +64,14 @@
     <section class="empty">
       <h2>{t('emptyBoardTitle')}</h2>
       <p>{t('emptyBoardText')}</p>
-      <a class="cta" href={resolve('/catalog')}>{t('browseCatalog')}</a>
+      <a class="btn btn-primary" href={resolve('/catalog')}>{t('browseCatalog')}</a>
     </section>
   {:else}
     {#if sharing}
       <SharePanel items={inventory.data.items} onclose={() => (sharing = false)} ontoast={showToast} />
     {/if}
     {#snippet share()}
-      <button class="chip" aria-expanded={sharing} onclick={() => (sharing = !sharing)}
+      <button class="chip-btn" aria-expanded={sharing} onclick={() => (sharing = !sharing)}
         >{t('shareBoard')}</button
       >
     {/snippet}
@@ -129,23 +129,7 @@
   .empty h2 {
     margin: 0;
   }
-  .cta {
-    padding: 12px 18px;
-    border-radius: 10px;
-    background: var(--text);
-    color: var(--bg);
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .chip {
-    height: 34px;
-    padding: 0 14px;
-    border-radius: 17px;
-    font-size: 13px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-  }
-  .chip[aria-expanded='true'] {
+  .chip-btn[aria-expanded='true'] {
     background: var(--text);
     color: var(--bg);
     border-color: var(--text);

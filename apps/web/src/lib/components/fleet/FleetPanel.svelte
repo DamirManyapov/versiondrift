@@ -68,7 +68,9 @@
       </p>
     </div>
     <FleetChip status={aggregate.status} label={chipLabel} size="md" />
-    {#if onclose}<button class="icon" onclick={onclose} aria-label={t('closePanel')}>✕</button>{/if}
+    {#if onclose}<button class="btn btn-sm btn-ghost btn-icon" onclick={onclose} aria-label={t('closePanel')}
+        >✕</button
+      >{/if}
   </header>
 
   {#if stale > 0 || lineCount > 1}
@@ -107,7 +109,7 @@
           {/each}
           {#if group.entries.length > SHOWN && !expanded[key]}
             <li>
-              <button class="more" onclick={() => (expanded[key] = true)}
+              <button class="btn btn-sm btn-ghost" onclick={() => (expanded[key] = true)}
                 >{t('showAllHosts', { n: group.entries.length })}</button
               >
             </li>
@@ -116,14 +118,16 @@
         <div class="actions">
           {#if group.latest && group.latest !== group.version && group.status !== 'eol'}
             <a
-              class="button"
+              class="btn btn-sm"
               href={resolve('/p/[id]/[range=range]', {
                 id: aggregate.productId,
                 range: `${group.version}...${group.latest}`,
               })}>{t('changesTo', { version: group.latest })}</a
             >
           {/if}
-          <button onclick={() => void copyHosts(group.entries.map((e) => e.host.record.name))}
+          <button
+            class="btn btn-sm"
+            onclick={() => void copyHosts(group.entries.map((e) => e.host.record.name))}
             >⧉ {t('copyHosts')}</button
           >
         </div>
@@ -223,16 +227,27 @@
     gap: 6px;
   }
   .host {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: var(--control-h-sm);
+    padding: 0 10px;
+    border-radius: var(--control-radius-sm);
     border: 1px solid var(--border-strong);
     color: var(--text);
     text-decoration: none;
     font-size: 13px;
+    transition:
+      background-color 0.12s,
+      border-color 0.12s;
   }
   .host:hover {
     border-color: var(--link);
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+  .host:active {
+    background: var(--surface-active);
   }
   .host.stale {
     border-style: dashed;
@@ -242,29 +257,9 @@
     font-family: var(--font-sans);
     font-size: 12px;
   }
-  .more {
-    font-size: 13px;
-    color: var(--link);
-    padding: 4px 6px;
-  }
   .actions {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-  }
-  .actions button,
-  .button {
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-    text-decoration: none;
-    background: none;
-  }
-  .icon {
-    font-size: 18px;
-    padding: 4px 8px;
-    border-radius: 8px;
   }
 </style>

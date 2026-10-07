@@ -38,7 +38,7 @@
 <section class="share" aria-labelledby="share-title">
   <header>
     <h2 id="share-title">{t('shareTitle')}</h2>
-    <button class="icon" onclick={onclose} aria-label={t('closePanel')}>✕</button>
+    <button class="btn btn-sm btn-ghost btn-icon" onclick={onclose} aria-label={t('closePanel')}>✕</button>
   </header>
   <p class="muted">{t('shareNote')}</p>
   <div class="row">
@@ -49,7 +49,7 @@
       aria-label={t('shareLink')}
       onfocus={(e) => e.currentTarget.select()}
     />
-    <button class="cta" onclick={copy} disabled={url === ''}>{t('shareCopy')}</button>
+    <button class="btn btn-primary" onclick={copy} disabled={url === ''}>{t('shareCopy')}</button>
   </div>
   {#if hasLabels}
     <label class="toggle"><input type="checkbox" bind:checked={labels} /> {t('shareLabels')}</label>
@@ -96,19 +96,13 @@
   input[readonly] {
     flex: 1;
     min-width: 0;
+    height: var(--control-h);
     font-size: 13px;
     color: var(--text);
     background: var(--bg);
     border: 1px solid var(--border-strong);
     border-radius: 8px;
-    padding: 8px 10px;
-  }
-  .cta {
-    padding: 8px 14px;
-    border-radius: 8px;
-    background: var(--text);
-    color: var(--bg);
-    font-weight: 600;
+    padding: 0 10px;
   }
   .toggle {
     display: flex;
@@ -116,10 +110,5 @@
     gap: 6px;
     font-size: 13px;
     color: var(--text-soft);
-  }
-  .icon {
-    font-size: 16px;
-    color: var(--text-muted);
-    padding: 4px 8px;
   }
 </style>

@@ -42,7 +42,17 @@
     max-width: calc(100vw - 32px);
   }
   button {
+    min-height: var(--control-h-sm);
+    padding: 0 6px;
+    border-radius: var(--control-radius-sm);
     font-weight: 600;
     text-decoration: underline;
+    transition: background-color 0.12s;
+  }
+  button:hover {
+    background: rgb(127 127 127 / 0.2);
+  }
+  button:active {
+    background: rgb(127 127 127 / 0.35);
   }
 </style>

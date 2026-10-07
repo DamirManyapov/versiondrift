@@ -38,6 +38,7 @@
     <label class="muted" for="board-pick">{t('boardLabel')}</label>
     <select
       id="board-pick"
+      class="input input-sm"
       value={inventory.boardId}
       onchange={(e) => {
         start('pick');
@@ -54,28 +55,31 @@
   {#if mode === 'create' || mode === 'rename'}
     <form onsubmit={submit}>
       <input
+        class="input input-sm"
         bind:value={name}
         aria-label={t('boardName')}
         placeholder={t('boardName')}
         maxlength="60"
         required
       />
-      <button class="primary" type="submit">{mode === 'rename' ? t('save') : t('create')}</button>
-      <button type="button" onclick={() => start('pick')}>{t('cancel')}</button>
+      <button class="btn btn-sm btn-primary" type="submit"
+        >{mode === 'rename' ? t('save') : t('create')}</button
+      >
+      <button class="btn btn-sm" type="button" onclick={() => start('pick')}>{t('cancel')}</button>
     </form>
   {:else if mode === 'delete' && current}
     {#if inventory.boards.length > 1}
-      <button class="danger" onclick={() => void run(() => inventory.deleteBoard(current.id))}
+      <button class="btn btn-sm btn-danger" onclick={() => void run(() => inventory.deleteBoard(current.id))}
         >{t('deleteBoardConfirm', { name: current.name })}</button
       >
     {:else}
       <span class="muted" role="status">{t('lastBoardHint')}</span>
     {/if}
-    <button onclick={() => start('pick')}>{t('cancel')}</button>
+    <button class="btn btn-sm" onclick={() => start('pick')}>{t('cancel')}</button>
   {:else}
-    <button onclick={() => start('rename')}>{t('rename')}</button>
-    <button onclick={() => start('delete')}>{t('deleteBoard')}</button>
-    <button onclick={() => start('create')}>+ {t('newBoard')}</button>
+    <button class="btn btn-sm" onclick={() => start('rename')}>{t('rename')}</button>
+    <button class="btn btn-sm" onclick={() => start('delete')}>{t('deleteBoard')}</button>
+    <button class="btn btn-sm" onclick={() => start('create')}>+ {t('newBoard')}</button>
   {/if}
   {#if problem}<span class="error" role="alert">{problem}</span>{/if}
 </div>
@@ -100,33 +104,6 @@
   form {
     display: flex;
     gap: 8px;
-  }
-  select,
-  input {
-    font: inherit;
-    font-size: 14px;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 6px 10px;
-  }
-  button {
-    font-size: 13px;
-    padding: 7px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    color: var(--text-soft);
-  }
-  .primary {
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
-  }
-  .danger {
-    color: var(--critical);
-    border-color: var(--critical-border);
-    background: var(--critical-bg);
   }
   .error {
     color: var(--critical);

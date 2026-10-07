@@ -25,7 +25,7 @@
 
 <div class="code">
   <pre bind:this={pre}><code>{code}</code></pre>
-  <button onclick={() => void copy()}>{copied ? t('copiedShort') : t('copy')}</button>
+  <button class="btn btn-sm copy" onclick={() => void copy()}>{copied ? t('copiedShort') : t('copy')}</button>
 </div>
 
 <style>
@@ -45,15 +45,9 @@
     overflow-x: auto;
     white-space: pre;
   }
-  button {
+  .copy {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 7px;
-    border: 1px solid var(--border-strong);
-    background: var(--surface);
-    color: var(--text-soft);
+    top: 6px;
+    right: 6px;
   }
 </style>

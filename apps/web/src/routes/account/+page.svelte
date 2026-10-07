@@ -36,22 +36,36 @@
         />
         <label>
           <span>{t('currentPassword')}</span>
-          <input name="current" type="password" autocomplete="current-password" required />
+          <input class="input" name="current" type="password" autocomplete="current-password" required />
         </label>
         <label>
           <span>{t('newPassword')}</span>
-          <input name="next" type="password" autocomplete="new-password" minlength="8" required />
+          <input
+            class="input"
+            name="next"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          />
         </label>
         <label>
           <span>{t('repeatPassword')}</span>
-          <input name="repeat" type="password" autocomplete="new-password" minlength="8" required />
+          <input
+            class="input"
+            name="repeat"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          />
         </label>
         {#if form && 'problem' in form && form.problem}
           <p class="error" role="alert">{t(PROBLEMS[form.problem])}</p>
         {:else if form && 'changed' in form}
           <p class="ok" role="status">{t('passwordChanged')}</p>
         {/if}
-        <button class="primary" type="submit">{t('changePassword')}</button>
+        <button class="btn btn-primary" type="submit">{t('changePassword')}</button>
       </form>
     </section>
   {:else if data.method === 'none'}
@@ -89,24 +103,8 @@
     gap: 6px;
     font-size: 14px;
   }
-  input {
-    font: inherit;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 9px 12px;
-  }
   .hidden {
     display: none;
-  }
-  .primary {
-    align-self: flex-start;
-    padding: 10px 16px;
-    border-radius: 10px;
-    background: var(--text);
-    color: var(--bg);
-    font-weight: 600;
   }
   .muted {
     color: var(--text-muted);
