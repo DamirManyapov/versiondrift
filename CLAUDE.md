@@ -12,7 +12,7 @@ everything that changed in between (with security / breaking changes highlighted
 | Status | Meaning |
 |---|---|
 | `critical` (red) | an advisory affects your version with CVSS ≥ threshold (default 7.0), or it is in CISA KEV |
-| `eol` (dark) | your release branch is end-of-life |
+| `eol` (violet) | your release branch is end-of-life |
 | `update` (amber) | newer releases exist in your track |
 | `ok` (green) | you are on the latest release of your track |
 | `news` (neutral) | no version set — tile shows recent news only |

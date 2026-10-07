@@ -130,9 +130,8 @@ status chips always carry text.
 --critical: #FF6B61; --critical-bg: #35181A; --critical-border: #8C2F2A; --on-critical: #1A0A08;
 --update:   #F5A524; --update-bg:   #2A2417; --update-border:   #6E5320; --on-update:   #1A1206;
 --ok:       #3DD68C;                                                 --on-ok:       #06170E;
---eol:      #D9D2C3; --eol-bg:      #29251E; --eol-border:      #7A6F5C; --on-eol:      #1B1A17;
---type-security: #FF6B61; --type-breaking: #F5A524; --type-deprecated: #C4A7FF;
---type-feature:  #7CB7FF; --type-fix: #4A4D54;
+--eol:      #B7ABF5; --eol-bg:      #221F33; --eol-border:      #51488A; --on-eol:      #15121F;
+--type-security: #FF6B61;  /* only security (red) and breaking (amber tone) are coloured; other change types are neutral tags */
 --font-sans: "IBM Plex Sans", system-ui, sans-serif; --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 ```
 A light theme is required before public launch (tokens redefined under `[data-theme=light]` and
@@ -159,7 +158,8 @@ row have one height.
 A selected card (the one the detail panel shows, `aria-pressed="true"`) has its own look — a 2px `--selected` border
 and `--selected-bg` — the same on the fleet board and the board, and it stays when focus leaves; the focus ring is drawn
 outside it (`outline-offset: 3px`). Status shows in the card's border, chip and versions, not as a fill of the whole
-card. Colour transitions take 0.12s and are off with `prefers-reduced-motion` (the e2e tests run that way).
+card. Blue is for text links and the focus ring only; end of life has its own violet (2026-10, it was a brown close to
+the breaking-change amber). Colour transitions take 0.12s and are off with `prefers-reduced-motion` (the e2e tests run that way).
 
 P1 (same audit): summary tiles are filters — the active one takes its status colour, a "Showing: … · n ✕ Clear"
 line sits above the grid, a 0 is disabled, and "Poll problems" is a link with "→" (it leads to the hosts list).

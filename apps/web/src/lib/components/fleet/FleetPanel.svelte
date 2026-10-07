@@ -98,7 +98,7 @@
           {#if group.track}<span class="muted small"
               >{t('lineOf', { line: lineLabel(group.track) ?? '' })}</span
             >{/if}
-          <span class="muted small mono">×{group.entries.length}</span>
+          <span class="muted small">{t('hosts', { n: group.entries.length })}</span>
           <span class="grow"></span>
           <FleetChip status={group.status} label={instanceLabel(t, group.instance)} />
         </div>

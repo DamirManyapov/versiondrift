@@ -149,6 +149,10 @@
     if (h.poll.state === 'unknown') return t('problemUnknown', { since });
     return '';
   };
+  // The "Poll problem" column only when a shown host has one (UI audit, hosts); the status chip says it anyway.
+  const anyProblem = $derived(visible.some((h) => problemOf(h) !== ''));
+  const columns = $derived((canEdit ? 7 : 6) + (anyProblem ? 1 : 0));
+
   const groupSummary = (hosts: FleetHostView[]) => {
     const counts = { critical: 0, eol: 0, update: 0, unknown: 0, ok: 0, stale: 0 };
     for (const h of hosts) {
@@ -198,6 +202,7 @@
           type="button"
           class="chip-btn"
           aria-pressed={status === s.id}
+          disabled={s.id !== 'all' && status !== s.id && count({ status: s.id }) === 0}
           onclick={() => setParam('status', s.id, 'all')}
           >{t(s.key)} <span class="c">{count({ status: s.id })}</span></button
         >
@@ -216,6 +221,7 @@
         type="button"
         class="chip-btn"
         aria-pressed={poll === 'problem'}
+        disabled={poll !== 'problem' && count({ poll: 'problem' }) === 0}
         onclick={() => setParam('poll', 'problem', 'any')}
         >{t('pollProblems')} <span class="c">{count({ poll: 'problem' })}</span></button
       >
@@ -227,6 +233,7 @@
           type="button"
           class="chip-btn"
           aria-pressed={kind === k.id}
+          disabled={k.id !== 'all' && kind !== k.id && count({ kind: k.id }) === 0}
           onclick={() => setParam('kind', k.id, 'all')}
           >{t(k.key)} <span class="c">{count({ kind: k.id })}</span></button
         >
@@ -291,14 +298,14 @@
             <th>{t('colOs')}</th>
             <th>{t('colProducts')}</th>
             <th>{t('colPolled')}</th>
-            <th>{t('colProblem')}</th>
+            {#if anyProblem}<th>{t('colProblem')}</th>{/if}
           </tr>
         </thead>
         {#each groups as group (group.site?.id ?? 'all')}
           <tbody>
             {#if group.site}
               <tr class="site">
-                <th colspan={canEdit ? 8 : 7} scope="colgroup"
+                <th colspan={columns} scope="colgroup"
                   >{group.site.name} · {t('hosts', { n: group.hosts.length })} · {groupSummary(
                     group.hosts,
                   )}</th
@@ -337,7 +344,7 @@
                       ? t('noProfile')
                       : t('neverPolled')}</td
                 >
-                <td class="problem">{problemOf(host)}</td>
+                {#if anyProblem}<td class="problem">{problemOf(host)}</td>{/if}
               </tr>
             {/each}
           </tbody>

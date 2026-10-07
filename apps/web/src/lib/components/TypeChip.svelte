@@ -17,6 +17,7 @@
 <span class="mono type {type}">{t(KEYS[type])}</span>
 
 <style>
+  /* Change types are neutral tags; only security (red) and breaking (amber) carry colour (UI audit, board 5). */
   .type {
     flex-shrink: 0;
     display: inline-block;
@@ -24,28 +25,20 @@
     text-align: center;
     padding: 2px 6px;
     border-radius: 4px;
+    border: 1px solid var(--border);
     font-size: 11px;
     font-weight: 600;
-    color: var(--on-type);
+    color: var(--text-soft);
+    background: var(--surface-3);
   }
   .security {
     background: var(--type-security);
+    border-color: var(--type-security);
+    color: var(--on-type);
   }
   .breaking {
-    background: var(--type-breaking);
-  }
-  .deprecated {
-    background: var(--type-deprecated);
-  }
-  .feature {
-    background: var(--type-feature);
-  }
-  .fix {
-    background: var(--type-fix);
-    color: var(--on-type-fix);
-  }
-  .other {
-    background: var(--type-other);
-    color: var(--on-type-fix);
+    background: var(--update-bg);
+    border-color: var(--update-border);
+    color: var(--update);
   }
 </style>

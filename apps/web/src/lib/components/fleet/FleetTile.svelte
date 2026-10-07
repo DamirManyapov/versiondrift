@@ -75,20 +75,23 @@
     </span>
     <FleetChip status={aggregate.status} label={chipLabel} />
   </span>
-  <DistributionBar counts={aggregate.counts} label={summaryText(t, aggregate.counts)} />
-  <span class="legend">
-    {#each ['critical', 'eol', 'update', 'unknown', 'ok', 'stale'] as const as key (key)}
-      {#if aggregate.counts[key] > 0}<span class={key}>{segmentLabel(t, key, aggregate.counts[key])}</span
-        >{/if}
-    {/each}
-  </span>
+  <!-- The distribution over hosts says something from two hosts on; one host is the subtitle already. -->
+  {#if aggregate.hosts > 1}
+    <DistributionBar counts={aggregate.counts} label={summaryText(t, aggregate.counts)} />
+    <span class="legend">
+      {#each ['critical', 'eol', 'update', 'unknown', 'ok', 'stale'] as const as key (key)}
+        {#if aggregate.counts[key] > 0}<span class={key}>{segmentLabel(t, key, aggregate.counts[key])}</span
+          >{/if}
+      {/each}
+    </span>
+  {/if}
   {#if lines.length > 0}
     <span class="lines">
       {#each lines as line (line.track ?? line.label)}
         <span class="line">
-          <span class="label">{line.label}</span>
+          <span class="label">{t('lineBranch', { label: line.label })}</span>
           <span class="range mono {line.status}">{line.text}</span>
-          <span class="count mono">×{line.count}</span>
+          <span class="count">{t('hosts', { n: line.count })}</span>
         </span>
       {/each}
     </span>
@@ -193,7 +196,7 @@
   }
   .line {
     display: grid;
-    grid-template-columns: minmax(0, 9em) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 10em) minmax(0, 1fr) auto;
     gap: 10px;
     font-size: 13px;
     align-items: baseline;
@@ -224,6 +227,8 @@
   }
   .count {
     color: var(--text-muted);
+    font-size: 12px;
+    white-space: nowrap;
   }
   .foot {
     display: flex;

@@ -137,7 +137,15 @@
   {:else if !digest}
     <p class="muted">{t('loading')}</p>
   {:else if rows.length === 0}
-    <p class="quiet">{t('quietWeek')}</p>
+    <!-- A real empty state (UI audit, week): what happened, and a way on. -->
+    <div class="quiet">
+      <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"
+        ><rect x="3.5" y="5" width="17" height="15" rx="2.5" /><path d="M3.5 10h17M8 3v4M16 3v4" /></svg
+      >
+      <h2>{t('quietWeekTitle')}</h2>
+      <p>{t('quietWeekText')}</p>
+      {#if prev}<a class="btn" href={hrefFor(prev)}>← {t('prevWeek')}</a>{/if}
+    </div>
   {:else}
     {#each days as group (group.day)}
       <section>
@@ -163,9 +171,8 @@
 </div>
 
 <style>
+  /* Full width like the other screens (UI audit, week). */
   .week {
-    max-width: 920px;
-    margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -197,8 +204,29 @@
     margin: 0;
   }
   .quiet {
-    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 56px 16px;
     text-align: center;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-lg);
+  }
+  .quiet svg {
+    fill: none;
+    stroke: var(--text-muted);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+  .quiet h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    text-transform: none;
+  }
+  .quiet p {
+    margin: 0 0 6px;
     color: var(--text-muted);
   }
   .nav {
