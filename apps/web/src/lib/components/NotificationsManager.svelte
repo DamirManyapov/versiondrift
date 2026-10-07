@@ -212,7 +212,7 @@
               >
               <button class="btn btn-sm" onclick={() => (confirming = undefined)}>{t('cancel')}</button>
             {:else}
-              <button class="btn btn-sm" onclick={() => (confirming = channel.id)}
+              <button class="btn btn-sm btn-danger-ghost" onclick={() => (confirming = channel.id)}
                 >{t('deleteChannel')}</button
               >
             {/if}
@@ -241,7 +241,7 @@
         </label>
         <label>
           <span>{t('channelKind')}</span>
-          <select bind:value={form.kind} disabled={editing !== 'new'}>
+          <select class="input" bind:value={form.kind} disabled={editing !== 'new'}>
             {#each KINDS as kind (kind)}<option value={kind}>{t(`kind_${kind}` as MessageKey)}</option>{/each}
           </select>
         </label>
@@ -290,14 +290,14 @@
         {#if form.events.includes('digest')}
           <label>
             <span>{t('digestDayLabel')}</span>
-            <select bind:value={form.digestDay}>
+            <select class="input" bind:value={form.digestDay}>
               {#each days as { day, name } (day)}<option value={day}>{name}</option>{/each}
             </select>
           </label>
         {/if}
         <label>
           <span>{t('channelLanguage')}</span>
-          <select bind:value={form.lang}>
+          <select class="input" bind:value={form.lang}>
             <option value="en">English</option>
             <option value="ru">Русский</option>
           </select>
@@ -387,8 +387,7 @@
     font-size: 14px;
     margin-bottom: 6px;
   }
-  input:not([type='checkbox']),
-  select {
+  input:not([type='checkbox']) {
     height: var(--control-h);
     font: inherit;
     font-size: 14px;
@@ -400,8 +399,10 @@
     min-width: 220px;
     transition: border-color 0.12s;
   }
-  input:not([type='checkbox']):hover:not(:disabled, :focus),
-  select:hover:not(:disabled, :focus) {
+  select {
+    min-width: 220px;
+  }
+  input:not([type='checkbox']):hover:not(:disabled, :focus) {
     border-color: var(--text-muted);
   }
   .muted {

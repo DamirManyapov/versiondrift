@@ -53,7 +53,11 @@
 <div class="wrap">
   <label class="site">
     <span class="muted">{t('siteLabel')}:</span>
-    <select value={current === undefined ? '' : String(current)} onchange={(e) => change(e.currentTarget)}>
+    <select
+      class="chevron"
+      value={current === undefined ? '' : String(current)}
+      onchange={(e) => change(e.currentTarget)}
+    >
       <option value="" selected={current === undefined}>{t('allSites')}</option>
       {#each sites as site (site.id)}<option value={String(site.id)} selected={site.id === current}
           >{site.name}</option

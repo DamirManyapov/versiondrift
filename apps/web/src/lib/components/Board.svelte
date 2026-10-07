@@ -106,6 +106,7 @@
           <button
             class="stat {key}"
             aria-pressed={status === key}
+            disabled={counts[key] === 0 && status !== key}
             onclick={() => (status = status === key ? undefined : key)}
           >
             <span class="dot" aria-hidden="true"></span>
@@ -156,6 +157,18 @@
       {/if}
       {@render actions?.()}
     </div>
+
+    {#if status}
+      <p class="shown" role="status">
+        {t('filterShown', {
+          what: t(SUMMARY_KEYS[status]),
+          n: visible.length,
+          noun: t('productsNoun', { n: visible.length }),
+        })}
+        <button class="btn btn-sm btn-ghost" onclick={() => (status = undefined)}>✕ {t('clearFilter')}</button
+        >
+      </p>
+    {/if}
 
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="grid" onkeydown={onGridKey}>
@@ -209,15 +222,47 @@
       background-color 0.12s,
       border-color 0.12s;
   }
-  .stat:hover {
+  .stat:hover:not(:disabled) {
     background: var(--surface-hover);
   }
-  .stat:active {
+  .stat:active:not(:disabled) {
     background: var(--surface-active);
   }
+  /* The active filter takes its status colour (UI audit P1-1); a 0 has nothing to filter. */
   .stat[aria-pressed='true'] {
-    border-color: var(--selected);
-    box-shadow: 0 0 0 1px var(--selected);
+    box-shadow: 0 0 0 1px currentColor;
+  }
+  .stat.critical[aria-pressed='true'] {
+    background: var(--critical-bg);
+    border-color: var(--critical);
+    color: var(--critical);
+  }
+  .stat.eol[aria-pressed='true'] {
+    background: var(--eol-bg);
+    border-color: var(--eol);
+    color: var(--eol);
+  }
+  .stat.update[aria-pressed='true'] {
+    background: var(--update-bg);
+    border-color: var(--update);
+    color: var(--update);
+  }
+  .stat.ok[aria-pressed='true'] {
+    background: var(--ok-bg);
+    border-color: var(--ok);
+    color: var(--ok);
+  }
+  .stat:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .shown {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-soft);
   }
   .dot {
     width: 12px;

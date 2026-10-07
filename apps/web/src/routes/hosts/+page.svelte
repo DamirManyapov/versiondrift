@@ -240,7 +240,7 @@
           >
           <button class="btn btn-sm" onclick={() => (confirmingDelete = false)}>{t('cancel')}</button>
         {:else}
-          <button class="btn btn-sm btn-danger" onclick={() => (confirmingDelete = true)}
+          <button class="btn btn-sm btn-danger-ghost" onclick={() => (confirmingDelete = true)}
             >{t('deleteSelected')}</button
           >
         {/if}

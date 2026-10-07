@@ -47,9 +47,13 @@
     return found ? trackName(found) : track;
   };
 
-  async function copyHosts(names: string[]) {
+  // The button itself says it worked for two seconds, the toast says how many (UI audit P1-3).
+  let copied = $state<string | undefined>();
+  async function copyHosts(key: string, names: string[]) {
     try {
       await copyText(names.join('\n'));
+      copied = key;
+      setTimeout(() => (copied = copied === key ? undefined : copied), 2000);
       ontoast(t('copiedHosts', { n: names.length }));
     } catch {
       ontoast(names.join(', '));
@@ -103,7 +107,10 @@
                 class:stale={entry.key === 'stale'}
                 href={resolve('/hosts/[id]', { id: entry.host.id })}
                 >{entry.host.record.name}{#if entry.key === 'stale'}
-                  <span class="why">· {pollLabel(t, entry.host.poll.state).toLowerCase()}</span>{/if}</a
+                  <span class="why">· {pollLabel(t, entry.host.poll.state).toLowerCase()}</span>{/if}<span
+                  class="go"
+                  aria-hidden="true">→</span
+                ></a
               >
             </li>
           {/each}
@@ -122,13 +129,16 @@
               href={resolve('/p/[id]/[range=range]', {
                 id: aggregate.productId,
                 range: `${group.version}...${group.latest}`,
-              })}>{t('changesTo', { version: group.latest })}</a
+              })}>{t('changesTo', { version: group.latest })} →</a
             >
           {/if}
           <button
             class="btn btn-sm"
-            onclick={() => void copyHosts(group.entries.map((e) => e.host.record.name))}
-            >⧉ {t('copyHosts')}</button
+            onclick={() =>
+              void copyHosts(
+                key,
+                group.entries.map((e) => e.host.record.name),
+              )}>{copied === key ? `✓ ${t('copiedShort')}` : `⧉ ${t('copyHosts')}`}</button
           >
         </div>
       </article>
@@ -256,6 +266,10 @@
   .why {
     font-family: var(--font-sans);
     font-size: 12px;
+  }
+  .go {
+    color: var(--text-muted);
+    font-family: var(--font-sans);
   }
   .actions {
     display: flex;

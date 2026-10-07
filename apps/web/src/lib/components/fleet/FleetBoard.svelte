@@ -59,9 +59,11 @@
 
 <div class="summary">
   {#each SUMMARY as item (item.key)}
+    <!-- A filter: nothing to filter when the count is 0 (UI audit P1-1). -->
     <button
       class="stat {item.key}"
       aria-pressed={status === item.key}
+      disabled={summary[item.key] === 0 && status !== item.key}
       onclick={() => (status = status === item.key ? undefined : item.key)}
     >
       <span class="label"><span class="dot"></span>{t(item.label)}</span>
@@ -69,12 +71,38 @@
       <span class="muted">{t('productsNoun', { n: summary[item.key] })}</span>
     </button>
   {/each}
-  <a class="stat poll" href="{resolve('/hosts')}?poll=problem">
-    <span class="label"><span class="dot"></span>{t('pollProblems')}</span>
-    <span class="n">{summary.pollProblems}</span>
-    <span class="muted">{t('hostsNoun', { n: summary.pollProblems })}</span>
-  </a>
+  <!-- Not a filter but a way to the hosts list: says so with an arrow and its accessible name. -->
+  {#if summary.pollProblems > 0}
+    <a
+      class="stat poll"
+      href="{resolve('/hosts')}?poll=problem"
+      aria-label={t('pollProblemsLink', { n: summary.pollProblems })}
+    >
+      <span class="label"
+        ><span class="dot"></span>{t('pollProblems')}<span class="go" aria-hidden="true">→</span></span
+      >
+      <span class="n">{summary.pollProblems}</span>
+      <span class="muted">{t('hostsNoun', { n: summary.pollProblems })}</span>
+    </a>
+  {:else}
+    <div class="stat poll off">
+      <span class="label"><span class="dot"></span>{t('pollProblems')}</span>
+      <span class="n">0</span>
+      <span class="muted">{t('hostsNoun', { n: 0 })}</span>
+    </div>
+  {/if}
 </div>
+
+{#if status}
+  <p class="shown" role="status">
+    {t('filterShown', {
+      what: t(SUMMARY.find((s) => s.key === status)!.label),
+      n: shown.length,
+      noun: t('productsNoun', { n: shown.length }),
+    })}
+    <button class="btn btn-sm btn-ghost" onclick={() => (status = undefined)}>✕ {t('clearFilter')}</button>
+  </p>
+{/if}
 
 <div class="layout">
   <div class="grid">
@@ -129,20 +157,56 @@
       background-color 0.12s,
       border-color 0.12s;
   }
-  .stat:hover {
+  .stat:hover:not(:disabled, .off) {
     background: var(--surface-hover);
     color: var(--text);
   }
-  .stat:active {
+  .stat:active:not(:disabled, .off) {
     background: var(--surface-active);
   }
+  /* The active filter takes its status colour: fill, border, dot and number. */
   .stat[aria-pressed='true'] {
-    border-color: var(--selected);
-    box-shadow: 0 0 0 1px var(--selected);
+    box-shadow: 0 0 0 1px currentColor;
   }
-  .stat.poll {
-    border-style: dashed;
-    border-color: var(--stale-border);
+  .stat.critical[aria-pressed='true'] {
+    background: var(--critical-bg);
+    border-color: var(--critical);
+    color: var(--critical);
+  }
+  .stat.eol[aria-pressed='true'] {
+    background: var(--eol-bg);
+    border-color: var(--eol);
+    color: var(--eol);
+  }
+  .stat.update[aria-pressed='true'] {
+    background: var(--update-bg);
+    border-color: var(--update);
+    color: var(--update);
+  }
+  .stat.ok[aria-pressed='true'] {
+    background: var(--ok-bg);
+    border-color: var(--ok);
+    color: var(--ok);
+  }
+  .stat[aria-pressed='true'] .label {
+    color: var(--text);
+  }
+  .stat:disabled,
+  .stat.off {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .go {
+    margin-left: auto;
+    color: var(--text-muted);
+  }
+  .shown {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 14px;
+    font-size: 14px;
+    color: var(--text-soft);
   }
   .label {
     grid-column: 1 / -1;

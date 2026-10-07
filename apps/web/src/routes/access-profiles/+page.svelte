@@ -92,8 +92,9 @@
                 >{t('replaceSecret')}</button
               >
             {/if}
-            <button class="btn btn-sm" onclick={() => (open = { id: profile.id, what: 'delete' })}
-              >{t('deleteProfile')}</button
+            <button
+              class="btn btn-sm btn-danger-ghost delete"
+              onclick={() => (open = { id: profile.id, what: 'delete' })}>{t('deleteProfile')}</button
             >
           </div>
         {/if}
@@ -122,12 +123,19 @@
                 >
               </form>
             {:else if open.what === 'delete'}
-              <button
-                class="btn btn-sm btn-danger"
-                onclick={() => void act(() => fleetApi.deleteProfile(profile.id), t('profileDeleted'))}
-                >{t('deleteProfileConfirm', { name: profile.name })}</button
-              >
-              <button class="btn btn-sm" onclick={() => (open = undefined)}>{t('cancel')}</button>
+              <!-- An inline confirmation (no browser dialog) that says what happens to the hosts (UI audit P1-5). -->
+              <div class="confirm" role="alert">
+                <span
+                  ><strong>{t('deleteProfileAsk', { name: profile.name })}</strong>
+                  {profile.hosts > 0 ? t('profileUsedBy', { n: profile.hosts }) : t('profileUnused')}</span
+                >
+                <button class="btn btn-sm" onclick={() => (open = undefined)}>{t('cancel')}</button>
+                <button
+                  class="btn btn-sm btn-danger"
+                  onclick={() => void act(() => fleetApi.deleteProfile(profile.id), t('profileDeleted'))}
+                  >{t('deleteProfile')}</button
+                >
+              </div>
             {/if}
           </div>
         {/if}
@@ -196,6 +204,23 @@
     gap: 8px;
     flex-wrap: wrap;
     align-items: center;
+  }
+  /* "Delete" stands apart from the other actions. */
+  .delete {
+    margin-left: 8px;
+  }
+  .confirm {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--critical-border);
+    border-radius: 10px;
+  }
+  .confirm span {
+    flex: 1 1 260px;
   }
   .drawer {
     flex-basis: 100%;

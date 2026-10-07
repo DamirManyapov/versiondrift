@@ -270,7 +270,7 @@
         <button class="btn btn-sm" onclick={startEdit}>{t('editHost')}</button>
       {/if}
       {#if canEdit && !confirmingDelete}
-        <button class="btn btn-sm btn-danger" onclick={() => (confirmingDelete = true)}
+        <button class="btn btn-sm btn-danger-ghost" onclick={() => (confirmingDelete = true)}
           >{t('deleteHost')}</button
         >
       {/if}

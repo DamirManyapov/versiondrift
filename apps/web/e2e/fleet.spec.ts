@@ -17,7 +17,7 @@ test('the board aggregates products over the hosts, with poll problems counted a
   const debian = page.locator('[data-fleet-tile="debian"]');
   await expect(debian).toContainText('10 hosts');
   await expect(debian).toContainText('1 EOL');
-  await expect(page.getByRole('link', { name: /Poll problems\s*2/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Poll problems: 2 hosts/ })).toBeVisible();
   // Windows Server is not in the e2e feed: its versions are unknown, so a host that can't be polled is stale.
   await page.locator('[data-fleet-tile="windows-server"]').click();
   await expect(page.getByRole('heading', { name: 'Versions' })).toBeVisible();
@@ -63,7 +63,8 @@ test('poll now: one host from its card, several from the table; select-all takes
 
 test('add hosts: one through the form, a list through the CSV dry run', async ({ page }) => {
   await page.goto('/hosts');
-  await page.getByRole('button', { name: 'Add hosts' }).click();
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
+  await page.getByRole('button', { name: /^Host\b/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Add hosts' });
   await dialog.getByLabel('Name').fill('e2e-one');
   await dialog.getByLabel('Address').fill('10.0.0.5');

@@ -85,7 +85,9 @@
               >
               <button class="btn btn-sm" onclick={() => (confirming = undefined)}>{t('cancel')}</button>
             {:else}
-              <button class="btn btn-sm" onclick={() => (confirming = board.id)}>{t('deleteBoard')}</button>
+              <button class="btn btn-sm btn-danger-ghost" onclick={() => (confirming = board.id)}
+                >{t('deleteBoard')}</button
+              >
             {/if}
           {/if}
         {/if}

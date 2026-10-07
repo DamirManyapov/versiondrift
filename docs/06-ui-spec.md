@@ -161,6 +161,14 @@ and `--selected-bg` — the same on the fleet board and the board, and it stays 
 outside it (`outline-offset: 3px`). Status shows in the card's border, chip and versions, not as a fill of the whole
 card. Colour transitions take 0.12s and are off with `prefers-reduced-motion` (the e2e tests run that way).
 
+P1 (same audit): summary tiles are filters — the active one takes its status colour, a "Showing: … · n ✕ Clear"
+line sits above the grid, a 0 is disabled, and "Poll problems" is a link with "→" (it leads to the hosts list).
+`btn-danger-ghost` is the trigger of a destructive action (neutral, red on hover); the confirmation is inline and
+`btn-danger`, and says what follows ("10 hosts use it…"). `select.input` (or `.chevron` inside its own frame) draws one
+chevron in both themes. Checkboxes are 18px inside a 32px label row. The header has one "+ Add" menu (a host, hosts
+from CSV, a product from the catalog); before signing in it shows only the logo. Navigation buttons end with "→",
+actions start with their icon; copying says "✓ Copied" on the button and in a toast.
+
 ## Product page (`/p/:id`, S2-T7)
 
 Server-rendered (universal load through `FeedClient`, 404 for unknown ids): latest release, latest per track,

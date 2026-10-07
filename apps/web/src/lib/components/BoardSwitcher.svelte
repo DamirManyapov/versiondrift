@@ -78,7 +78,7 @@
     <button class="btn btn-sm" onclick={() => start('pick')}>{t('cancel')}</button>
   {:else}
     <button class="btn btn-sm" onclick={() => start('rename')}>{t('rename')}</button>
-    <button class="btn btn-sm" onclick={() => start('delete')}>{t('deleteBoard')}</button>
+    <button class="btn btn-sm btn-danger-ghost" onclick={() => start('delete')}>{t('deleteBoard')}</button>
     <button class="btn btn-sm" onclick={() => start('create')}>+ {t('newBoard')}</button>
   {/if}
   {#if problem}<span class="error" role="alert">{problem}</span>{/if}

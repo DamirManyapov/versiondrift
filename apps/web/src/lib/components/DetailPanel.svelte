@@ -175,12 +175,7 @@
   <header class="top">
     <div class="grow">
       <h2 id="detail-title"><a class="plain" href={resolve('/p/[id]', { id: row.id })}>{row.name}</a></h2>
-      <div class="muted">
-        {categoryLabel(t, row.category)} · {t('moduleFile')}
-        <a class="mono" href="{REPO_URL}/blob/main/products/{row.id}.yaml" target="_blank" rel="noreferrer"
-          >products/{row.id}.yaml</a
-        >
-      </div>
+      <div class="muted">{categoryLabel(t, row.category)}</div>
     </div>
     {#if row.known}<StatusChip status={row.status} cvss={s?.maxCvss} size="md" />{/if}
     {#if !readonly && instance}
@@ -236,13 +231,23 @@
       {#if groups.length > 0}
         <label class="field">
           <span class="muted">{t('trackLine')}</span>
-          <select value={group} disabled={readonly} onchange={(e) => setGroup(e.currentTarget.value)}>
+          <select
+            class="input"
+            value={group}
+            disabled={readonly}
+            onchange={(e) => setGroup(e.currentTarget.value)}
+          >
             {#each groups as g (g)}<option value={g}>{g}</option>{/each}
           </select>
         </label>
         <label class="field">
           <span class="muted">{t('trackChannel')}</span>
-          <select value={currentTrack} disabled={readonly} onchange={(e) => setTrack(e.currentTarget.value)}>
+          <select
+            class="input"
+            value={currentTrack}
+            disabled={readonly}
+            onchange={(e) => setTrack(e.currentTarget.value)}
+          >
             {#each product.tracks.filter((tr) => tr.group === group) as track (track.id)}
               <option value={track.id}>{track.label ?? track.id}</option>
             {/each}
@@ -251,7 +256,12 @@
       {:else if product.tracks.length > 0}
         <label class="field">
           <span class="muted">{t('trackLine')}</span>
-          <select value={currentTrack} disabled={readonly} onchange={(e) => setTrack(e.currentTarget.value)}>
+          <select
+            class="input"
+            value={currentTrack}
+            disabled={readonly}
+            onchange={(e) => setTrack(e.currentTarget.value)}
+          >
             <option value="latest">{t('trackLatest')}</option>
             {#each product.tracks as track (track.id)}
               <option value={track.id}>{trackName(track)}</option>
@@ -263,7 +273,7 @@
         <label class="field">
           <span class="muted">{t('myVersion')}</span>
           <input
-            class="mono"
+            class="input mono"
             list="versions-{row.id}"
             value={versionInput}
             placeholder={t('versionPlaceholder', { example: s.latest ?? '1.0.0' })}
@@ -383,6 +393,15 @@
         {/if}
       {:else}
         <dl class="module">
+          <dt>{t('moduleFile')}</dt>
+          <dd>
+            <a
+              class="mono"
+              href="{REPO_URL}/blob/main/products/{row.id}.yaml"
+              target="_blank"
+              rel="noreferrer">products/{row.id}.yaml ↗</a
+            >
+          </dd>
           <dt>{t('sources')}</dt>
           <dd>
             {#each product.sources as source (source.url)}
@@ -586,37 +605,12 @@
   }
   input,
   select {
-    box-sizing: border-box;
-    height: var(--control-h);
-    font: inherit;
-    color: var(--text);
-    background-color: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 0 10px;
     max-width: 320px;
-  }
-  /* Safari ignores a native select's height and padding: draw it like the text field, with our own chevron. */
-  select {
-    appearance: none;
-    padding-right: 32px;
-    background-image:
-      linear-gradient(45deg, transparent 50%, currentColor 50%),
-      linear-gradient(135deg, currentColor 50%, transparent 50%);
-    background-position:
-      calc(100% - 17px) 50%,
-      calc(100% - 12px) 50%;
-    background-size: 5px 5px;
-    background-repeat: no-repeat;
   }
   .setup input,
   .setup select {
     width: 100%;
     max-width: none;
-  }
-  input:hover:not(:disabled, :focus),
-  select:hover:not(:disabled, :focus) {
-    border-color: var(--text-muted);
   }
   input[aria-invalid='true'] {
     border-color: var(--critical);
@@ -740,6 +734,10 @@
   .ver {
     font-size: 16px;
     font-weight: 600;
+    text-decoration: none;
+  }
+  a.ver:hover {
+    text-decoration: underline;
   }
   .line {
     flex-grow: 1;
