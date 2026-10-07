@@ -18,6 +18,17 @@ export default defineConfig({
     { name: 'public', testMatch: 'public.spec.ts', use: { baseURL: 'http://localhost:4173' } },
     { name: 'selfhosted', testMatch: 'selfhosted.spec.ts', use: { baseURL: 'http://localhost:4174' } },
     { name: 'fleet', testMatch: 'fleet.spec.ts', use: { baseURL: 'http://localhost:4175' } },
+    // A phone (390px) on the fleet server: tab bar, compact header, 44px targets, the panel as a full-screen layer.
+    {
+      name: 'phone',
+      testMatch: 'phone.spec.ts',
+      use: {
+        baseURL: 'http://localhost:4175',
+        viewport: { width: 390, height: 844 },
+        isMobile: true,
+        hasTouch: true,
+      },
+    },
     // The fleet server under a LAN name over plain http: not a secure context, like http://192.168.1.10:8080.
     {
       name: 'lan',

@@ -410,6 +410,7 @@ export const en = {
   trackChannel: 'Update channel',
   // Fleet (self-hosted, docs/specs/fleet-ui.md)
   navHosts: 'Hosts',
+  navProfilesShort: 'Profiles',
   navProfiles: 'Access profiles',
   siteLabel: 'Site',
   allSites: 'All sites',

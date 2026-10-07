@@ -515,4 +515,17 @@
   .grow {
     flex: 1;
   }
+  /* Phones: each half of the toggle is a 44px target (UI audit P2). */
+  @media (max-width: 640px) {
+    .toggle {
+      height: auto;
+      padding: 0;
+      gap: 0;
+      overflow: hidden;
+    }
+    .toggle button {
+      height: var(--control-h);
+      border-radius: 0;
+    }
+  }
 </style>

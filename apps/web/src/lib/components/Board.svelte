@@ -207,6 +207,7 @@
 
   {#if panel && selected}
     <div class="right" class:overlay>
+      <button type="button" class="btn btn-sm back" onclick={() => (overlay = false)}>← {t('back')}</button>
       <DetailPanel row={selected} {readonly} {readonlyNote} onclose={() => (overlay = false)} {ontoast} />
     </div>
   {/if}
@@ -378,6 +379,37 @@
     }
     .right.overlay {
       padding: 0;
+    }
+  }
+  /* Phones (UI audit P2): the summary tiles are a strip that scrolls sideways, not a 2×3 grid. */
+  @media (max-width: 640px) {
+    .summary {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 10px;
+      margin-left: -16px;
+      margin-right: -16px;
+      padding: 0 16px 4px;
+    }
+    .summary > :global(*) {
+      flex: 0 0 auto;
+      min-width: 148px;
+      scroll-snap-align: start;
+    }
+  }
+  /* On narrow screens the panel is a full-screen layer with "← Back" on top (UI audit P2). */
+  .back {
+    display: none;
+  }
+  @media (max-width: 1100px) {
+    .right.overlay .back {
+      display: inline-flex;
+      margin-bottom: 12px;
+    }
+    .right.overlay {
+      overflow-y: auto;
+      padding: calc(12px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
     }
   }
 </style>

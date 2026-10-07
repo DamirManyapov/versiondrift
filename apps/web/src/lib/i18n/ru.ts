@@ -478,6 +478,7 @@ export const ru: Messages = {
   trackChannel: 'Канал обновлений',
   // Флот (self-hosted, docs/specs/fleet-ui.md)
   navHosts: 'Хосты',
+  navProfilesShort: 'Профили',
   navProfiles: 'Профили доступа',
   siteLabel: 'Площадка',
   allSites: 'Все площадки',

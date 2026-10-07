@@ -19,6 +19,7 @@
     below,
     other,
     onpick,
+    overlay = $bindable(false),
   }: {
     data: FleetData;
     site: number | undefined;
@@ -29,6 +30,8 @@
     other?: Snippet | undefined;
     /** A fleet tile was clicked. */
     onpick?: () => void;
+    /** Narrow screens: the panel is open as a full-screen layer (the page opens it for host-less picks too). */
+    overlay?: boolean;
   } = $props();
   const { t } = $derived(i18n());
 
@@ -60,6 +63,16 @@
     { key: 'ok', label: 'summaryOk' },
   ];
 
+  // Narrow screens: Escape closes the layer; opening it moves focus to "← Back".
+  let back = $state<HTMLButtonElement>();
+  $effect(() => {
+    if (overlay && window.matchMedia('(max-width: 1100px)').matches) back?.focus();
+  });
+  function onKey(event: KeyboardEvent) {
+    if (event.key === 'Escape' && overlay && window.matchMedia('(max-width: 1100px)').matches)
+      overlay = false;
+  }
+
   function chipLabel(id: string): string {
     const a = view.aggregates.find((x) => x.productId === id);
     if (!a) return '';
@@ -73,6 +86,8 @@
     return a.status === 'stale' ? t('chipNoConnection') : t('chipUnknown');
   }
 </script>
+
+<svelte:window onkeydown={onKey} />
 
 <div class="summary">
   {#each SUMMARY as item (item.key)}
@@ -137,6 +152,7 @@
           selected={selected?.productId === aggregate.productId}
           onselect={() => {
             selectedId = aggregate.productId;
+            overlay = true;
             onpick?.();
           }}
         />
@@ -144,18 +160,20 @@
     </div>
     {@render below?.()}
   </div>
-  {#if other}
-    <div class="right">{@render other()}</div>
-  {:else if selected}
-    <div class="right">
-      <FleetPanel
-        aggregate={selected}
-        product={productCache.products[selected.productId]}
-        name={nameOf(selected.productId)}
-        category={categoryOf(selected.productId)}
-        chipLabel={chipLabel(selected.productId)}
-        {ontoast}
-      />
+  {#if other || selected}
+    <div class="right" class:overlay>
+      <button type="button" class="btn btn-sm back" bind:this={back} onclick={() => (overlay = false)}
+        >← {t('back')}</button
+      >
+      {#if other}{@render other()}{:else if selected}
+        <FleetPanel
+          aggregate={selected}
+          product={productCache.products[selected.productId]}
+          name={nameOf(selected.productId)}
+          category={categoryOf(selected.productId)}
+          chipLabel={chipLabel(selected.productId)}
+          {ontoast}
+        />{/if}
     </div>
   {/if}
 </div>
@@ -290,16 +308,50 @@
     max-height: calc(100vh - 32px);
     overflow-y: auto;
   }
+  .back {
+    display: none;
+  }
+  /* Narrow screens: the panel is a full-screen layer with "← Back" on top (UI audit P2). */
   @media (max-width: 1100px) {
     .layout {
       grid-template-columns: minmax(0, 1fr);
     }
     .right {
-      position: static;
+      display: none;
+    }
+    .right.overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 40;
       max-height: none;
+      overflow-y: auto;
+      background: var(--bg);
+      padding: calc(12px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+    }
+    .right.overlay .back {
+      display: inline-flex;
+      margin-bottom: 12px;
     }
     .summary {
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+  }
+  /* Phones (UI audit P2): the summary tiles are a strip that scrolls sideways, not a 2×3 grid. */
+  @media (max-width: 640px) {
+    .summary {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 10px;
+      margin-left: -16px;
+      margin-right: -16px;
+      padding: 0 16px 4px;
+    }
+    .summary > :global(*) {
+      flex: 0 0 auto;
+      min-width: 148px;
+      scroll-snap-align: start;
     }
   }
 </style>

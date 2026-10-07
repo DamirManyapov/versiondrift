@@ -169,6 +169,13 @@ chevron in both themes. Checkboxes are 18px inside a 32px label row. The header 
 from CSV, a product from the catalog); before signing in it shows only the logo. Navigation buttons end with "→",
 actions start with their icon; copying says "✓ Copied" on the button and in a toast.
 
+P2, phones (≤640px): every control is 44px (`--control-h` and `--control-h-sm` both 44px); the header is ~60px — the
+logo, "+" and the account initial — and the views move to a bottom tab bar (56px plus the safe area, icons and
+labels); the site filter heads the content; summary tiles are a strip that scrolls sideways with snap points. Up to
+1100px the detail panel (on both boards) is a full-screen layer with "← Back" on top, which takes focus; Escape closes
+it. The fleet board has one detail panel for fleet products and those without a host, so one card is selected at a
+time. Every button carries a `type` (`svelte/button-has-type`). The `phone` e2e project checks the phone layout.
+
 ## Product page (`/p/:id`, S2-T7)
 
 Server-rendered (universal load through `FeedClient`, 404 for unknown ids): latest release, latest per track,

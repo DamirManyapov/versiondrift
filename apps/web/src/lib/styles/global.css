@@ -45,6 +45,18 @@ button {
   outline-offset: 2px;
 }
 
+/* Phones (UI audit P2): every control is at least 44px tall; the views move to a bottom tab bar. */
+:root {
+  --tabbar-h: 0px;
+}
+@media (max-width: 640px) {
+  :root {
+    --control-h: 44px;
+    --control-h-sm: 44px;
+    --tabbar-h: 56px;
+  }
+}
+
 /*
  * Controls (UI audit P0): two heights (--control-h, --control-h-sm) and the same states everywhere: hover, pressed,
  * the focus ring above and disabled. `btn` takes a variant (primary, ghost, danger; plain is secondary) and a size

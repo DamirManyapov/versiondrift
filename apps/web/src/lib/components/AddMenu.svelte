@@ -37,11 +37,14 @@
     class="btn btn-primary"
     aria-expanded={open}
     aria-controls="add-menu"
+    aria-label={t('addMenu')}
     onclick={() => (open = !open)}
   >
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-    {t('addMenu')}
-    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+    <span class="wide">{t('addMenu')}</span>
+    <svg class="wide" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
+      ><path d="M6 9l6 6 6-6" /></svg
+    >
   </button>
   {#if open}
     <div id="add-menu" class="panel">
@@ -104,11 +107,24 @@
   .panel button:active {
     background: var(--surface-active);
   }
-  strong {
+  .panel strong {
     font-size: 14px;
     font-weight: 600;
   }
-  span {
+  /* Phones: just "+" (UI audit P2). */
+  @media (max-width: 640px) {
+    .wide {
+      display: none;
+    }
+    .menu > .btn {
+      width: var(--control-h);
+      padding: 0;
+    }
+    .panel {
+      width: min(300px, calc(100vw - 32px));
+    }
+  }
+  .panel span {
     font-size: 12px;
     color: var(--text-muted);
   }

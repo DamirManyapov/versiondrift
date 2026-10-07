@@ -34,9 +34,15 @@
   });
   const freshnessLabel = $derived(freshness && freshness !== 'missing' ? t(FRESHNESS[freshness]) : '');
 
+  // Phones (≤640px): the site filter moves from the header to the top of the content. One switcher at a time,
+  // so its label stays unique.
+  let phone = $state(false);
   onMount(() => {
     void feed.load();
     if (data.mode === 'selfhosted') void fleet.load();
+    const query = window.matchMedia('(max-width: 640px)');
+    phone = query.matches;
+    query.addEventListener('change', (e) => (phone = e.matches));
   });
 
   // Self-hosted with hosts: Board · Hosts · This week · Access profiles (docs/specs/fleet-ui.md §3).
@@ -116,7 +122,7 @@
       <span class="name">VersionDrift</span>
     </a>
 
-    {#if !signedOut}<nav aria-label="Views">
+    {#if !signedOut}<nav class="views" aria-label="Views">
         {#each views as view (view.href)}
           <a href={view.href} aria-current={current(view.href) ? 'page' : undefined}
             >{t(view.key)}{#if view.count !== undefined}<span class="count">{view.count}</span>{/if}</a
@@ -126,15 +132,15 @@
 
     <div class="spacer"></div>
 
-    {#if fleet.hasHosts && fleet.data}
+    {#if fleet.hasHosts && fleet.data && !phone}
       <SiteSwitcher sites={fleet.data.sites} />
     {/if}
     {#if canAddHosts}
       <AddMenu onhosts={setAdd} />
     {:else if !signedOut && data.account?.role !== 'viewer'}
-      <a class="btn btn-primary" href={resolve('/catalog')}>
+      <a class="btn btn-primary add-product" href={resolve('/catalog')} aria-label={t('addProduct')}>
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-        {t('addProduct')}
+        <span class="label">{t('addProduct')}</span>
       </a>
     {/if}
     {#if data.account && data.account.auth !== 'none'}
@@ -147,6 +153,10 @@
   </header>
 
   <main>
+    <!-- Phones: the site filter heads the content instead of the header (UI audit P2). -->
+    {#if fleet.hasHosts && fleet.data && phone}
+      <div class="site-row"><SiteSwitcher sites={fleet.data.sites} /></div>
+    {/if}
     {@render children()}
   </main>
   {#if addTab}
@@ -192,6 +202,46 @@
       </select>
     </label>
   </footer>
+
+  <!-- Phones: the views as a bottom tab bar (UI audit P2), 56px plus the safe area. -->
+  {#if !signedOut}
+    <nav class="tabbar" aria-label="Views">
+      {#each views as view (view.href)}
+        <a href={view.href} aria-current={current(view.href) ? 'page' : undefined}>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            {#if view.key === 'navBoard'}<rect x="4" y="4" width="7" height="7" rx="1.5" /><rect
+                x="13"
+                y="4"
+                width="7"
+                height="7"
+                rx="1.5"
+              /><rect x="4" y="13" width="7" height="7" rx="1.5" /><rect
+                x="13"
+                y="13"
+                width="7"
+                height="7"
+                rx="1.5"
+              />{:else if view.key === 'navHosts'}<rect x="4" y="4" width="16" height="6" rx="1.5" /><rect
+                x="4"
+                y="14"
+                width="16"
+                height="6"
+                rx="1.5"
+              /><path d="M8 7h.01M8 17h.01" />{:else if view.key === 'navWeek'}<rect
+                x="4"
+                y="5"
+                width="16"
+                height="15"
+                rx="2"
+              /><path d="M4 10h16M9 3v4M15 3v4" />{:else}<circle cx="8" cy="15" r="4" /><path
+                d="M11 12l8-8M16 7l2 2M14 9l2 2"
+              />{/if}
+          </svg>
+          <span>{t(view.key === 'navProfiles' ? 'navProfilesShort' : view.key)}</span>
+        </a>
+      {/each}
+    </nav>
+  {/if}
 </div>
 
 <style>
@@ -240,7 +290,7 @@
     letter-spacing: -0.01em;
   }
   /* A segmented control as tall as the other header controls: 3 + 32 + 3 px inside a 1 px border. */
-  nav {
+  .views {
     display: flex;
     height: var(--control-h);
     background: var(--surface);
@@ -249,7 +299,7 @@
     padding: 3px;
     gap: 3px;
   }
-  nav a {
+  .views a {
     display: flex;
     align-items: center;
     padding: 0 14px;
@@ -262,14 +312,14 @@
       background-color 0.12s,
       color 0.12s;
   }
-  nav a:hover:not([aria-current='page']) {
+  .views a:hover:not([aria-current='page']) {
     background: var(--surface-hover);
     color: var(--text);
   }
-  nav a:active:not([aria-current='page']) {
+  .views a:active:not([aria-current='page']) {
     background: var(--surface-active);
   }
-  nav a[aria-current='page'] {
+  .views a[aria-current='page'] {
     background: var(--text);
     color: var(--bg);
   }
@@ -341,6 +391,73 @@
     footer {
       padding-left: 16px;
       padding-right: 16px;
+    }
+  }
+  .tabbar {
+    display: none;
+  }
+  /* Phones (UI audit P2): a ~60px header (logo, "+", the account), the views in a bottom tab bar, the site filter
+     at the top of the content. */
+  @media (max-width: 640px) {
+    header {
+      min-height: 60px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+    .name {
+      font-size: 16px;
+    }
+    .views {
+      display: none;
+    }
+    .add-product {
+      width: var(--control-h);
+      padding: 0;
+    }
+    .add-product .label {
+      display: none;
+    }
+    .site-row {
+      margin-bottom: 14px;
+    }
+    .app {
+      padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+    }
+    .tabbar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 30;
+      display: flex;
+      height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+    .tabbar a {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+    .tabbar a[aria-current='page'] {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .tabbar svg {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
   }
 </style>

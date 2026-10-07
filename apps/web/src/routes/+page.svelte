@@ -32,7 +32,11 @@
   const site = $derived(fleet.data ? siteFrom(page.url, fleet.data) : undefined);
   const canEdit = $derived(page.data.account?.role !== 'viewer');
   let hostlessId = $state<string | undefined>();
-  const chooseHostless = (id: string) => (hostlessId = id);
+  let panelOpen = $state(false);
+  const chooseHostless = (id: string) => {
+    hostlessId = id;
+    panelOpen = true;
+  };
   const hostlessRow = $derived.by(() => {
     if (!hostlessId || !fleet.data) return undefined;
     const { items } = hostlessView(fleet.data, site, {
@@ -61,6 +65,7 @@
     ontoast={showToast}
     other={hostlessRow ? hostlessPanel : undefined}
     onpick={() => (hostlessId = undefined)}
+    bind:overlay={panelOpen}
   >
     {#snippet below()}
       <HostlessProducts
