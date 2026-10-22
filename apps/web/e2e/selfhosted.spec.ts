@@ -62,6 +62,7 @@ test('settings offer boards and notification channels; the feed copy is served l
   expect(index.ok()).toBe(true);
   expect(index.headers()['access-control-allow-origin']).toBe('*');
   expect((await request.get('/', { maxRedirects: 0 })).headers()['x-robots-tag']).toBe('noindex, nofollow');
+  expect(await (await request.get('/robots.txt', { maxRedirects: 0 })).text()).toContain('Disallow: /');
 });
 
 test('settings → feed: an upload that is not a feed package is refused with the reason', async ({ page }) => {

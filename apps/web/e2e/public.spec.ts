@@ -87,4 +87,7 @@ test('the catalog finds products and the feeds and sitemap answer', async ({ pag
     expect((await request.get(url)).ok(), url).toBe(true);
   }
   expect((await request.get('/api/boards')).status()).toBe(404);
+  const robots = await (await request.get('/robots.txt')).text();
+  expect(robots).toContain('Allow: /');
+  expect(robots).toMatch(/^Sitemap: https?:\/\/.+\/sitemap\.xml$/m);
 });

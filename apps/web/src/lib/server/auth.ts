@@ -106,10 +106,14 @@ export function endSession(cookies: Cookies): void {
   cookies.delete(SESSION_COOKIE, { path: '/' });
 }
 
-/** Paths reachable without signing in (the feed mirror is public data). Static files never reach the hooks. */
+/**
+ * Paths reachable without signing in (the feed mirror is public data; robots.txt tells crawlers to stay away rather
+ * than sending them to the sign-in page). Static files never reach the hooks.
+ */
 export const isOpenPath = (pathname: string) =>
   pathname === '/login' ||
   pathname === '/healthz' ||
+  pathname === '/robots.txt' ||
   pathname.startsWith('/auth/') ||
   pathname.startsWith('/feed/');
 

@@ -112,7 +112,8 @@ Secrets (GitHub Actions): `GITHUB_TOKEN` (built-in, for GitHub API), `CLOUDFLARE
 - Pages project `versiondrift` (direct upload, production branch `main`), custom domain `versiondrift.dev`.
   Serves `apps/web` (SSR in Pages Functions / Workers) since S2-T8, deployed by `.github/workflows/deploy-web.yml` on
   every push to `main` that touches the app, `core` or `schema` (`wrangler pages deploy`, then a smoke test).
-  `robots.txt` disallows crawling until the public launch (S4-T7).
+  `/robots.txt` (a route, not a static file) allows crawling and names `/sitemap.xml` on the public site; a
+  self-hosted instance answers `Disallow: /` (also without signing in) and sends `X-Robots-Tag: noindex, nofollow`.
 
 ## Feed integrity
 
