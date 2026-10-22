@@ -59,8 +59,6 @@ Goal: the author uses `versiondrift.dev` for his own stack.
   repo** (inventory + bot token as secrets, never in this repo). Becomes the Telegram channel of S5-T5.
   Implemented as `apps/notify` + `notify.yml` (secrets of this repo instead of a separate repo — the inventory still
   never enters git); goes live once the bot token, chat id and inventory secrets are set.
-  Implemented as `apps/notify` + `notify.yml` (secrets of this repo instead of a separate repo — the inventory still
-  never enters git); goes live once the bot token, chat id and inventory secrets are set.
 
 **Done when:** the author's board (≥ 12 products with versions) shows correct `update/ok/eol` states and changelogs,
 and the author gets Telegram messages about their own stack without opening the site.

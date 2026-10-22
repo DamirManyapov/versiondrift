@@ -106,7 +106,12 @@ program
         now: new Date(),
         digestDay,
       });
-      for (const problem of result.problems) console.warn(`warning: ${problem}`);
+      // Actions logs of a public repository are public: there, name no product of the inventory.
+      if (process.env.GITHUB_ACTIONS === 'true' && result.problems.length > 0)
+        console.warn(
+          `warning: ${result.problems.length} problem(s), details hidden in CI (run --dry-run locally)`,
+        );
+      else for (const problem of result.problems) console.warn(`warning: ${problem}`);
       console.log(`${result.checked.length} instance(s) checked, ${result.messages.length} message(s)`);
       if (opts.dryRun) {
         for (const message of result.messages) console.log(`\n---\n${message}`);

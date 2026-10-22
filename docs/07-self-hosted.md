@@ -383,6 +383,7 @@ Mattermost instead of Telegram: set `MATTERMOST_WEBHOOK_URL` (and optionally `MA
 there. In this repository, `.github/workflows/notify.yml` runs after every feed update when the secrets `TELEGRAM_BOT_TOKEN`,
 `TELEGRAM_CHAT_ID` (or `MATTERMOST_WEBHOOK_URL`, with the repository variable `MATTERMOST_CHANNEL` if needed) and `NOTIFY_INVENTORY` (the YAML itself) are set, with the state in the private bucket
 (`r2:notify/state.json`) and the language from the repository variable `NOTIFY_LANG`. The inventory never enters the
-repository. Setup: create a bot with @BotFather, send it a message, read your chat id from
+repository, and since the repository's Actions logs are public, the CLI logs only counts there (`GITHUB_ACTIONS=true`):
+no product of the inventory is named. Setup: create a bot with @BotFather, send it a message, read your chat id from
 `https://api.telegram.org/bot<token>/getUpdates`, set the three secrets. In S5 this becomes the Telegram channel of the
 self-hosted notifications.
