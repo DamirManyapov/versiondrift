@@ -195,6 +195,7 @@ export const ru: Messages = {
   statusFailedLabel: 'ошибка',
   // Settings
   settingsTitle: 'Настройки',
+  settingsGeneral: 'Общие',
   settingsThreshold: 'Порог критичности',
   settingsThresholdHelp:
     'Уязвимость, затрагивающая вашу версию, делает продукт критичным начиная с этой оценки CVSS (или если она уже эксплуатируется).',

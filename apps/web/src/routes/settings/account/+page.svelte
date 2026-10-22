@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Meta from '$lib/components/Meta.svelte';
+  // Settings → Account: who is signed in, and the password when this instance keeps passwords.
   import { i18n } from '$lib/i18n/context';
   import type { ActionData, PageData } from './$types';
 
@@ -12,10 +12,8 @@
   } as const;
 </script>
 
-<Meta title="{t('accountTitle')} · VersionDrift" canonical={false} />
-
-<div class="page">
-  <h1>{t('accountTitle')}</h1>
+<section>
+  <h2>{t('accountTitle')}</h2>
   <p>
     <strong>{data.user.name}</strong>{#if data.user.email}
       · {data.user.email}{/if}
@@ -23,8 +21,8 @@
   </p>
 
   {#if data.method === 'password'}
-    <section>
-      <h2>{t('changePassword')}</h2>
+    <div class="password">
+      <h3>{t('changePassword')}</h3>
       <form method="POST" action="?/password">
         <input
           class="hidden"
@@ -67,30 +65,34 @@
         {/if}
         <button class="btn btn-primary" type="submit">{t('changePassword')}</button>
       </form>
-    </section>
+    </div>
   {:else if data.method === 'none'}
     <p class="muted">{t('authNone')}</p>
   {:else}
     <p class="muted">{t('accountExternal')}</p>
   {/if}
-</div>
+</section>
 
 <style>
-  .page {
-    max-width: 480px;
-    margin: 32px auto;
+  section {
     display: flex;
     flex-direction: column;
     gap: 20px;
   }
-  h1,
   h2,
+  h3,
   p {
     margin: 0;
   }
   h2 {
     font-size: 18px;
+  }
+  h3 {
+    font-size: 16px;
     margin-bottom: 12px;
+  }
+  .password {
+    max-width: 420px;
   }
   form {
     display: flex;

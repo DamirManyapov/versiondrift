@@ -1,13 +1,27 @@
 <script lang="ts">
-  // The signed-in user's menu in the header (self-hosted): account, settings and signing out in one place instead
-  // of a row of buttons. A disclosure, not an ARIA menu: the button opens a panel of ordinary links; Esc, a click
-  // elsewhere or a navigation closes it.
+  // The signed-in user's menu in the header (self-hosted): the sections of Settings and signing out in one place
+  // (docs/06). Without sign-in (VD_AUTH=none) it is a settings menu behind a gear: no name, no account, no sign-out.
+  // A disclosure, not an ARIA menu: the button opens a panel of ordinary links; Esc, a click elsewhere or a navigation
+  // closes it.
   import { afterNavigate } from '$app/navigation';
   import { resolve } from '$app/paths';
+  import { fleet } from '$lib/fleet/state.svelte';
   import { i18n } from '$lib/i18n/context';
+  import { settingsSections } from '$lib/settings/sections';
 
-  let { name, role, canSignOut }: { name: string; role: 'admin' | 'viewer'; canSignOut: boolean } = $props();
+  let { account }: { account: { name: string; role: 'admin' | 'viewer'; auth: string } } = $props();
   const { t } = $derived(i18n());
+  const { name, role } = $derived(account);
+  const anonymous = $derived(account.auth === 'none');
+  const canSignOut = $derived(account.auth === 'password' || account.auth === 'oidc');
+  // Account first (who you are), then the sections, then "Settings" for the general one (the mock-up in docs/06).
+  const links = $derived.by(() => {
+    const sections = settingsSections('selfhosted', account, fleet.hasHosts);
+    const general = sections.find((s) => s.path === '/settings');
+    const own = sections.find((s) => s.path === '/settings/account');
+    const rest = sections.filter((s) => s !== general && s !== own);
+    return [own, ...rest, general && { ...general, key: 'settingsTitle' as const }].filter((s) => !!s);
+  });
   let open = $state(false);
   let root: HTMLElement;
   let button: HTMLButtonElement;
@@ -31,23 +45,33 @@
     type="button"
     bind:this={button}
     class="btn trigger"
+    class:gear={anonymous}
     aria-expanded={open}
     aria-controls="user-menu"
-    aria-label={t('userMenu', { name })}
+    aria-label={anonymous ? t('settingsTitle') : t('userMenu', { name })}
     onclick={() => (open = !open)}
   >
-    <span class="avatar" aria-hidden="true">{name.slice(0, 1).toUpperCase()}</span>
-    <span class="who">{name}</span>
+    {#if anonymous}
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
+        ><circle cx="12" cy="12" r="3" /><path
+          d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"
+        /></svg
+      >
+    {:else}
+      <span class="avatar" aria-hidden="true">{name.slice(0, 1).toUpperCase()}</span>
+      <span class="who">{name}</span>
+    {/if}
     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
   </button>
   {#if open}
     <div id="user-menu" class="panel">
-      <p class="head">
-        <strong>{name}</strong>
-        <span>{role === 'admin' ? t('roleAdmin') : t('roleViewer')}</span>
-      </p>
-      <a href={resolve('/account')}>{t('accountTitle')}</a>
-      <a href={resolve('/settings')}>{t('settingsTitle')}</a>
+      {#if !anonymous}<p class="head">
+          <strong>{name}</strong>
+          <span>{role === 'admin' ? t('roleAdmin') : t('roleViewer')}</span>
+        </p>{/if}
+      {#each links as link (link.path)}
+        <a href={resolve(link.path)}>{t(link.key)}</a>
+      {/each}
       {#if canSignOut}
         <form method="POST" action="/logout" data-sveltekit-reload>
           <button type="submit">{t('signOut')}</button>
@@ -63,6 +87,10 @@
   }
   .trigger {
     padding: 0 10px 0 5px;
+  }
+  .trigger.gear {
+    padding: 0 8px 0 10px;
+    gap: 4px;
   }
   .trigger[aria-expanded='true'] {
     background: var(--surface-hover);

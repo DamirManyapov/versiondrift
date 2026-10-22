@@ -143,12 +143,8 @@
         <span class="label">{t('addProduct')}</span>
       </a>
     {/if}
-    {#if data.account && data.account.auth !== 'none'}
-      <UserMenu
-        name={data.account.name}
-        role={data.account.role}
-        canSignOut={data.account.auth === 'password' || data.account.auth === 'oidc'}
-      />
+    {#if data.account}
+      <UserMenu account={data.account} />
     {/if}
   </header>
 

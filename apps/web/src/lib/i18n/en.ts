@@ -168,6 +168,7 @@ export const en = {
   statusFailedLabel: 'failed',
   // Settings
   settingsTitle: 'Settings',
+  settingsGeneral: 'General',
   settingsThreshold: 'Critical threshold',
   settingsThresholdHelp:
     'An advisory affecting your version makes a product critical from this CVSS score (or when it is known to be exploited).',

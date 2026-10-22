@@ -15,7 +15,7 @@ intended behaviour; its markup shows layout and tokens.
 | `/p/:id/:from...:to` | all | **compare page**: merged changelog + advisories fixed between versions. SSR, SEO-indexed |
 | `/p/:id/v/:version` | all | "Is :version affected?" page: advisories affecting it, newer releases, EOL. SSR, SEO |
 | `/b#s=…` | public | shared board (read-only until "Save to my board") |
-| `/settings` | all | inventory import/export (YAML/JSON), thresholds, theme, language; self-hosted: detectors, notifications, users |
+| `/settings` | all | general: critical threshold, inventory import/export, clear board. Self-hosted adds sections: `/settings/sites` (boards/sites), `/settings/notifications` (admins), `/settings/feed`, `/settings/account` (`/account` redirects there) |
 | `/status` | all | feed health: last run, modules failing |
 | `/docs/*` | all | docs (module guide, API, self-hosting) |
 | `/rss/p/:id.xml`, `/rss/b/:ids.xml`, `/rss/week.xml` | all | RSS feeds (board feeds name products only: `/rss/b/grafana,nginx.xml`) |
@@ -61,6 +61,12 @@ search/hide-OK filters, arrow-key grid navigation, version picker as a searchabl
 releases, track selector, "I've updated" with an 8 s undo toast, Changes / Vulnerabilities / Module tabs. Below
 1100 px the detail panel opens as a full-screen overlay. "Copy as Markdown" (S3-T5) copies the changes since the installed version and the affecting advisories.
 `/settings` (S3-T3): critical CVSS threshold, `inventory.yaml` export / import (replace or add), clear board.
+
+**Settings sections and the user menu (self-hosted, 2026-10).** Settings are split into sections with a menu on the
+left (a row of tabs on top below 720 px): General · Sites (Boards until there are hosts) · Notifications (admins) ·
+Feed · Account (only with sign-in). The header's user menu (avatar + name) links to the same pages — Account,
+Sites, Notifications, Feed, Settings (= General) — and holds "Sign out"; with `VD_AUTH=none` it is a gear with the
+settings links only. The list lives in `apps/web/src/lib/settings/sections.ts`.
 
 ## This week (`/week`)
 

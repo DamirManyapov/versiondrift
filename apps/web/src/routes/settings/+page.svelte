@@ -1,9 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { page } from '$app/state';
-  import BoardsManager from '$lib/components/BoardsManager.svelte';
-  import FeedManager from '$lib/components/FeedManager.svelte';
-  import NotificationsManager from '$lib/components/NotificationsManager.svelte';
+  // Settings → General: the critical threshold and the inventory file (the layout loads the inventory).
   import { i18n } from '$lib/i18n/context';
   import { fromYaml, InventoryImportError, toYaml, type InventoryItem } from '$lib/inventory/model';
   import { inventory } from '$lib/inventory/state.svelte';
@@ -11,8 +7,6 @@
   const { t } = $derived(i18n());
   let pending = $state<InventoryItem[] | undefined>();
   let message = $state<string | undefined>();
-
-  onMount(() => inventory.init());
 
   function exportYaml() {
     const blob = new Blob([toYaml(inventory.data)], { type: 'application/yaml' });
@@ -48,85 +42,65 @@
   }
 </script>
 
-<svelte:head><title>{t('settingsTitle')} · VersionDrift</title></svelte:head>
+<section>
+  <h2><label for="cvss">{t('settingsThreshold')}</label></h2>
+  <p class="muted">{t('settingsThresholdHelp')}</p>
+  <input
+    id="cvss"
+    class="input cvss"
+    type="number"
+    min="0"
+    max="10"
+    step="0.1"
+    value={inventory.data.settings.criticalCvss}
+    onchange={(e) => {
+      const value = Number(e.currentTarget.value);
+      if (value >= 0 && value <= 10) inventory.setSettings({ criticalCvss: value });
+    }}
+  />
+</section>
 
-<div class="page">
-  <h1>{t('settingsTitle')}</h1>
-
-  {#if inventory.mode === 'selfhosted'}<BoardsManager />{/if}
-  {#if inventory.mode === 'selfhosted' && page.data.account?.role !== 'viewer'}<NotificationsManager />{/if}
-  {#if inventory.mode === 'selfhosted'}<FeedManager />{/if}
-
-  <section>
-    <h2><label for="cvss">{t('settingsThreshold')}</label></h2>
-    <p class="muted">{t('settingsThresholdHelp')}</p>
-    <input
-      id="cvss"
-      class="input cvss"
-      type="number"
-      min="0"
-      max="10"
-      step="0.1"
-      value={inventory.data.settings.criticalCvss}
-      onchange={(e) => {
-        const value = Number(e.currentTarget.value);
-        if (value >= 0 && value <= 10) inventory.setSettings({ criticalCvss: value });
-      }}
-    />
-  </section>
-
-  <section>
-    <h2>{t('settingsInventory')}</h2>
-    <p class="muted">{inventory.mode === 'selfhosted' ? t('settingsStorageServer') : t('settingsStorage')}</p>
-    <div class="row">
-      <button
-        type="button"
-        class="btn btn-primary"
-        onclick={exportYaml}
-        disabled={inventory.data.items.length === 0}>{t('exportYaml')}</button
+<section>
+  <h2>{t('settingsInventory')}</h2>
+  <p class="muted">{inventory.mode === 'selfhosted' ? t('settingsStorageServer') : t('settingsStorage')}</p>
+  <div class="row">
+    <button
+      type="button"
+      class="btn btn-primary"
+      onclick={exportYaml}
+      disabled={inventory.data.items.length === 0}>{t('exportYaml')}</button
+    >
+    <label class="btn upload">
+      {t('importYaml')}
+      <input
+        type="file"
+        accept=".yaml,.yml,text/yaml,application/yaml"
+        onchange={readFile}
+        class="visually-hidden"
+      />
+    </label>
+    <button
+      type="button"
+      class="btn btn-danger"
+      onclick={() => {
+        inventory.startOwn();
+        message = t('clearedBoard');
+      }}>{t('clearBoard')}</button
+    >
+  </div>
+  {#if pending}
+    <div class="confirm" role="status">
+      <span>{t('importedItems', { n: pending.length }).replace(/\.$/, '')}?</span>
+      <button type="button" class="btn btn-sm btn-primary" onclick={() => apply('replace')}
+        >{t('importReplace')}</button
       >
-      <label class="btn upload">
-        {t('importYaml')}
-        <input
-          type="file"
-          accept=".yaml,.yml,text/yaml,application/yaml"
-          onchange={readFile}
-          class="visually-hidden"
-        />
-      </label>
-      <button
-        type="button"
-        class="btn btn-danger"
-        onclick={() => {
-          inventory.startOwn();
-          message = t('clearedBoard');
-        }}>{t('clearBoard')}</button
-      >
+      <button type="button" class="btn btn-sm" onclick={() => apply('add')}>{t('importAdd')}</button>
     </div>
-    {#if pending}
-      <div class="confirm" role="status">
-        <span>{t('importedItems', { n: pending.length }).replace(/\.$/, '')}?</span>
-        <button type="button" class="btn btn-sm btn-primary" onclick={() => apply('replace')}
-          >{t('importReplace')}</button
-        >
-        <button type="button" class="btn btn-sm" onclick={() => apply('add')}>{t('importAdd')}</button>
-      </div>
-    {/if}
-    {#if message}<p role="status">{message}</p>{/if}
-  </section>
-</div>
+  {/if}
+  {#if message}<p role="status">{message}</p>{/if}
+</section>
 
 <style>
-  .page {
-    max-width: 720px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-  }
-  h1 {
-    margin: 0;
-  }
   h2 {
     margin: 0 0 6px;
     font-size: 18px;

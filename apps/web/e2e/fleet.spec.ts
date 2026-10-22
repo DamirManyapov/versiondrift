@@ -183,7 +183,7 @@ test('a new site is made from the site switcher; Settings list sites and keep on
   await expect(page.getByLabel('Site:')).toHaveValue(/^\d+$/);
   await expect(page.getByLabel('Site:').locator('option:checked')).toHaveText('Lab 3');
 
-  await page.goto('/settings');
+  await page.goto('/settings/sites');
   const sites = page.locator('section', { has: page.getByRole('heading', { name: 'Sites' }) });
   await expect(sites.locator('li', { hasText: 'Lab 3' })).toContainText('0 hosts');
   const kazan = sites.locator('li', { hasText: 'Казань, филиал' });

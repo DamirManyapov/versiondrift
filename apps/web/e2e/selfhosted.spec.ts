@@ -51,13 +51,30 @@ test('a board is renamed and deleted from the board switcher', async ({ page }) 
   await expect(page.getByLabel('Board', { exact: true }).locator('option', { hasText: name })).toHaveCount(0);
 });
 
-test('settings offer boards and notification channels; the feed copy is served locally', async ({
+test('the user menu leads to the sections of settings; the feed copy is served locally', async ({
   page,
   request,
 }) => {
-  await page.goto('/settings');
-  await expect(page.getByRole('heading', { name: 'Boards' })).toBeVisible();
+  await page.goto('/');
+  // Without sign-in (VD_AUTH=none) the menu is behind a gear: settings only, no account.
+  await page.getByRole('banner').getByRole('button', { name: 'Settings' }).click();
+  await expect(page.locator('#user-menu').getByRole('link')).toHaveText([
+    'Boards',
+    'Notifications',
+    'Feed',
+    'Settings',
+  ]);
+  await page.locator('#user-menu').getByRole('link', { name: 'Notifications' }).click();
+  await expect(page).toHaveURL(/\/settings\/notifications$/);
   await expect(page.getByRole('heading', { name: 'Notifications' })).toBeVisible();
+  const sections = page.getByRole('navigation', { name: 'Settings' });
+  await expect(sections.getByRole('link')).toHaveText(['General', 'Boards', 'Notifications', 'Feed']);
+  await expect(sections.getByRole('link', { name: 'Notifications' })).toHaveAttribute('aria-current', 'page');
+  await sections.getByRole('link', { name: 'Boards' }).click();
+  await expect(page.getByRole('heading', { name: 'Boards' })).toBeVisible();
+  const account = await request.get('/account', { maxRedirects: 0 });
+  expect(account.status()).toBe(308);
+  expect(account.headers()['location']).toBe('/settings/account');
   const index = await request.get('/feed/v1/index.json');
   expect(index.ok()).toBe(true);
   expect(index.headers()['access-control-allow-origin']).toBe('*');
@@ -66,7 +83,7 @@ test('settings offer boards and notification channels; the feed copy is served l
 });
 
 test('settings → feed: an upload that is not a feed package is refused with the reason', async ({ page }) => {
-  await page.goto('/settings');
+  await page.goto('/settings/feed');
   const section = page.locator('section', { has: page.getByRole('heading', { name: 'Feed' }) });
   await expect(section.getByRole('button', { name: 'Check for updates' })).toBeVisible();
   await section.getByLabel('Upload an offline package…').setInputFiles({
