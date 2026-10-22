@@ -1,19 +1,24 @@
 # 07 — Self-hosted
 
-One multi-arch image `ghcr.io/<org>/versiondrift:<version>` (amd64, arm64). SvelteKit `adapter-node` + SQLite +
+One multi-arch image `ghcr.io/damirmanyapov/versiondrift:<version>` (amd64, arm64). SvelteKit `adapter-node` + SQLite +
 background scheduler. Same UI as the public site, `VD_MODE=selfhosted`.
 
 ## Quick start
 
-`git clone` the repository and run `docker compose up -d`: `compose.yaml` builds the image from the source (until a
-release tag publishes `ghcr.io/damirmanyapov/versiondrift`), keeps the data in the `vd-data` volume and serves
-http://localhost:8080. The published image will be used the same way:
+```bash
+curl -fsSLO https://raw.githubusercontent.com/DamirManyapov/versiondrift/main/compose.yaml
+docker compose up -d   # http://localhost:8080; the admin password is in `docker compose logs versiondrift`
+```
+
+`compose.yaml` runs the published image (`latest`; pin a version such as `0.1.0` to update when you choose), keeps
+the data in the `vd-data` volume and serves http://localhost:8080 (`build: .` in a clone builds from the source).
+The same as a file of your own:
 
 ```yaml
 # docker-compose.yml
 services:
   versiondrift:
-    image: ghcr.io/<org>/versiondrift:latest
+    image: ghcr.io/damirmanyapov/versiondrift:latest
     ports: ["8080:8080"]
     volumes: ["./data:/data"]
     environment:
@@ -32,7 +37,7 @@ Unraid/TrueNAS templates, a static binary is **not** planned.
 # docker-compose.yml
 services:
   versiondrift:
-    image: ghcr.io/<owner>/versiondrift:latest
+    image: ghcr.io/damirmanyapov/versiondrift:latest
     restart: unless-stopped
     read_only: true
     tmpfs: [/tmp]
@@ -110,7 +115,7 @@ JavaScript) installs the workspace with pnpm, builds `apps/web` with `adapter-no
 dependencies; the runtime stage is `node:22-alpine` with only `build/` and those dependencies, running as `node`
 (uid 1000) with `/data` as the only writable path (`docker run --read-only` works), `HEALTHCHECK` on `/healthz`.
 CI builds the image and starts it on every push; `.github/workflows/release.yml` publishes
-`ghcr.io/<owner>/versiondrift` for `linux/amd64` and `linux/arm64` on a `v*` tag (`1.2.3`, `1.2`, `latest`) or by hand
+`ghcr.io/damirmanyapov/versiondrift` for `linux/amd64` and `linux/arm64` on a `v*` tag (`1.2.3`, `1.2`, `latest`) or by hand
 (branch and sha tags). The image runs with `VD_MODE=selfhosted` (boards in SQLite, sign-in, a local feed mirror).
 
 Behind a reverse proxy that passes the original `Host` nothing needs configuring; if it rewrites `Host`, set

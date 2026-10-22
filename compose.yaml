@@ -1,10 +1,10 @@
 # VersionDrift, self-hosted (docs/07): `docker compose up -d`, then open http://localhost:8080 and sign in as admin
 # (the password is VD_ADMIN_PASSWORD, or the one printed once in `docker compose logs versiondrift`).
-# Until a release publishes the image (ghcr.io/damirmanyapov/versiondrift), this builds it from the source.
+# Pin a release (`:0.1.0`) instead of `latest` to update on your own schedule; `build: .` builds from a clone instead.
 services:
   versiondrift:
-    build: .
-    # image: ghcr.io/damirmanyapov/versiondrift:latest
+    image: ghcr.io/damirmanyapov/versiondrift:latest
+    # build: .
     ports: ['8080:8080']
     volumes: ['vd-data:/data']
     environment:

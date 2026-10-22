@@ -21,18 +21,23 @@ Products are simple YAML modules — if yours is missing, add a file and open a 
 | **Self-hosted** (Docker) | your server | `docker compose up -d` |
 
 Self-hosted keeps several boards on your server, signs people in (password, OIDC or your proxy), serves a verified copy
-of the feed to your network and sends alerts via Telegram, e-mail, ntfy, Gotify or webhooks. Automatic version detection
-inside your network (HTTP endpoints, Docker, SSH, SNMP, Zabbix, Proxmox) is next.
+of the feed to your network (or takes it as an offline package), follows your hosts and sends alerts via Telegram,
+Mattermost, e-mail, ntfy, Gotify or webhooks.
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/DamirManyapov/versiondrift/main/compose.yaml
+docker compose up -d   # http://localhost:8080; the admin password is in `docker compose logs versiondrift`
+```
 
 ## Status
 
-Pre-alpha. See [`docs/09-roadmap.md`](docs/09-roadmap.md).
+Alpha, first release v0.1.0. See [`docs/09-roadmap.md`](docs/09-roadmap.md).
 
-- **versiondrift.dev**: 75 products collected daily into a signed feed; a board in your browser, share links,
+- **versiondrift.dev**: 77 products collected into a signed feed; a board in your browser, share links,
   comparison and "is this version affected?" pages, RSS.
-- **Self-hosted** (no published image yet): `Dockerfile` and `charts/versiondrift`; setup in
-  [`docs/07-self-hosted.md`](docs/07-self-hosted.md).
-- **Telegram alerts without a server**: `pnpm notify` from a GitHub Action or cron (same doc).
+- **Self-hosted**: the image `ghcr.io/damirmanyapov/versiondrift` (amd64, arm64), `compose.yaml` and the Helm chart
+  `charts/versiondrift`; setup in [`docs/07-self-hosted.md`](docs/07-self-hosted.md).
+- **Alerts without a server**: `pnpm notify` to Telegram or Mattermost from a GitHub Action or cron (same doc).
 
 ## Add a product
 

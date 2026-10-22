@@ -94,7 +94,7 @@ self-hosted container; writes `instances` into SQLite.
 | Public site | Cloudflare Pages/Workers (`versiondrift.dev`) | free tier initially |
 | Accounts DB | Cloudflare D1 | free tier initially |
 | E-mail | Resend / Postmark / Amazon SES (pick at Sprint 7) | low |
-| Self-hosted image | GHCR `ghcr.io/<org>/versiondrift` (multi-arch amd64/arm64) | 0 |
+| Self-hosted image | GHCR `ghcr.io/damirmanyapov/versiondrift` (multi-arch amd64/arm64) | 0 |
 | Docs site | the SvelteKit app's `/docs` or Starlight on Pages | 0 |
 
 Secrets (GitHub Actions): `GITHUB_TOKEN` (built-in, for GitHub API), `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
