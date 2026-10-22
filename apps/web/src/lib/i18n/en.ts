@@ -51,6 +51,8 @@ export const en = {
   typeCount: '{n} {type}',
   lastRelease: 'Last release {date}',
   newThisWeek: 'new this week',
+  notInFeedYet:
+    '“{name}” is not in the feed this page has yet. A product just added to the feed appears with the next update: on your own instance Settings → Feed → “Check for updates”, on the public site reload in a few minutes.',
   unknownProduct: 'Not in the feed',
   emptyBoardTitle: 'Your board is empty',
   emptyBoardText: 'Add the products you run and the versions you have. Your list stays in this browser.',
@@ -325,6 +327,9 @@ export const en = {
   channelKind: 'Type',
   kind_telegram: 'Telegram',
   kind_ntfy: 'ntfy',
+  kind_mattermost: 'Mattermost',
+  field_mattermost_url: 'Incoming webhook URL (Integrations → Incoming Webhooks)',
+  field_mattermost_channel: 'Channel (optional, else the webhook’s own)',
   kind_gotify: 'Gotify',
   kind_webhook: 'Webhook',
   kind_email: 'E-mail',

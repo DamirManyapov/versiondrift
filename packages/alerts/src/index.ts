@@ -16,6 +16,7 @@ export {
   alertMessage,
   channel,
   CHANNEL_KINDS,
+  htmlToMarkdown,
   htmlToText,
   type AlertMessage,
   type Channel,

@@ -329,7 +329,7 @@ boards:
 ## Notifications
 
 Implemented in S5-T5 (`packages/alerts`, shared with `pnpm notify`; `apps/web/src/lib/server/alerts.ts`):
-Settings → Notifications lists channels — Telegram, ntfy, Gotify, webhook, e-mail (SMTP) — each with its own
+Settings → Notifications lists channels — Telegram, Mattermost (an incoming webhook, messages in Markdown, the URL kept write-only since it carries the token), ntfy, Gotify, webhook, e-mail (SMTP) — each with its own
 subscriptions (vulnerabilities, end of life incl. 90 days before, new releases, weekly summary), message language and
 summary weekday. After every feed sync (and on "Check now") each enabled channel gets what changed for every board's
 products with a version since its own last delivery; a new channel first gets an overview, a failed delivery keeps
@@ -379,8 +379,9 @@ pnpm notify run --inventory inventory.yaml --dry-run --lang ru                 #
 pnpm notify run --inventory inventory.yaml --state notify-state.json --lang ru # e.g. from cron on any server
 ```
 
-In this repository, `.github/workflows/notify.yml` runs after every feed update when the secrets `TELEGRAM_BOT_TOKEN`,
-`TELEGRAM_CHAT_ID` and `NOTIFY_INVENTORY` (the YAML itself) are set, with the state in the private bucket
+Mattermost instead of Telegram: set `MATTERMOST_WEBHOOK_URL` (and optionally `MATTERMOST_CHANNEL`); the CLI then sends
+there. In this repository, `.github/workflows/notify.yml` runs after every feed update when the secrets `TELEGRAM_BOT_TOKEN`,
+`TELEGRAM_CHAT_ID` (or `MATTERMOST_WEBHOOK_URL`, with the repository variable `MATTERMOST_CHANNEL` if needed) and `NOTIFY_INVENTORY` (the YAML itself) are set, with the state in the private bucket
 (`r2:notify/state.json`) and the language from the repository variable `NOTIFY_LANG`. The inventory never enters the
 repository. Setup: create a bot with @BotFather, send it a message, read your chat id from
 `https://api.telegram.org/bot<token>/getUpdates`, set the three secrets. In S5 this becomes the Telegram channel of the

@@ -49,7 +49,7 @@ export const ALERT_EVENTS: AlertEventName[] = ['critical', 'eol', 'update', 'dig
 export interface ChannelRecord {
   id: number;
   name: string;
-  kind: 'telegram' | 'ntfy' | 'gotify' | 'webhook' | 'email';
+  kind: 'telegram' | 'mattermost' | 'ntfy' | 'gotify' | 'webhook' | 'email';
   /** Decrypted settings (tokens included): server-side only. */
   config: Record<string, unknown>;
   events: AlertEventName[];

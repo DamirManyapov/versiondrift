@@ -6,6 +6,8 @@ import { z } from 'zod';
 /** Credential fields per kind; the API reports whether they are set, not their values. */
 export const SECRET_FIELDS: Record<ChannelRecord['kind'], string[]> = {
   telegram: ['token'],
+  // The incoming webhook URL carries its token: write-only like a password.
+  mattermost: ['url'],
   ntfy: ['token'],
   gotify: ['token'],
   webhook: ['secret'],
@@ -17,6 +19,7 @@ const url = text.pipe(z.url({ protocol: /^https?$/ }));
 
 const CONFIG = {
   telegram: z.object({ token: text.min(1), chatId: text.min(1) }),
+  mattermost: z.object({ url, channel: text.optional() }),
   ntfy: z.object({
     server: z.union([url, z.literal('')]).optional(),
     topic: text.min(1),
@@ -43,7 +46,7 @@ const Common = z.object({
   enabled: z.boolean().optional(),
 });
 
-const Kind = z.enum(['telegram', 'ntfy', 'gotify', 'webhook', 'email']);
+const Kind = z.enum(['telegram', 'mattermost', 'ntfy', 'gotify', 'webhook', 'email']);
 
 /** Drops empty optional strings so they don't end up as settings. */
 const compact = (config: Record<string, unknown>) =>

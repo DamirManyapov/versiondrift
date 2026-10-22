@@ -1,6 +1,6 @@
 import { createHmac } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
-import { alertMessage, channel, htmlToText } from '../src/index.ts';
+import { alertMessage, channel, htmlToMarkdown, htmlToText } from '../src/index.ts';
 
 const message = alertMessage(
   '🟥 <b>Grafana</b> 12.0.0 → 12.1.1 · <a href="https://example.com/n?a=1&amp;b=2">notes</a>\nCVE-2026-1 &lt;x&gt;',
@@ -28,6 +28,23 @@ describe('alert channels', () => {
     await channel({ kind: 'telegram', token: 'T', chatId: '42' }, { fetch: r.fetch }).send(message);
     expect(r.calls[0]?.url).toBe('https://api.telegram.org/botT/sendMessage');
     expect(JSON.parse(r.calls[0]?.init.body as string)).toMatchObject({ chat_id: '42', parse_mode: 'HTML' });
+  });
+
+  it('mattermost posts Markdown to the incoming webhook, with a channel when given', async () => {
+    expect(htmlToMarkdown(message.html)).toBe(
+      '🟥 **Grafana** 12.0.0 → 12.1.1 · [notes](https://example.com/n?a=1&b=2)\nCVE-2026-1 <x>',
+    );
+    const r = recorder();
+    await channel(
+      { kind: 'mattermost', url: 'https://mm.example.com/hooks/abc', channel: 'ops-alerts' },
+      { fetch: r.fetch },
+    ).send(message);
+    expect(r.calls[0]?.url).toBe('https://mm.example.com/hooks/abc');
+    expect(JSON.parse(r.calls[0]?.init.body as string)).toEqual({
+      text: '🟥 **Grafana** 12.0.0 → 12.1.1 · [notes](https://example.com/n?a=1&b=2)\nCVE-2026-1 <x>',
+      username: 'VersionDrift',
+      channel: 'ops-alerts',
+    });
   });
 
   it('ntfy posts text with a title, to ntfy.sh unless a server is given', async () => {

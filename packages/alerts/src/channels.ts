@@ -1,11 +1,14 @@
-// Where alerts go (docs/07 "Notifications"): Telegram, ntfy, Gotify, a signed webhook, or e-mail over SMTP.
-// Messages are composed as Telegram-flavoured HTML (<b>, <a>); other channels get plain text or a small HTML mail.
+// Where alerts go (docs/07 "Notifications"): Telegram, Mattermost, ntfy, Gotify, a signed webhook, or e-mail over
+// SMTP. Messages are composed as Telegram-flavoured HTML (<b>, <a>); Mattermost gets it as Markdown, the others plain
+// text or a small HTML mail.
 import { createHmac } from 'node:crypto';
 import { createTransport } from 'nodemailer';
 import { splitMessage, telegram } from './telegram.ts';
 
 export type ChannelConfig =
   | { kind: 'telegram'; token: string; chatId: string }
+  /** An incoming webhook (Integrations → Incoming Webhooks); `channel` overrides the webhook's own channel. */
+  | { kind: 'mattermost'; url: string; channel?: string }
   | { kind: 'ntfy'; server?: string; topic: string; token?: string }
   | { kind: 'gotify'; server: string; token: string }
   | { kind: 'webhook'; url: string; secret?: string }
@@ -22,7 +25,7 @@ export type ChannelConfig =
     };
 
 export type ChannelKind = ChannelConfig['kind'];
-export const CHANNEL_KINDS: ChannelKind[] = ['telegram', 'ntfy', 'gotify', 'webhook', 'email'];
+export const CHANNEL_KINDS: ChannelKind[] = ['telegram', 'mattermost', 'ntfy', 'gotify', 'webhook', 'email'];
 
 export interface AlertMessage {
   title: string;
@@ -47,6 +50,21 @@ export function htmlToText(html: string): string {
         /<a\s+href="([^"]*)"[^>]*>(.*?)<\/a>/g,
         (_, href: string, label: string) => `${label} (${href})`,
       )
+      .replace(/<[^>]+>/g, ''),
+  );
+}
+
+/** "<b>Grafana</b> · <a href="u">notes</a>" → "**Grafana** · [notes](u)" (Mattermost, Slack-style Markdown). */
+export function htmlToMarkdown(html: string): string {
+  return unescape(
+    html
+      .replace(
+        /<a\s+href="([^"]*)"[^>]*>(.*?)<\/a>/g,
+        (_, href: string, label: string) => `[${label}](${href})`,
+      )
+      .replace(/<\/?(b|strong)>/g, '**')
+      .replace(/<\/?(i|em)>/g, '_')
+      .replace(/<\/?code>/g, '`')
       .replace(/<[^>]+>/g, ''),
   );
 }
@@ -76,6 +94,25 @@ export function channel(config: ChannelConfig, deps: ChannelDeps = {}): Channel 
       const bot = telegram(config.token, config.chatId, doFetch);
       return { send: (m) => bot.send(m.html) };
     }
+    case 'mattermost':
+      return {
+        async send(m) {
+          for (const part of splitMessage(htmlToMarkdown(m.html))) {
+            await ok(
+              await doFetch(config.url, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                  text: part,
+                  username: 'VersionDrift',
+                  ...(config.channel && { channel: config.channel }),
+                }),
+              }),
+              'Mattermost',
+            );
+          }
+        },
+      };
     case 'ntfy':
       return {
         async send(m) {

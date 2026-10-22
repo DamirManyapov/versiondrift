@@ -159,7 +159,7 @@ export const sessions = sqliteTable(
 export const channels = sqliteTable('channels', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
-  kind: text('kind', { enum: ['telegram', 'ntfy', 'gotify', 'webhook', 'email'] }).notNull(),
+  kind: text('kind', { enum: ['telegram', 'mattermost', 'ntfy', 'gotify', 'webhook', 'email'] }).notNull(),
   config: text('config').notNull(),
   /** Subscribed events: critical, eol, update, digest. */
   events: text('events', { mode: 'json' }).$type<string[]>().notNull(),

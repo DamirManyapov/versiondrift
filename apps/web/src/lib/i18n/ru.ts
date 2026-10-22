@@ -55,6 +55,8 @@ export const ru: Messages = {
   typeCount: '{type}: {n}',
   lastRelease: 'Последний релиз {date}',
   newThisWeek: 'новое за неделю',
+  notInFeedYet:
+    '«{name}» пока нет в фиде, который загрузила эта страница. Только что добавленный продукт появится со следующим обновлением: на своём экземпляре — «Настройки → Фид → Проверить обновления», на сайте — обновите страницу через несколько минут.',
   unknownProduct: 'Нет в фиде',
   emptyBoardTitle: 'Доска пока пуста',
   emptyBoardText:
@@ -393,6 +395,9 @@ export const ru: Messages = {
   channelKind: 'Тип',
   kind_telegram: 'Telegram',
   kind_ntfy: 'ntfy',
+  kind_mattermost: 'Mattermost',
+  field_mattermost_url: 'URL входящего вебхука (Интеграции → Входящие вебхуки)',
+  field_mattermost_channel: 'Канал (необязательно, иначе канал вебхука)',
   kind_gotify: 'Gotify',
   kind_webhook: 'Webhook',
   kind_email: 'Почта',

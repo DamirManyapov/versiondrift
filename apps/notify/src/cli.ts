@@ -1,13 +1,22 @@
 #!/usr/bin/env node
 // pnpm notify run --inventory inventory.yaml --state notify-state.json [--lang ru]
-// Needs TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID (unless --dry-run). See docs/07-self-hosted.md "Telegram alerts".
+// Sends to Mattermost when MATTERMOST_WEBHOOK_URL is set (MATTERMOST_CHANNEL optional), else to Telegram with
+// TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID (unless --dry-run). See docs/07-self-hosted.md "Telegram alerts".
 import { readFile, writeFile } from 'node:fs/promises';
 import { r2Bucket } from '@versiondrift/collector';
 import { Inventory } from '@versiondrift/schema';
 import { Command } from 'commander';
 import { parse as parseYaml } from 'yaml';
 import { DEFAULT_FEED_URL, loadFeed } from './feed.ts';
-import { EMPTY_STATE, runNotify, telegram, TEXT, type NotifyState } from '@versiondrift/alerts';
+import {
+  alertMessage,
+  channel,
+  EMPTY_STATE,
+  runNotify,
+  telegram,
+  TEXT,
+  type NotifyState,
+} from '@versiondrift/alerts';
 
 const DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -47,6 +56,20 @@ function stateStore(location: string) {
     },
     save: (state: NotifyState) => writeFile(location, JSON.stringify(state, null, 1) + '\n'),
   };
+}
+
+/** Where messages go: Mattermost when its webhook is set, else Telegram. Messages are Telegram-flavoured HTML. */
+function messenger(): { send(html: string): Promise<void> } {
+  const url = process.env.MATTERMOST_WEBHOOK_URL;
+  if (url) {
+    const mm = channel({
+      kind: 'mattermost',
+      url,
+      ...(process.env.MATTERMOST_CHANNEL && { channel: process.env.MATTERMOST_CHANNEL }),
+    });
+    return { send: (html) => mm.send(alertMessage(html)) };
+  }
+  return telegram(env('TELEGRAM_BOT_TOKEN'), env('TELEGRAM_CHAT_ID'));
 }
 
 const program = new Command('notify');
@@ -89,20 +112,20 @@ program
         for (const message of result.messages) console.log(`\n---\n${message}`);
         return;
       }
-      const messenger = telegram(env('TELEGRAM_BOT_TOKEN'), env('TELEGRAM_CHAT_ID'));
-      for (const message of result.messages) await messenger.send(message);
+      const out = messenger();
+      for (const message of result.messages) await out.send(message);
       await store.save(result.state);
     },
   );
 
 program
   .command('test')
-  .description('send a test message to check TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID')
+  .description(
+    'send a test message to check MATTERMOST_WEBHOOK_URL, or TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID',
+  )
   .option('--lang <en|ru>', 'message language', process.env.NOTIFY_LANG ?? 'en')
   .action(async (opts: { lang: string }) => {
-    await telegram(env('TELEGRAM_BOT_TOKEN'), env('TELEGRAM_CHAT_ID')).send(
-      TEXT[opts.lang === 'ru' ? 'ru' : 'en'].test,
-    );
+    await messenger().send(TEXT[opts.lang === 'ru' ? 'ru' : 'en'].test);
     console.log('sent');
   });
 

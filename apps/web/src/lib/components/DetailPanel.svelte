@@ -454,6 +454,11 @@
         >
       {/if}
     </div>
+  {:else if !row.known}
+    <!-- On the board but not in the feed this page loaded: a product published since (UI: say so, not an empty card). -->
+    <p class="note info">{t('notInFeedYet', { name: row.name })}</p>
+  {:else}
+    <p class="hint">{t('loading')}</p>
   {/if}
 
   {#snippet release(r: Release)}

@@ -11,12 +11,16 @@
 
   const { t, locale } = $derived(i18n());
 
-  const KINDS: Kind[] = ['telegram', 'ntfy', 'gotify', 'webhook', 'email'];
+  const KINDS: Kind[] = ['telegram', 'mattermost', 'ntfy', 'gotify', 'webhook', 'email'];
   const EVENTS = ['critical', 'eol', 'update', 'digest'] as const;
   const FIELDS: Record<Kind, Field[]> = {
     telegram: [
       { key: 'token', type: 'password', required: true },
       { key: 'chatId', type: 'text', required: true },
+    ],
+    mattermost: [
+      { key: 'url', type: 'password', required: true },
+      { key: 'channel', type: 'text' },
     ],
     ntfy: [
       { key: 'server', type: 'text' },
