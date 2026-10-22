@@ -191,7 +191,7 @@ https without `ORIGIN`, which would refuse every form post on a plain-http LAN i
 | `BODY_SIZE_LIMIT` | 32M in the image | largest request body (adapter-node); an offline package is ~4 MB |
 | `VD_FEED_URL` | https://feed.versiondrift.dev/ | public feed (the directory holding `v1/`; a URL ending in `/v1/` works too); `off`: no network sync, offline packages only |
 | `VD_FEED_PUBKEY` | baked-in | minisign public key (`keys/feed.pub`) |
-| `VD_FEED_SYNC` | `0 3 * * *` | cron for the feed sync (the public feed is rebuilt at 02:00 UTC); also runs at start |
+| `VD_FEED_SYNC` | `17 */2 * * *` | cron for the feed sync: every two hours, since the public feed is rebuilt daily at an hour GitHub picks (02:00 UTC planned, often hours later) and an unchanged feed is one 304; also runs at start |
 | `VD_TZ` | UTC | time zone for `VD_FEED_SYNC` |
 | `PUBLIC_FEED_URL` | `/feed/` in the image | where browsers read the feed: the instance's own mirror |
 | `VD_OFFLINE` | false | run own collector instead of pulling feed — **not implemented yet** |

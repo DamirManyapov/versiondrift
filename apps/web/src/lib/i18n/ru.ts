@@ -460,7 +460,7 @@ export const ru: Messages = {
   feedTitle: 'Фид',
   feedBuilt: 'Фид от {generated}: {n} продуктов',
   feedNone: 'Фида здесь ещё нет. Без доступа в интернет загрузите офлайн-пакет.',
-  feedSourceNetwork: 'Обновления приходят с {url} каждый день.',
+  feedSourceNetwork: 'Обновления приходят с {url}: по умолчанию проверка каждые 2 часа (VD_FEED_SYNC).',
   feedLastCheck: ' Последняя проверка {at}.',
   feedSourceOff: 'Обновление по сети выключено (VD_FEED_URL=off): фид обновляется только офлайн-пакетами.',
   feedCheckNow: 'Проверить обновления',

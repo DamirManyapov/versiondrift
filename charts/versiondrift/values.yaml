@@ -34,7 +34,7 @@ feed:
   # Upstream feed (the directory holding v1/).
   url: https://feed.versiondrift.dev/
   # Cron for the sync; it also runs at start.
-  schedule: "0 3 * * *"
+  schedule: "17 */2 * * *"
 
 # Optional GitOps inventory (docs/07): mounted read-only and imported at start and on change.
 inventory: ""

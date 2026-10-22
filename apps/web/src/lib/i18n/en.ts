@@ -392,7 +392,7 @@ export const en = {
   feedTitle: 'Feed',
   feedBuilt: 'Feed built {generated}: {n} products',
   feedNone: 'No feed here yet. Without Internet access, upload an offline package.',
-  feedSourceNetwork: 'Updates come from {url} every day.',
+  feedSourceNetwork: 'Updates come from {url}: checked every two hours by default (VD_FEED_SYNC).',
   feedLastCheck: ' Last check {at}.',
   feedSourceOff: 'Network updates are off (VD_FEED_URL=off): the feed changes only through offline packages.',
   feedCheckNow: 'Check for updates',

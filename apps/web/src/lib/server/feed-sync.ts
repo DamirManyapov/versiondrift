@@ -137,7 +137,9 @@ export function startFeedSync(then?: () => Promise<void>): void {
       `VersionDrift: VD_FEED_URL=off, no network sync: upload feed packages in Settings → Feed or copy them into ${importDir()}`,
     );
   void syncNow();
-  const pattern = env.VD_FEED_SYNC || '0 3 * * *';
+  // Every two hours by default: the public feed is rebuilt once a day at an hour GitHub decides (02:00 UTC planned,
+  // often hours later), and an unchanged feed costs one conditional request (304).
+  const pattern = env.VD_FEED_SYNC || '17 */2 * * *';
   schedule = new Cron(
     pattern,
     { timezone: env.VD_TZ || env.TZ || 'UTC', protect: true },
