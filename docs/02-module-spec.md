@@ -83,6 +83,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `tracks` | | needed when a product has parallel supported lines (ES 8/9, Debian 12/13, PostgreSQL majors). Ids are strings — quote numbers (`id: "12"`), unique, `latest` is reserved. Each has `match` (a version regex) **or** `current: { url, versionRegex? }` — an update channel's "newest version" URL; the track is that version's major.minor branch, re-read every run. `prereleases: true` lets release candidates count (a testing channel). `group` puts tracks into a product line ("RouterOS 7"): users then pick the line, then the channel within it. Tracks may overlap; the first matching one is what a version is assumed to follow (docs/05) |
 | `defaultTrack` | | `latest` (default) or one of the track ids |
 | `releaseNotesUrl` | | per-release notes page with a `{version}` placeholder (`https://www.zabbix.com/rn/rn{version}`); used as the release link |
+| `advisoryRanges` | | `osv` (default): ranges read as OSV does, a union — `< 8.3.32` covers everything below. `per-branch`: a range without a lower bound covers its own line only (`< 8.3.32` → `8.3.0 … 8.3.32`), for vendors that list every affected supported line and leave out lines the bug is not in (PHP). Overlapping upper bounds (`< 2.42.1`, `< 2.41.4`) read as backports either way (docs/05) |
 | `classify` | | hints; without them the generic pipeline is used |
 | `detect` | | list, first match wins |
 | `maintainers` | | GitHub handles |
@@ -91,7 +92,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 
 | `type` | For | Config | Gives |
 |---|---|---|---|
-| `github` | GitHub releases (falls back to tags if `useTags: true`) | `repo`, `useTags?`, `notesFrom?: release\|changelogFile`, `changelogPath?`, `versionRegex?` (version from the tag name, e.g. `'^release-(\d+\.\d+\.\d+)$'`; other tags are ignored) | releases + notes |
+| `github` | GitHub releases (falls back to tags if `useTags: true`) | `repo`, `useTags?`, `notesFrom?: release\|changelogFile\|none` (none: the body is an announcement, drop it — the advisories and `releaseNotesUrl` carry the content), `changelogPath?`, `versionRegex?` (version from the tag name, e.g. `'^release-(\d+\.\d+\.\d+)$'`; other tags are ignored) | releases + notes |
 | `gitlab` | GitLab releases | `host?` (default gitlab.com), `project` | releases + notes |
 | `gitea` | Gitea/Forgejo/Codeberg | `host` (`codeberg.org`), `repo`, `versionRegex?` | releases + notes |
 | `rss` | RSS/Atom feeds | `url`, `versionFrom: title\|link`, `versionRegex` | releases (+ notes from entry body) |

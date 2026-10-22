@@ -47,6 +47,16 @@ describe('github', () => {
     expect(latest?.notes?.body).toContain('### Security');
   });
 
+  it('drops the release body with notesFrom: none (an announcement, not the changes)', async () => {
+    const releases = await fetchReleases(
+      { type: 'github', repo: 'grafana/grafana', notesFrom: 'none' },
+      ctx('github'),
+    );
+    expect(releases).toHaveLength(10);
+    expect(releases.every((r) => r.notes === undefined)).toBe(true);
+    expect(releases[0]).toMatchObject({ version: 'v13.2.2' });
+  });
+
   it('reads tags with dates via GraphQL, in UTC', async () => {
     const tags = await fetchReleases({ type: 'github', repo: 'zabbix/zabbix', useTags: true }, ctx('github'));
     expect(tags).toHaveLength(10);

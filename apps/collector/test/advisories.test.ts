@@ -2,7 +2,7 @@ import type { RawAdvisory } from '@versiondrift/adapters';
 import { parse } from '@versiondrift/core';
 import type { Module, Release } from '@versiondrift/schema';
 import { describe, expect, it } from 'vitest';
-import { linkAdvisories, mergeAdvisories, severityFixedIn } from '../src/advisories.ts';
+import { linkAdvisories, mergeAdvisories, perBranchRanges, severityFixedIn } from '../src/advisories.ts';
 
 const adv = (extra: Partial<RawAdvisory>): RawAdvisory => ({
   id: 'CVE-2026-0001',
@@ -66,6 +66,41 @@ describe('mergeAdvisories', () => {
       new Set(),
     );
     expect(merged.map((a) => a.id)).toEqual(['CVE-2', 'CVE-1']);
+  });
+});
+
+describe('perBranchRanges (advisoryRanges: per-branch)', () => {
+  it('starts an upper bound without a lower one at its own line; other ranges stay', async () => {
+    const { isAffected } = await import('@versiondrift/core');
+    const [a] = perBranchRanges([
+      {
+        id: 'CVE-2026-12184',
+        aliases: [],
+        title: 'TLS DoS',
+        cvss: null,
+        severity: 'high',
+        kev: false,
+        published: null,
+        affected: [
+          { introduced: '0', fixed: '8.3.32' },
+          { fixed: '8.4.21' },
+          { introduced: '8.5.0', fixed: '8.5.6' },
+          { introduced: '0', last_affected: '8.1.99' },
+        ],
+        source: 'ghsa',
+        url: 'https://github.com/php/php-src/security/advisories/x',
+      },
+    ]);
+    expect(a!.affected).toEqual([
+      { introduced: '8.3.0', fixed: '8.3.32' },
+      { introduced: '8.4.0', fixed: '8.4.21' },
+      { introduced: '8.5.0', fixed: '8.5.6' },
+      { introduced: '0', last_affected: '8.1.99' },
+    ]);
+    // 8.2 is not one of the listed lines: not affected; 8.3.31 is, 8.3.32 is fixed.
+    expect(isAffected('semver', '8.2.35', a!.affected.slice(0, 3))).toBe(false);
+    expect(isAffected('semver', '8.3.31', a!.affected)).toBe(true);
+    expect(isAffected('semver', '8.3.32', a!.affected.slice(0, 3))).toBe(false);
   });
 });
 

@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-10-23 at the owner's request (the 2026-10-21 security releases fix two critical RCEs, CVE-2026-109618
+# and CVE-2026-109619); checked against the live sources. Only the branches PHP still supports are followed (the
+# owner's choice): 8.2–8.5. 8.1 and older get no fixes; drop a branch from tagFilter and tracks when it reaches end
+# of life (8.2: 2026-12-31, see endoflife.date). Distribution packages (Debian, Ubuntu) backport fixes without changing
+# the upstream number, so a distro PHP is judged by its security update, not by this version.
+id: php
+name: PHP
+vendor: The PHP Group
+category: web
+homepage: https://www.php.net
+logo: simpleicons:php
+description: Server-side scripting language (PHP-FPM, mod_php, CLI).
+versionScheme: semver
+# PHP's advisories list every affected supported branch ("< 8.3.32, < 8.4.21"): a branch left out is not affected.
+advisoryRanges: per-branch
+tagFilter:
+  include: '^8\.[2-5]\.\d+$'
+tracks:
+  - { id: "8.5", match: '^8\.5\.' }
+  - { id: "8.4", match: '^8\.4\.' }
+  - { id: "8.3", match: '^8\.3\.' }
+  - { id: "8.2", match: '^8\.2\.' }
+sources:
+  # The release body is an announcement; the changes are in the ChangeLog (releaseNotesUrl) and the advisories.
+  releases: { type: github, repo: php/php-src, versionRegex: '^php-(\d+\.\d+\.\d+)$', notesFrom: none }
+  security:
+    - { type: ghsa, repo: php/php-src }
+  eol: { type: endoflife, product: php }
+releaseNotesUrl: https://www.php.net/ChangeLog-8.php#{version}
+detect:
+  - docker: { image: php }
+maintainers: ["@DamirManyapov"]

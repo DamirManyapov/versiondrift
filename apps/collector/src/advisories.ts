@@ -54,6 +54,24 @@ export function mergeAdvisories(lists: RawAdvisory[][], kev: ReadonlySet<string>
   );
 }
 
+/**
+ * advisoryRanges: per-branch (PHP): a vendor that lists every affected supported line writes "< 8.3.32" meaning the
+ * 8.3 line only. Such a bound without a lower one starts at its own line (8.3.0), so 8.2.x is not taken as affected
+ * by a fix that never reached it because the bug is not there.
+ */
+export function perBranchRanges(advisories: Advisory[]): Advisory[] {
+  return advisories.map((a) => ({
+    ...a,
+    affected: a.affected.map((range) => {
+      if (range.fixed === undefined || (range.introduced !== undefined && range.introduced !== '0'))
+        return range;
+      const parts = range.fixed.split('.');
+      if (parts.length < 2) return range;
+      return { ...range, introduced: [...parts.slice(0, -1), '0'].join('.') };
+    }),
+  }));
+}
+
 /** sortKey of every version an advisory names as its fix, under the module's scheme. */
 function fixKeys(
   module: Pick<Module, 'versionScheme' | 'versionRegex' | 'branchGroups'>,

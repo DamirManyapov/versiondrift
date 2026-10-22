@@ -25,7 +25,7 @@ import {
   type Module,
   type Release,
 } from '@versiondrift/schema';
-import { linkAdvisories, mergeAdvisories } from './advisories.ts';
+import { linkAdvisories, mergeAdvisories, perBranchRanges } from './advisories.ts';
 import { sourceLinks } from './links.ts';
 
 export interface CollectContext {
@@ -292,10 +292,12 @@ export async function collectProduct(
       warnings.push(`${source.type} (security): ${(error as Error).message}`);
     }
   }
-  const advisories =
+  const mergedAdvisories =
     securitySources.length > 0 && advisoryLists.length === 0
       ? (previous?.advisories ?? [])
       : mergeAdvisories(advisoryLists, ctx.kev ?? new Set());
+  const advisories =
+    module.advisoryRanges === 'per-branch' ? perBranchRanges(mergedAdvisories) : mergedAdvisories;
 
   const moduleHash = createHash('sha256')
     .update(JSON.stringify(module))

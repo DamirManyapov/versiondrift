@@ -1,5 +1,6 @@
 // GitHub releases (REST) or tags (GraphQL, one query returns 100 tags with their dates).
-// Notes come from the release body (Markdown) or, with notesFrom: changelogFile, from a changelog file.
+// Notes come from the release body (Markdown) or, with notesFrom: changelogFile, from a changelog file; with
+// notesFrom: none the body is only an announcement and is dropped.
 import type { ReleaseSource } from '@versiondrift/schema';
 import { SourceError, type AdapterContext, type RawRelease } from '../types.ts';
 import { extractVersion, reachedKnown, toIso, withVersionRegex, type SourceType } from './common.ts';
@@ -135,6 +136,12 @@ export function changelogSections(markdown: string): Map<string, string> {
 
 export async function githubReleases(source: GithubSource, ctx: AdapterContext): Promise<RawRelease[]> {
   const list = source.useTags ? await tags(source, ctx) : await releases(source, ctx);
+  if (source.notesFrom === 'none')
+    return list.map((release) => {
+      const copy = { ...release };
+      delete copy.notes;
+      return copy;
+    });
   if (source.notesFrom !== 'changelogFile') return list;
   const file = source.changelogPath ?? 'CHANGELOG.md';
   const { body } = await ctx.fetcher.text(`${API}/repos/${source.repo}/contents/${file}`, {

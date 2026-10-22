@@ -113,6 +113,15 @@
         "include"
       ]
     },
+    "advisoryRanges": {
+      "default": "osv",
+      "description": "How advisory ranges without a lower bound read: osv (a union, \"< 8.3.32\" covers everything below), or per-branch (it covers its own line only, 8.3.x: the vendor lists every affected supported line, like PHP).",
+      "type": "string",
+      "enum": [
+        "osv",
+        "per-branch"
+      ]
+    },
     "releaseNotesUrl": {
       "description": "Per-release notes page, e.g. https://www.zabbix.com/rn/rn{version}; used as the release link.",
       "type": "string",
@@ -300,10 +309,12 @@
               "type": "boolean"
             },
             "notesFrom": {
+              "description": "Where release notes come from: the release body (default), a changelog file, or none (the body is an announcement; the notes link and advisories carry the content).",
               "type": "string",
               "enum": [
                 "release",
-                "changelogFile"
+                "changelogFile",
+                "none"
               ]
             },
             "changelogPath": {

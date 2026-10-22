@@ -75,7 +75,10 @@ const GithubSource = z.strictObject({
   type: z.literal('github'),
   repo: repoSlug,
   useTags: z.boolean().optional().meta({ description: 'Read git tags instead of GitHub releases.' }),
-  notesFrom: z.enum(['release', 'changelogFile']).optional(),
+  notesFrom: z.enum(['release', 'changelogFile', 'none']).optional().meta({
+    description:
+      'Where release notes come from: the release body (default), a changelog file, or none (the body is an announcement; the notes link and advisories carry the content).',
+  }),
   changelogPath: nonEmpty
     .optional()
     .meta({ description: 'Path of the changelog file for notesFrom: changelogFile.' }),
@@ -469,6 +472,10 @@ export const Module = z
       })
       .optional(),
     prerelease: z.enum(['skip', 'include']).default('skip'),
+    advisoryRanges: z.enum(['osv', 'per-branch']).default('osv').meta({
+      description:
+        'How advisory ranges without a lower bound read: osv (a union, "< 8.3.32" covers everything below), or per-branch (it covers its own line only, 8.3.x: the vendor lists every affected supported line, like PHP).',
+    }),
 
     releaseNotesUrl: z
       .string()
