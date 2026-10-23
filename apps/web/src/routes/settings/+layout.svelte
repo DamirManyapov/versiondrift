@@ -52,8 +52,14 @@
     align-items: start;
   }
   h1 {
-    grid-area: title;
     margin: 0;
+  }
+  /* The named areas exist only in the split layout: elsewhere they would all land in one implicit cell. */
+  .split h1 {
+    grid-area: title;
+  }
+  .split .content {
+    grid-area: content;
   }
   nav {
     grid-area: nav;
@@ -85,7 +91,6 @@
     box-shadow: inset 2px 0 0 var(--selected);
   }
   .content {
-    grid-area: content;
     min-width: 0;
     display: flex;
     flex-direction: column;

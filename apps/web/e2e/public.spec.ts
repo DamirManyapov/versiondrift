@@ -79,6 +79,14 @@ test('product, compare and version pages are server-rendered with canonical URLs
   await noAxeViolations(page);
 });
 
+test('settings are one page whose title sits above the first section', async ({ page }) => {
+  await page.goto('/settings');
+  await expect(page.getByRole('navigation', { name: 'Settings' })).toHaveCount(0);
+  const title = await page.getByRole('heading', { name: 'Settings', level: 1 }).boundingBox();
+  const first = await page.getByRole('heading', { name: 'Critical threshold' }).boundingBox();
+  expect(title!.y + title!.height).toBeLessThanOrEqual(first!.y);
+});
+
 test('the catalog finds products and the feeds and sitemap answer', async ({ page, request }) => {
   await page.goto('/catalog');
   await page.getByRole('searchbox').fill('postgres');
