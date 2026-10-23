@@ -19,7 +19,9 @@ function inlineMarkdownToText(md: string): string {
       .replace(/\s+by @[\w-]+(?:\[bot\])? in https?:\/\/\S+/g, '')
       .replace(/\s+in https?:\/\/github\.com\/\S+\/(?:pull|issues)\/\d+\S*/g, '')
       .replace(/!\[[^\]]*\]\([^)]*\)/g, '') // images
-      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // links → text
+      // links → text; the text may hold brackets itself: "[[GHSA-…]](…)" (Vaultwarden) → "GHSA-…"
+      .replace(/\[((?:[^[\]]|\[[^\]]*\])*)\]\([^)]*\)/g, '$1')
+      .replace(/\[((?:CVE|GHSA)-[\w-]+)\]/gi, '$1')
       .replace(/<[^>]+>/g, '') // inline html
       .replace(/(\*\*|__)(.*?)\1/g, '$2')
       .replace(/(^|\W)[*_](\S.*?\S|\S)[*_](?=\W|$)/g, '$1$2')

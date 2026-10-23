@@ -210,6 +210,16 @@ describe('classifyNotes: vendor conventions', () => {
     expect(classifyNotes({ format: 'markdown', body: md }).items[0]?.text).toBe('Added OKF export');
   });
 
+  it('reduces a link whose text has brackets to the text (Vaultwarden "[[GHSA-…]](…)")', () => {
+    const md =
+      '## Security Fixes\n- Attachments [[GHSA-q5x6-grh5-fqgc]](https://github.com/dani-garcia/vaultwarden/security/advisories/GHSA-q5x6-grh5-fqgc) (**Medium**, 6.5)';
+    expect(classifyNotes({ format: 'markdown', body: md }).items[0]).toMatchObject({
+      type: 'security',
+      text: 'Attachments GHSA-q5x6-grh5-fqgc (Medium, 6.5)',
+      refs: ['GHSA-q5x6-grh5-fqgc'],
+    });
+  });
+
   it('keeps a prose paragraph that names a CVE even when there are bullets (nginx)', () => {
     const md =
       "nginx-1.31.6 has been released, with a fix for CVE-2026-90439.\n\n## What's Changed\n* man page updates";

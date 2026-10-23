@@ -1,6 +1,6 @@
 // docs/04 steps 7 and "Advisory → release linking": merge advisories from several sources, flag KEV, and give each
 // fixing release a "Fixes CVE-…" item when the vendor's own notes don't mention it.
-import type { RawAdvisory } from '@versiondrift/adapters';
+import { severityFromScore, type RawAdvisory } from '@versiondrift/adapters';
 import { parse } from '@versiondrift/core';
 import type { Advisory, ChangeItem, Module, Release, Severity } from '@versiondrift/schema';
 
@@ -70,6 +70,108 @@ export function perBranchRanges(advisories: Advisory[]): Advisory[] {
       return { ...range, introduced: [...parts.slice(0, -1), '0'].join('.') };
     }),
   }));
+}
+
+const SEVERITY = '(critical|high|medium|moderate|low)';
+const SCORE = '(10(?:\\.0)?|\\d\\.\\d)(?![\\d./])';
+/** "(High, 8.1)", "Low/3.8": a score right after a severity word. */
+const SCORE_AFTER_SEVERITY = new RegExp(`\\b${SEVERITY}\\s*[,:/]\\s*${SCORE}`, 'i');
+/**
+ * "CVSS 9.8", "CVSSv3 7.5", "CVSS 3.1 base score: 6.6" — not the version of "CVSS 3.1" or of a vector "CVSS:3.1/AV:N/…".
+ */
+const SCORE_AFTER_CVSS = new RegExp(
+  `\\bCVSS(?:\\s*v?[234](?:\\.\\d)?)?(?:\\s+base)?(?:\\s+score)?\\s*[:=]?\\s*${SCORE}`,
+  'i',
+);
+/** "(High)", "severity: high", "high severity". */
+const SEVERITY_ONLY = new RegExp(
+  `\\(\\s*${SEVERITY}\\s*\\)|\\bseverity\\s*[:=]?\\s*${SEVERITY}\\b|\\b${SEVERITY}\\s+severity\\b`,
+  'i',
+);
+const REF_IN_TEXT = /\[?\b(?:CVE-\d{4}-\d{4,}|GHSA(?:-[0-9a-z]{4}){3})\b\]?/gi;
+
+const severityWord = (word: string | undefined): Severity | undefined =>
+  word === undefined
+    ? undefined
+    : word.toLowerCase() === 'moderate'
+      ? 'medium'
+      : (word.toLowerCase() as Severity);
+
+/** The score and severity a release-note item gives its vulnerability, if it gives any. */
+export function ratingIn(text: string): { score?: number; severity?: Severity } | undefined {
+  const bySeverity = SCORE_AFTER_SEVERITY.exec(text);
+  if (bySeverity) return { score: Number(bySeverity[2]), severity: severityWord(bySeverity[1])! };
+  const byCvss = SCORE_AFTER_CVSS.exec(text);
+  if (byCvss) return { score: Number(byCvss[1]) };
+  const word = SEVERITY_ONLY.exec(text);
+  const severity = severityWord(word?.[1] ?? word?.[2] ?? word?.[3]);
+  return severity ? { severity } : undefined;
+}
+
+/** "Organization member revocation [GHSA-…] (High, 8.1)" → "Organization member revocation". */
+function titleOf(text: string): string {
+  return text
+    .replace(REF_IN_TEXT, '')
+    .replace(/\(https?:[^)]*\)/g, '')
+    .replace(new RegExp(`\\(\\s*${SEVERITY}?\\s*[,:/]?\\s*(?:CVSS[^)]*|${SCORE})?\\s*\\)`, 'gi'), '')
+    .replace(/\(\s*\)|\[\s*\]/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/^[\s:,–—-]+|[\s:,–—-]+$/g, '')
+    .trim();
+}
+
+/**
+ * Projects on GitHub often ship a fix before its repository advisory is public ("private for now, pending CVE
+ * assignment", Vaultwarden 1.37.4), but their notes say what it fixes: a security item that names one GHSA id no
+ * advisory source knows (with a CVE id as an alias, if any) and rates it (a CVSS score or a severity) becomes an
+ * advisory of source "vendor", fixed in that release (in each release that names it: backports) and linking to the
+ * notes. Once the advisory is published, the security source knows the id and this one is no longer made.
+ * CVE ids alone don't count: notes list fixed CVEs of bundled tools and dependencies too (Percona: MySQL Shell and
+ * Router; Portainer: kubectl's Go modules), and a CVE of the product itself reaches NVD/OSV within days.
+ */
+export function noteAdvisories(
+  releases: Release[],
+  advisories: Advisory[],
+  kev: ReadonlySet<string>,
+): Advisory[] {
+  const known = new Set(advisories.flatMap(keysOf));
+  const found = new Map<string, Advisory>();
+  const out: Advisory[] = [];
+  // Oldest first, so the first release that names it dates it.
+  for (const release of [...releases].sort((a, b) => (a.sortKey < b.sortKey ? -1 : 1))) {
+    for (const item of release.items) {
+      if (item.type !== 'security' || item.classifiedBy === 'advisory' || !item.refs?.length) continue;
+      const cves = item.refs.filter((r) => r.toUpperCase().startsWith('CVE-'));
+      const ghsas = item.refs.filter((r) => r.toUpperCase().startsWith('GHSA-'));
+      // No GHSA, or several vulnerabilities in one item (which rating belongs to which is not said).
+      if (ghsas.length !== 1 || cves.length > 1) continue;
+      const ids = [...ghsas, ...cves];
+      if (ids.some((id) => known.has(id.toUpperCase()))) continue;
+      const range = { introduced: '0', fixed: release.version };
+      const existing = ids.map((id) => found.get(id.toUpperCase())).find((a) => a !== undefined);
+      if (existing) {
+        if (!existing.affected.some((r) => r.fixed === range.fixed)) existing.affected.push(range);
+        continue;
+      }
+      const rating = ratingIn(item.text);
+      if (!rating) continue;
+      const advisory: Advisory = {
+        id: ids[0]!,
+        aliases: ids.slice(1),
+        title: titleOf(item.text),
+        cvss: rating.score === undefined ? null : { score: rating.score, vector: '', version: '' },
+        severity: severityFromScore(rating.score, rating.severity ?? 'unknown'),
+        kev: ids.some((id) => kev.has(id.toUpperCase())),
+        published: release.date,
+        affected: [range],
+        source: 'vendor',
+        url: release.url ?? '',
+      };
+      out.push(advisory);
+      for (const id of ids) found.set(id.toUpperCase(), advisory);
+    }
+  }
+  return out;
 }
 
 /** sortKey of every version an advisory names as its fix, under the module's scheme. */

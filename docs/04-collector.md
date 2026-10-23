@@ -164,6 +164,20 @@ For each advisory, compute for every release whether it is affected (`core.isAff
 `security` that references a CVE id is linked to that advisory; advisories with a `fixed` version that has no
 matching security item get a synthetic item `"Fixes CVE-…"` on the fixing release (`classifiedBy: "advisory"`).
 
+### Advisories from release notes
+
+Projects on GitHub often ship a fix before its repository advisory is public (Vaultwarden 1.37.4: seven GHSA ids,
+"private for now, pending CVE assignment"; the API answers 404). Then no security source knows them and an old
+version would only show `update`. So after the releases are merged, `noteAdvisories` (`apps/collector/src/
+advisories.ts`) turns a release item of type `security` that names exactly one GHSA id unknown to the security sources
+(a CVE id beside it becomes an alias) and rates it — `(High, 8.1)`, `CVSS 9.8`, `CVSS 3.1 base score 7.5`, `(High)`,
+`severity: high` — into an advisory with `source: "vendor"`, `affected: [{ introduced: "0", fixed: <that release> }]`
+(one range per release that names it, so backports work; `advisoryRanges: per-branch` applies), `cvss.vector` and
+`cvss.version` empty, the title from the item and `url` = the release notes. Once the advisory is published, the
+security source knows the id and replaces it. CVE ids alone are not used: notes also list fixed CVEs of bundled
+tools and dependencies (Percona: MySQL Shell and Router; Portainer: kubectl's Go modules), and a product's own CVE
+reaches NVD/OSV within days.
+
 ## Workflows
 
 - `collect.yml`: cron `0 2 * * *` + `workflow_dispatch` (inputs: `only` ids, `force`). Timeout 30 min. Concurrency group

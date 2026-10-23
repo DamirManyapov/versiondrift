@@ -134,6 +134,9 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 - `summary`: optional LLM one-paragraph summary of the release (Sprint 3+), `null` otherwise.
 - `advisories[].affected`: OSV semantics; `fixed` exclusive upper bound, `last_affected` inclusive alternative.
 - `severity`: from CVSS (`critical ≥ 9`, `high ≥ 7`, `medium ≥ 4`, `low > 0`) or vendor rating when no CVSS.
+- `advisories[].source`: `ghsa | osv | nvd | debian | vendor`. `vendor` is the vendor's own data: MSRC, or a rated
+  security item of the release notes whose GHSA advisory is not public yet (docs/04 "Advisories from release notes";
+  `cvss.vector` and `cvss.version` are empty there, `url` is the release notes).
 - Debian: `advisories[].id` may be `DSA-5xxx-1` / `DLA-…` with `affected` expressed per Debian release (`"release": "bookworm"`).
 
 ## Weekly digest `week/2026-W39.json`

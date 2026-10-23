@@ -21,11 +21,12 @@ import {
   FEED_FORMAT_VERSION,
   FeedProduct,
   releaseSourcesOf,
+  type Advisory,
   type Branch,
   type Module,
   type Release,
 } from '@versiondrift/schema';
-import { linkAdvisories, mergeAdvisories, perBranchRanges } from './advisories.ts';
+import { linkAdvisories, mergeAdvisories, noteAdvisories, perBranchRanges } from './advisories.ts';
 import { sourceLinks } from './links.ts';
 
 export interface CollectContext {
@@ -296,8 +297,9 @@ export async function collectProduct(
     securitySources.length > 0 && advisoryLists.length === 0
       ? (previous?.advisories ?? [])
       : mergeAdvisories(advisoryLists, ctx.kev ?? new Set());
-  const advisories =
-    module.advisoryRanges === 'per-branch' ? perBranchRanges(mergedAdvisories) : mergedAdvisories;
+  const ranged = (list: Advisory[]) =>
+    module.advisoryRanges === 'per-branch' ? perBranchRanges(list) : list;
+  const sourceAdvisories = ranged(mergedAdvisories);
 
   const moduleHash = createHash('sha256')
     .update(JSON.stringify(module))
@@ -374,11 +376,15 @@ export async function collectProduct(
     newReleases.push(c.version.raw);
   }
 
-  const releases = linkAdvisories(
-    module,
-    [...merged.values()].sort((a, b) => (a.sortKey < b.sortKey ? 1 : a.sortKey > b.sortKey ? -1 : 0)),
-    advisories,
+  const sorted = [...merged.values()].sort((a, b) =>
+    a.sortKey < b.sortKey ? 1 : a.sortKey > b.sortKey ? -1 : 0,
   );
+  // Fixes the notes rate whose advisories are not public yet (docs/04 "Advisories from release notes").
+  const advisories = [
+    ...sourceAdvisories,
+    ...ranged(noteAdvisories(sorted, sourceAdvisories, ctx.kev ?? new Set())),
+  ].sort((a, b) => (b.published ?? '').localeCompare(a.published ?? '') || a.id.localeCompare(b.id));
+  const releases = linkAdvisories(module, sorted, advisories);
   if (releases.length === 0) {
     return {
       ok: false,

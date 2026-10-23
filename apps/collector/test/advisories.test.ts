@@ -2,7 +2,14 @@ import type { RawAdvisory } from '@versiondrift/adapters';
 import { parse } from '@versiondrift/core';
 import type { Module, Release } from '@versiondrift/schema';
 import { describe, expect, it } from 'vitest';
-import { linkAdvisories, mergeAdvisories, perBranchRanges, severityFixedIn } from '../src/advisories.ts';
+import {
+  linkAdvisories,
+  mergeAdvisories,
+  noteAdvisories,
+  perBranchRanges,
+  ratingIn,
+  severityFixedIn,
+} from '../src/advisories.ts';
 
 const adv = (extra: Partial<RawAdvisory>): RawAdvisory => ({
   id: 'CVE-2026-0001',
@@ -163,5 +170,101 @@ describe('linkAdvisories', () => {
   it('reports the highest severity fixed in a release', () => {
     expect(severityFixedIn(module, [fix], release('1.2.0'))).toBe('critical');
     expect(severityFixedIn(module, [fix], release('1.1.0'))).toBeNull();
+  });
+});
+
+describe('advisories from release notes', () => {
+  const release = (version: string, items: Release['items']): Release => ({
+    version,
+    sortKey: parse('semver', version)!.sortKey,
+    track: null,
+    date: `2026-10-0${version.at(-1)}T00:00:00Z`,
+    firstSeenAt: '2026-10-01T00:00:00Z',
+    url: `https://github.com/dani-garcia/vaultwarden/releases/tag/${version}`,
+    prerelease: false,
+    items,
+    summary: null,
+  });
+  const security = (text: string, refs: string[]): Release['items'][number] => ({
+    type: 'security',
+    text,
+    refs,
+    classifiedBy: 'section',
+  });
+
+  it('reads a rating next to a severity word or "CVSS", not a version or a vector', () => {
+    expect(ratingIn('Organization member revocation GHSA-69q9-v8p6-xvx3 (High, 8.1)')).toEqual({
+      score: 8.1,
+      severity: 'high',
+    });
+    expect(ratingIn('CVE-2026-1234 (CVSS base score: 6.6)')).toEqual({ score: 6.6 });
+    expect(ratingIn('CVE-2026-1234, CVSS 3.1 base score 7.5')).toEqual({ score: 7.5 });
+    expect(ratingIn('CVE-2026-1234 CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H')).toBeUndefined();
+    expect(ratingIn('Fix CVE-2026-1234 (moderate)')).toEqual({ severity: 'medium' });
+    expect(ratingIn('Fix CVE-2026-1234 in 8.1.2')).toBeUndefined();
+  });
+
+  it('makes a vendor advisory for a rated fix whose advisory is not public yet (Vaultwarden 1.37.4)', () => {
+    const releases = [
+      release('1.37.4', [
+        security('Organization member revocation GHSA-69q9-v8p6-xvx3 (High, 8.1)', ['GHSA-69q9-v8p6-xvx3']),
+        security('Attachments GHSA-q5x6-grh5-fqgc (Medium, 6.5)', ['GHSA-q5x6-grh5-fqgc']),
+        security('Additional dependency updates and minor security enhancements', []),
+      ]),
+      release('1.37.3', []),
+    ];
+    const [revocation, attachments, ...rest] = noteAdvisories(releases, [], new Set());
+    expect(rest).toEqual([]);
+    expect(revocation).toEqual({
+      id: 'GHSA-69q9-v8p6-xvx3',
+      aliases: [],
+      title: 'Organization member revocation',
+      cvss: { score: 8.1, vector: '', version: '' },
+      severity: 'high',
+      kev: false,
+      published: '2026-10-04T00:00:00Z',
+      affected: [{ introduced: '0', fixed: '1.37.4' }],
+      source: 'vendor',
+      url: 'https://github.com/dani-garcia/vaultwarden/releases/tag/1.37.4',
+    });
+    expect(attachments?.severity).toBe('medium');
+  });
+
+  it('skips ids a security source knows, unrated items, several vulnerabilities and CVEs without a GHSA', () => {
+    const releases = [
+      release('1.2.1', [
+        security('Fix GHSA-aaaa-bbbb-cccc (High, 7.5)', ['GHSA-aaaa-bbbb-cccc']),
+        security('Fix GHSA-dddd-eeee-ffff', ['GHSA-dddd-eeee-ffff']),
+        security('Fix GHSA-gggg-hhhh-jjjj and GHSA-kkkk-mmmm-nnnn (CVSS 9.8)', [
+          'GHSA-gggg-hhhh-jjjj',
+          'GHSA-kkkk-mmmm-nnnn',
+        ]),
+        security('CVE-2026-46860: A vulnerability in MySQL Router (CVSS 3.1 Base Score 9.8)', [
+          'CVE-2026-46860',
+        ]),
+      ]),
+    ];
+    const known = mergeAdvisories([[adv({ id: 'GHSA-aaaa-bbbb-cccc', source: 'ghsa' })]], new Set());
+    expect(noteAdvisories(releases, known, new Set())).toEqual([]);
+  });
+
+  it('gives a fix named in several releases one range per release (backports), dated by the first', () => {
+    const item = security('Fix GHSA-pppp-qqqq-rrrr / CVE-2026-0005 (Critical, 9.1)', [
+      'CVE-2026-0005',
+      'GHSA-pppp-qqqq-rrrr',
+    ]);
+    const [a] = noteAdvisories(
+      [release('1.3.2', [item]), release('1.2.9', [item])],
+      [],
+      new Set(['CVE-2026-0005']),
+    );
+    expect(a?.id).toBe('GHSA-pppp-qqqq-rrrr');
+    expect(a?.aliases).toEqual(['CVE-2026-0005']);
+    expect(a?.affected).toEqual([
+      { introduced: '0', fixed: '1.2.9' },
+      { introduced: '0', fixed: '1.3.2' },
+    ]);
+    expect(a?.published).toBe('2026-10-09T00:00:00Z');
+    expect(a?.kev).toBe(true);
   });
 });
