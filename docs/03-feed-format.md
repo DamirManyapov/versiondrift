@@ -148,6 +148,6 @@ Breaking changes to the format create `/v2/`; additive changes bump `formatVersi
 
 ## Caching
 
-`index.json`, `index.json.minisig`, `health.json` and `versiondrift-feed.tar.gz` are served with `Cache-Control: public, max-age=300,
-stale-while-revalidate=3600`, everything else with `max-age=3600, stale-while-revalidate=86400`; R2 adds strong ETags.
+`index.json`, `index.json.minisig`, `catalog.json`, `versions.json`, `health.json` and `versiondrift-feed.tar.gz` are
+served with `Cache-Control: public, max-age=300, stale-while-revalidate=3600`, everything else with `max-age=3600, stale-while-revalidate=86400`; R2 adds strong ETags.
 Clients must use conditional requests.

@@ -9,9 +9,15 @@ import { sha256 } from './build.ts';
 import { signFile, type SigningKey } from './minisign.ts';
 import type { R2Bucket } from './r2.ts';
 
-/** Index, signature, health and the offline package change every run; the rest is also reachable through versioned URLs. */
+/**
+ * Index, signature, catalog, versions, health and the offline package change every run and have one URL each;
+ * product files are also reachable through versioned URLs. An hour-long cache of catalog.json hid a new product
+ * from the catalog page while its own page (read through the index) already worked.
+ */
 export function cacheControlFor(key: string): string {
-  return /(^|\/)(index\.json(\.minisig)?|health\.json|versiondrift-feed\.tar\.gz)$/.test(key)
+  return /(^|\/)((index|catalog|versions|health)\.json|index\.json\.minisig|versiondrift-feed\.tar\.gz)$/.test(
+    key,
+  )
     ? 'public, max-age=300, stale-while-revalidate=3600'
     : 'public, max-age=3600, stale-while-revalidate=86400';
 }

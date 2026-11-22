@@ -134,6 +134,9 @@ describe('publishFeed', () => {
   it('caches index and health briefly, everything else longer', () => {
     expect(cacheControlFor('v1/index.json')).toContain('max-age=300');
     expect(cacheControlFor('v1/health.json')).toContain('max-age=300');
+    expect(cacheControlFor('v1/catalog.json')).toContain('max-age=300');
+    expect(cacheControlFor('v1/versions.json')).toContain('max-age=300');
+    expect(cacheControlFor('v1/index.json.minisig')).toContain('max-age=300');
     expect(cacheControlFor('v1/products/grafana.json')).toContain('max-age=3600');
   });
 });
