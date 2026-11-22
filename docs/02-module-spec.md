@@ -156,7 +156,7 @@ Rules 2, 3 and 5 need collected data and run in the collector (`pnpm collect --o
 
 ## Examples in this repo
 
-`products/` holds 75 modules. The first 17 were verified against their live sources in S1-T7 and cover every
+`products/` holds 78 modules. The first 17 were verified against their live sources in S1-T7 and cover every
 source type in use: GitHub releases (grafana, elastic stack, nginx with `versionRegex`, minio with `versionScheme: regex`,
 rabbitmq, outline, bigbluebutton), GitHub tags (zabbix, percona-xtradb-cluster), RSS (debian, routeros, postgresql),
 HTML (poste-io, proxmox-ve and proxmox-backup-server from their roadmap wikis, elastic release-notes pages as an extra
@@ -202,6 +202,12 @@ docs.percona.com (ended innovation releases 9.0–9.6 have no page any more). Ne
 changelog page (supported versions only) gives the changes per app. A published release without items is classified
 as soon as a source has notes for it, so a page that lags (Nextcloud) catches up; notes only reach releases the
 primary source still lists (the tags' first pages), so older history stays without them.
+
+Mattermost's GitHub releases are one-line announcements (`notesFrom: none`): the notes of every patch come from the
+changelog page of its major on docs.mattermost.com (v10–v12; a new major needs its page added), the advisories from
+NVD, where Mattermost files a range per affected branch. Its tracks are the Extended Support Releases (11.7, 10.11);
+any other version follows `latest`. A new minor is tagged up to two weeks before its announced release day and is
+listed from the tag on, without notes until the changelog names it.
 
 Known gaps: Zabbix takes its notes from the ChangeLog of each supported release branch (7.4, 7.0, 6.0);
 a new LTS branch needs its line added to the module.

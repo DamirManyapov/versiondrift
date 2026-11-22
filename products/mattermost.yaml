@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=../schemas/module.schema.json
+# Added 2026-11-22 at the owner's request; checked against the live sources. A GitHub release is a one-line
+# announcement, published when the build is cut: up to two weeks before the official release day of a new minor
+# (12.1.0: tagged 2026-11-05, announced 2026-11-16). The notes of every patch come from the changelog page of its major.
+id: mattermost
+name: Mattermost
+aliases: [mattermost-server]
+vendor: Mattermost, Inc.
+category: collaboration
+homepage: https://mattermost.com
+logo: simpleicons:mattermost
+description: Self-hosted team chat and collaboration platform.
+versionScheme: semver
+tagFilter:
+  include: '^v?\d+\.\d+\.\d+$'   # drops release candidates (v12.1.0-rc4)
+tracks:                          # Extended Support Releases; everything else follows "latest"
+  - { id: "11.7", match: '^11\.7\.', label: ESR }
+  - { id: "10.11", match: '^10\.11\.', label: ESR }
+sources:
+  releases: { type: github, repo: mattermost/mattermost, notesFrom: none }
+  releasesExtra:
+    # One page per major; every minor is an h2 with a list of its patches below: "12.0.2, released 2026-11-05"
+    # (sometimes after a note, so the list is not tied to the h2; other bold list items yield no version and are
+    # skipped). A new major needs its page added here.
+    - type: html
+      url: https://docs.mattermost.com/product-overview/mattermost-v12-changelog.html
+      select: { item: 'ul > li:has(> strong)', title: strong, body: '> ul' }
+      versionRegex: '^(?:\d+\.\d+\.\d+ / )?(\d+\.\d+\.\d+), released'
+    - type: html
+      url: https://docs.mattermost.com/product-overview/mattermost-v11-changelog.html
+      select: { item: 'ul > li:has(> strong)', title: strong, body: '> ul' }
+      versionRegex: '^(?:\d+\.\d+\.\d+ / )?(\d+\.\d+\.\d+), released'
+    - type: html
+      url: https://docs.mattermost.com/product-overview/mattermost-v10-changelog.html
+      select: { item: 'ul > li:has(> strong)', title: strong, body: '> ul' }
+      versionRegex: '^(?:\d+\.\d+\.\d+ / )?(\d+\.\d+\.\d+), released'
+  # The repository publishes no advisories; Mattermost is its own CNA and NVD carries its CVEs with a range per
+  # affected branch, under two CPE products.
+  security:
+    - { type: nvd, cpe: "cpe:2.3:a:mattermost:mattermost_server" }
+    - { type: nvd, cpe: "cpe:2.3:a:mattermost:mattermost" }
+  eol: { type: endoflife, product: mattermost }
+classify:
+  keywords:
+    security: ["security fixes", "severity level"]
+detect:
+  - http: { path: '/api/v4/config/client?format=old', jsonPath: $.Version, defaultPort: 8065 }
+  - docker: { image: mattermost/mattermost-team-edition }
+  - docker: { image: mattermost/mattermost-enterprise-edition }
+  - command: { run: "mattermost version", regex: 'Version: (\d+\.\d+\.\d+)' }
+maintainers: ["@DamirManyapov"]
