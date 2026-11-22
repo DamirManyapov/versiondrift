@@ -139,6 +139,36 @@ describe('gitea', () => {
   });
 });
 
+describe('gitlab', () => {
+  it('reads tags of a gitlab.com project, dated by the tag', async () => {
+    const releases = await fetchReleases(
+      { type: 'gitlab', project: 'gitlab-org/gitlab-foss', useTags: true },
+      ctx('gitlab'),
+    );
+    expect(releases).toHaveLength(10);
+    expect(releases[0]).toEqual({
+      version: 'v19.6.1',
+      date: '2026-11-19T22:54:57Z',
+      url: 'https://gitlab.com/gitlab-org/gitlab-foss/-/tags/v19.6.1',
+    });
+    for (const r of releases) expect(r.date).toMatch(ISO_UTC);
+  });
+
+  it('reads releases with Markdown notes; versionRegex picks the tags', async () => {
+    const releases = await fetchReleases(
+      { type: 'gitlab', project: 'gitlab-org/gitlab-runner', versionRegex: '^v(\\d+\\.\\d+\\.\\d+)$' },
+      ctx('gitlab'),
+    );
+    expect(releases).toHaveLength(10);
+    expect(releases[0]).toMatchObject({
+      version: '19.6.0',
+      date: '2026-11-19T23:34:21Z',
+      url: 'https://gitlab.com/gitlab-org/gitlab-runner/-/releases/v19.6.0',
+    });
+    expect(releases[0]?.notes?.format).toBe('markdown');
+  });
+});
+
 describe('changelog files (Zabbix)', () => {
   it('reads notes per version from a release branch ChangeLog', async () => {
     const releases = await fetchReleases(

@@ -14,7 +14,7 @@ function linkFor(source: ReleaseSource | SecuritySource | EolSource): string | u
         ? `https://github.com/${source.repo}/tags`
         : `https://github.com/${source.repo}/releases`;
     case 'gitlab':
-      return `https://${source.host ?? 'gitlab.com'}/${source.project}/-/releases`;
+      return `https://${source.host ?? 'gitlab.com'}/${source.project}/-/${source.useTags ? 'tags' : 'releases'}`;
     case 'gitea':
       return `https://${source.host}/${source.repo}/releases`;
     case 'rss':

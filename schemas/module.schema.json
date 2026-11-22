@@ -349,7 +349,18 @@
             },
             "project": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "Project path, e.g. gitlab-org/gitlab-foss"
+            },
+            "useTags": {
+              "description": "Read git tags instead of GitLab releases.",
+              "type": "boolean"
+            },
+            "versionRegex": {
+              "type": "string",
+              "minLength": 1,
+              "format": "regex",
+              "description": "Extracts the version from the tag name; tags that don't match are ignored. First non-empty capture group wins."
             }
           },
           "required": [

@@ -125,6 +125,8 @@ const cases: Case[] = [
     release: { type: 'dockerhub', repo: 'analogic/poste.io', tagRegex: '^\\d+\\.\\d+\\.\\d+$' },
   },
   { name: 'gitea', release: { type: 'gitea', host: 'codeberg.org', repo: 'forgejo/forgejo' } },
+  { name: 'gitlab', release: { type: 'gitlab', project: 'gitlab-org/gitlab-foss', useTags: true } },
+  { name: 'gitlab', release: { type: 'gitlab', project: 'gitlab-org/gitlab-runner' } },
   { name: 'endoflife', lifecycle: { type: 'endoflife', product: 'grafana' } },
   {
     name: 'changelog',

@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schemas/module.schema.json
-# Added 2026-09-26 (S4-T5); checked against the live sources.
+# Added 2026-09-26 (S4-T5); checked against the live sources. Moved from the GitHub mirror to gitlab.com 2026-11-22.
 id: gitlab
 name: GitLab
 vendor: GitLab Inc.
@@ -11,7 +11,9 @@ versionScheme: semver
 tagFilter:
   include: '^v?\d+\.\d+\.\d+$'
 sources:
-  releases: { type: github, repo: gitlabhq/gitlabhq, useTags: true }
+  # Tags of the FOSS project on gitlab.com (CE has no GitLab releases). The gitlabhq/gitlabhq mirror on GitHub
+  # stopped at 19.5.1 in October 2026.
+  releases: { type: gitlab, project: gitlab-org/gitlab-foss, useTags: true }
   security:
     - { type: nvd, cpe: "cpe:2.3:a:gitlab:gitlab" }
   eol: { type: endoflife, product: gitlab }

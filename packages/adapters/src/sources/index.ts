@@ -6,6 +6,7 @@ import { dockerhubReleases } from './dockerhub.ts';
 import { rssReleases } from './feed.ts';
 import { giteaReleases } from './gitea.ts';
 import { githubReleases } from './github.ts';
+import { gitlabReleases } from './gitlab.ts';
 import { htmlReleases } from './html.ts';
 import { endoflifeBranches, endoflifeReleases, manualBranches } from './lifecycle.ts';
 import { manualReleases } from './manual.ts';
@@ -27,6 +28,8 @@ export function fetchReleases(source: ReleaseSource, ctx: AdapterContext): Promi
       return endoflifeReleases(source, ctx);
     case 'gitea':
       return giteaReleases(source, ctx);
+    case 'gitlab':
+      return gitlabReleases(source, ctx);
     case 'pointer':
       return pointerReleases(source, ctx);
     case 'apt':
@@ -38,8 +41,6 @@ export function fetchReleases(source: ReleaseSource, ctx: AdapterContext): Promi
     case 'notes':
       // Needs the versions to fetch: the collector calls fetchNotes for the releases it classifies.
       return Promise.reject(new SourceError('notes only enriches releases (releasesExtra)'));
-    case 'gitlab':
-      return Promise.reject(new SourceError(`source type "${source.type}" is not implemented yet`));
   }
 }
 

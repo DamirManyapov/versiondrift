@@ -93,7 +93,7 @@ maintainers: ["@github-handle"]  # who to ping when the module breaks
 | `type` | For | Config | Gives |
 |---|---|---|---|
 | `github` | GitHub releases (falls back to tags if `useTags: true`) | `repo`, `useTags?`, `notesFrom?: release\|changelogFile\|none` (none: the body is an announcement, drop it — the advisories and `releaseNotesUrl` carry the content), `changelogPath?`, `versionRegex?` (version from the tag name, e.g. `'^release-(\d+\.\d+\.\d+)$'`; other tags are ignored) | releases + notes |
-| `gitlab` | GitLab releases | `host?` (default gitlab.com), `project` | releases + notes |
+| `gitlab` | GitLab releases (tags with `useTags: true`) | `host?` (default gitlab.com), `project` (`gitlab-org/gitlab-foss`), `useTags?`, `versionRegex?` | releases + notes; tags: versions + dates |
 | `gitea` | Gitea/Forgejo/Codeberg | `host` (`codeberg.org`), `repo`, `versionRegex?` | releases + notes |
 | `rss` | RSS/Atom feeds | `url`, `versionFrom: title\|link`, `versionRegex` | releases (+ notes from entry body) |
 | `html` | changelog pages without a feed | `url`, `select: { item, title, body, date? }`, `versionRegex`, `versionFormat?` (build the version from several groups: `'$1-$2'`), `dateFormat?` | releases + notes; without a `date` selector the date comes from the title, the start of the body, or the item's link (`./20260912` with `dateFormat: YYYYMMDD`) |
@@ -118,9 +118,9 @@ endoflife.date's branch heads). The run fails only if none answers. `notes` fetc
 run: for new releases first, then for published ones that still have no items (the cap or a failure left them out)
 or all of them after a module change, newest first; a release whose notes are still due keeps its published items.
 
-New source types = new adapter in `packages/adapters` + fixtures + docs row here. `gitlab` is specified but not
-implemented yet (a module using it fails collection with "not implemented"; gitlab.com's API needs a token even for
-public projects, so GitLab itself is collected from the `gitlabhq/gitlabhq` GitHub mirror).
+New source types = new adapter in `packages/adapters` + fixtures + docs row here. `gitlab` reads public projects
+without a token; GitLab itself is collected from the tags of `gitlab-org/gitlab-foss` on gitlab.com (the
+`gitlabhq/gitlabhq` GitHub mirror stopped updating at 19.5.1 in October 2026).
 
 **Versions from text** (`rss`, `html`): `versionRegex` — the first non-empty capture group wins (so alternatives
 like `'Debian (\d+\.\d+) released|Updated Debian \d+: (\d+\.\d+) released'` work). Without it, the first
@@ -211,7 +211,7 @@ listed from the tag on, without notes until the changelog names it.
 
 Known gaps: Zabbix takes its notes from the ChangeLog of each supported release branch (7.4, 7.0, 6.0);
 a new LTS branch needs its line added to the module.
-Other products taken from tags (dovecot, gitlab via the `gitlabhq/gitlabhq` mirror, …) have no notes
+Other products taken from tags (dovecot, gitlab, …) have no notes
 either; endoflife.date release sources only know the latest release of each cycle.
 pfSense (its public repo stopped at 2.5.2), WireGuard (the tools barely change; the module is in the kernel) and 1C:Enterprise
 (no public release feed) from the priority list have no usable source yet. Operating systems collected from

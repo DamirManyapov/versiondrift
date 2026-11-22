@@ -90,7 +90,11 @@ const GithubSource = z.strictObject({
 const GitlabSource = z.strictObject({
   type: z.literal('gitlab'),
   host: nonEmpty.optional().meta({ description: 'Default: gitlab.com' }),
-  project: nonEmpty,
+  project: nonEmpty.meta({ description: 'Project path, e.g. gitlab-org/gitlab-foss' }),
+  useTags: z.boolean().optional().meta({ description: 'Read git tags instead of GitLab releases.' }),
+  versionRegex: regex(
+    "Extracts the version from the tag name; tags that don't match are ignored. First non-empty capture group wins.",
+  ).optional(),
 });
 
 const GiteaSource = z.strictObject({
